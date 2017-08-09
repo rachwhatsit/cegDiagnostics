@@ -86,58 +86,41 @@ df %>% filter(Social=="High",Events=="Low") %>% group_by(Admission) %>% tally() 
 #take BN-A from the CEG book
 parents <- "Social"
 parent.values <- "High"
-
-#passing col names to the filtering bit
-test<-sym(parents)
-filter(df, (!!test) == parent.values) -> df_node
-df_node %>% count(Economic)
-
-filter(df, Social =="High") %>% count(Economic)
-
-df %>%
-  group_by(Social, Economic, Events, Admission) %>%
-  tally() -> counts 
+child <- "Economic"
 
 ####COPIED FROM ABOVE
-get.zhed <- function(df, col_name="Events", prior, n=50, learn=FALSE) {#dataframes should also be added for the counts
+cndtl.node.monitor <- function(df, parents, parent.values, child, n=50, learn=FALSE) {#dataframes should also be added for the counts
   #add checks to make sure that prior has same number of items as counts in dataframe
+  
+  #passing col names to the filtering bit
+  p.sym <- sym(parents)
+  c.sym <- sym(child)
+  alpha.bar <- max(apply(df, 2, function(x){length(levels(as.factor(x)))})) #max number of categories at each level in the dataset 
+  prior <- rep(1, length(levels(df[[child]])))/3
+  
+  #initialize log penalty scores
   Zm <- rep(NA, n)
   Sm <- rep(NA, n)
   Em <- rep(NA, n)
   Vm <- rep(NA, n)
   p <- rep(NA, n)
   
-  if(learn==FALSE){
-    for (i in 2:n){
-      df_cut <- df[2:i,] 
-      df_cut %>%
-        group_by_(col_name) %>% #groups by the stage of interest
-        tally() -> u1 #stage1
-      counts = u1$n 
+    for (i in 1:n){
+      
+      df_cut <- df[1:i,] 
+      filter(df_cut, (!!p.sym) == parent.values) %>% count(!!c.sym) -> counts.tbl
+      counts = counts.tbl$n 
       p[i] = (lgamma(sum(prior)) + sum(lgamma(prior+counts)) - (sum(lgamma(prior)) + lgamma(sum(prior)+sum(counts))))#logprobability
       #compute the z statistics
       Sm[i]=-p[i]
       Em[i]=sum((prior/sum(prior))*sum(counts))
       Vm[i]=sum(prior*(sum(prior)-prior))/(sum(prior)^2*(sum(prior)+1))
       Zm[i]=sum(na.omit(Sm)) - sum(na.omit(Em)) / sqrt(sum(na.omit(Vm)))
-    }
-  }
-  else{
-    for (i in 2:n){
-      newprior <- prior
-      df_cut <- df[2:i,] 
-      df_cut %>%
-        group_by_(col_name) %>% #groups by the stage of interest
-        tally() -> u1 #stage1
-      counts = u1$n 
-      p[i] = (lgamma(sum(prior)) + sum(lgamma(prior+counts)) - (sum(lgamma(prior)) + lgamma(sum(prior)+sum(counts))))#logprobability
-      #compute the z statistics
-      Sm[i]=-p[i]
-      Em[i]=sum((newprior/sum(newprior))*sum(counts))
-      Vm[i]=sum(newprior*(sum(newprior)-newprior))/(sum(newprior)^2*(sum(newprior)+1))
-      Zm[i]=sum(na.omit(Sm)) - sum(na.omit(Em)) / sqrt(sum(na.omit(Vm)))
-      newprior <- (prior+counts)/sum(counts+1)
-    }  
   }
   return(list(Sm,Zm, Em, Vm))
 }
+
+bn.mod1 <- cndtl.node.monitor(df, parents = "Social", parent.values = "High", child = "Economic",n=50)
+plot(bn.mod1[[1]])
+
+
