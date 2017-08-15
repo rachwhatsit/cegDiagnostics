@@ -93,7 +93,8 @@ cndtl.node.monitor <- function(df, parents, parent.values, child, n=50, learn=FA
   #add checks to make sure that prior has same number of items as counts in dataframe
   
   #passing col names to the filtering bit
-  p.sym <- sym(parents)
+  #p.sym <- sym(parents)
+  #p.sym <- lapply(parents, sym)
   c.sym <- sym(child)
   alpha.bar <- max(apply(df, 2, function(x){length(levels(as.factor(x)))})) #max number of categories at each level in the dataset 
   prior <- rep(1, length(levels(df[[child]])))/3
@@ -108,7 +109,14 @@ cndtl.node.monitor <- function(df, parents, parent.values, child, n=50, learn=FA
     for (i in 1:n){
       
       df_cut <- df[1:i,] 
-      filter(df_cut, (!!p.sym) == parent.values) %>% count(!!c.sym) -> counts.tbl
+      #for each parent, filter it off 
+      for (j in 1: length(parents)){
+        df_cut <- filter(df_cut, UQ(sym(parents[j])) == parent.values[j])   
+      }
+      
+      
+      df_cut %>% count(!!c.sym) -> counts.tbl
+      
       counts = counts.tbl$n 
       p[i] = (lgamma(sum(prior)) + sum(lgamma(prior+counts)) - (sum(lgamma(prior)) + lgamma(sum(prior)+sum(counts))))#logprobability
       #compute the z statistics
@@ -120,7 +128,15 @@ cndtl.node.monitor <- function(df, parents, parent.values, child, n=50, learn=FA
   return(list(Sm,Zm, Em, Vm))
 }
 
+#testex
 bn.mod1 <- cndtl.node.monitor(df, parents = "Social", parent.values = "High", child = "Economic",n=50)
-plot(bn.mod1[[1]])
+plot(bn.mod1[[1]]) 
+
+#BN-b
+bn.mod2 <- cndtl.node.monitor(df, parents = "Social", parent.values = "Low", child = "Events",n=50)
+plot(bn.mod2[[1]]) 
+#BN-a 
+bn.mod3 <- cndtl.node.monitor(df, parents = c("Social", "Economic"), parent.values = c("Low","Low"), child = "Events",n=50)
+plot(bn.mod3[[1]]) 
 
 
