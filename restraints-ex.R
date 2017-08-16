@@ -1,3 +1,4 @@
+#just adding comments
 #data cleaning of restraint dataset from ProPublica 
 library(ggplot2); library(dplyr);library(tidyr)
 rm(list=ls())
