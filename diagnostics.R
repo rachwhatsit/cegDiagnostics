@@ -1,6 +1,6 @@
 rm(list=ls())
 library(dplyr);library(ggplot2)
-setwd("/home/rachel/Documents/diagnostics/")
+setwd("/Users/hoban/Documents/diagnostics/diagnostics")
 df<-read.csv(file = "CHDS.latentexample1.csv")
 
 
@@ -163,8 +163,8 @@ plot(bn.modD[[1]])
 
 ##CONDITIONAL STAGE MONITOR FOR THE CEG 
 
-strcut <- list(w0, w1, w2, w3, w5, w6, w7, w8, w9, wINF)
-stages <- list("w0", "w1", "w2", "w3", "w5", "w6", "w7", "w8", "w9")
+struct <- list(w0, w1, w2, w3, w4, w5, w6, w7, w8, w9)
+stages <- list("w0", "w1", "w2", "w3", "w4", "w5", "w6", "w7", "w8", "w9")
 #take the sturated tree
 saturated.tree <- count(df, Social, Economic, Events, Admission)
 
@@ -185,7 +185,7 @@ w8 <- df %>% filter((Social=="High" & Economic=="High"  & Events=="Average") |
                       (Social=="Low" & Economic=="Low"  & Events=="Low")) %>% count(Admission)
 w9 <- df %>% filter((Social=="Low" & Economic=="High"  & Events=="Average") | 
                              (Social=="Low" & Economic=="High"  & Events=="High") | 
-                             (Social=="High" & Economic=="High"  & Events=="High")| 
+                             (Social=="High" & Economic=="High"  & Events=="High") | 
                              (Social=="High" & Economic=="Low"  & Events=="High") |
                              (Social=="Low" & Economic=="Low"  & Events=="High") |
                              (Social=="Low" & Economic=="Low"  & Events=="Average")) %>% count(Admission)
@@ -194,14 +194,16 @@ stage = "w8" #sample for buildling function
 
 #can initalize this, and prompt user to input the pathways for the particular tree
 stage.key <- list()
-df %>% count(Social) -> stage.key[[1]]
-df %>% count(Social, Economic) -> stage.key[[2]]
-df %>% count(Social, Economic, Events) -> stage.key[[3]]
+count(df) -> stage.key[[1]]
+df %>% count(Social) -> stage.key[[2]]
+df %>% count(Social, Economic) -> stage.key[[3]]
+df %>% count(Social, Economic, Events) -> stage.key[[4]]
 #define a stage key for each cut in the data 
 #Q: how does this change for asymmetries?
-stage.key[[1]]$stage <- c("w1", "w2")
-stage.key[[2]]$stage <- c("w3", "w4", "w5", "w6")
-stage.key[[3]]$stage <- c("w8", "w7", "w9", "w8", "w7", "w9", "w9", "w8", "w9", "w9", "w8", "w9")#this contains the structure
+stage.key[[1]]$stage <- c("w0")
+stage.key[[2]]$stage <- c("w1", "w2")
+stage.key[[3]]$stage <- c("w3", "w4", "w5", "w6")
+stage.key[[4]]$stage <- c("w8", "w7", "w9", "w8", "w7", "w9", "w9", "w8", "w9", "w9", "w8", "w9")#this contains the structure
 
 
   
@@ -223,22 +225,30 @@ ceg.uncndtl.node.monitor <- function(df, stage, stage.key, struct, n=50) {
   ref.prior <- list()#will have prior for each stage (9 in case of CHDS example)
   ref.prior[[1]] <- rep(n/length(levels(struct[[1]][[cuts[[1]]]])), length(levels(struct[[1]][[cuts[[1]]]]))) #initialize the prior for w0
   counter=1
-
+print(ref.prior[[1]])
     for (k in 2:length(cuts)){#start at the second cut
-      for (l in 1:length(unique(stage.key[[k]]$stage)))#for each unique stage in the cut
+      for (l in 1:length(unique(stage.key[[k]]$stage))){#for each unique stage in the cut
         counter=counter+1 #which stage we're on
-      stage <- stages[counter+1]#moving through the stages top to bottom
-        in.paths<-stage.key[[k-1]][which(stage.key[[(k-1)]]$stage==stage),]#id the incoming pathways
-        #in.paths<-stage.key[[k]][which(stage.key[[k]]$stage==stage),]#id the incoming pathways
+        print(counter)
+      stage <- stages[counter]#moving through the stages top to bottom
+      print(stage)
+        #in.paths<-stage.key[[k-1]][which(stage.key[[(k-1)]]$stage==stage),]#id the incoming pathways
+        in.paths<-stage.key[[k]][which(stage.key[[k]]$stage==stage),]#id the incoming pathways
+        #colname of third to last col gives stage number
+        
         
       #stages.of.interest <- stage.key[[k-1]]$stage[which(in.paths[["Social"]]==stage.key[[2]][["Social"]] & in.paths[["Economic"]]==stage.key[[2]][["Economic"]])]
-      stages.of.interest <- merge(in.paths[,1:(k-1)], stage.key[[(k-2)]][,c(1:(k-2),dim(stage.key[[(k-2)]])[2])])$stage
+      stages.of.interest <- merge(in.paths[,1:(k-1)], stage.key[[(k-1)]][,c(1:(k-1),dim(stage.key[[(k-1)]])[2])])$stage
       #stages.of.interest <- merge(in.paths[,1:(k-2)], stage.key)
       ref.prior.idx <- unlist(lapply(stages.of.interest, function(x){as.numeric(substr(x,2,2))+1}))#gives the stage number, because of weird indexing, want 
+      #^this is actually the stage index
+      #now we need the index of the kth row, but these are actually all equal, so it shouldn't matter, can just take the first. 
       
-      numtor <- sum(sapply(ref.prior[ref.prior.idx], FUN = `[[`, l))#the 2 here is the index of the cut that we want it to pull out of the prior lists.
-      denom <- dim(struct[[counter+1]])[1]#number of outgoing edges
+      numtor <- sum(sapply(ref.prior[ref.prior.idx], FUN = `[[`, 1))#the 2 here is the index of the cut that we want it to pull out of the prior lists.
+      denom <- dim(struct[[counter]])[1]#number of outgoing edges
       ref.prior[[counter]] <- rep(numtor/denom, denom)
+      print(ref.prior[[counter]])
+      }
     }
 
   #to figure this out
