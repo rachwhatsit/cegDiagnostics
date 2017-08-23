@@ -1,47 +1,158 @@
 rm(list=ls())
-library(dplyr);library(ggplot2)
+library(dplyr);library(ggplot2);library(tidyr)
+library(tidyverse)
 setwd("/Users/hoban/Documents/diagnostics/diagnostics")
 df<-read.csv(file = "CHDS.latentexample1.csv")
+radical <- read.csv(file= "data1.csv")
+
+##CHDS EXAMPLE
+
+#HOW TO FUNCTIONIZE?  
+##THIS IS FOR CEG-a
+cega.stages <- list("cega.w0", "cega.w1", "cega.w2", "cega.w3", "cega.w4", "cega.w5", "cega.w6", "cega.w7", "cega.w8", "cega.w9")
+
+cega.w0 <- df %>% count(Social)
+cega.w1 <- df %>% filter(Social=="High") %>% count(Economic)
+cega.w2 <- df %>% filter(Social=="Low") %>% count(Economic)
+cega.w3 <- df %>% filter(Social=="High", Economic=="High") %>% count(Events)
+cega.w4 <- df %>% filter(Social=="High", Economic=="Low") %>% count(Events)
+cega.w5 <- df %>% filter(Social=="Low", Economic=="High") %>% count(Events)
+cega.w6 <- df %>% filter(Social=="Low", Economic=="Low") %>% count(Events)
+cega.w7 <- df %>% filter((Social=="High" & Economic=="High"  & Events=="Low") |  (Social=="High" & Economic=="Low"  & Events=="Low")) %>% count(Admission)
+cega.w8 <- df %>% filter((Social=="High" & Economic=="High"  & Events=="Average") | 
+                      (Social=="High" & Economic=="Low"  & Events=="Average") | 
+                      (Social=="Low" & Economic=="High"  & Events=="Low") | 
+                      (Social=="Low" & Economic=="Low"  & Events=="Low")) %>% count(Admission)
+cega.w9 <- df %>% filter((Social=="Low" & Economic=="High"  & Events=="Average") | 
+                      (Social=="Low" & Economic=="High"  & Events=="High") | 
+                      (Social=="High" & Economic=="High"  & Events=="High") | 
+                      (Social=="High" & Economic=="Low"  & Events=="High") |
+                      (Social=="Low" & Economic=="Low"  & Events=="High") |
+                      (Social=="Low" & Economic=="Low"  & Events=="Average")) %>% count(Admission)
+cega.struct <- list(cega.w0, cega.w1, cega.w2, cega.w3, cega.w4, cega.w5, cega.w6, cega.w7, cega.w8, cega.w9)#this is the observed values for each of the stages
+
+#can initalize this, and prompt user to input the pathways for the particular tree
+cega.stage.key <- list()
+count(df) -> cega.stage.key[[1]]
+df %>% count(Social) -> cega.stage.key[[2]]
+df %>% count(Social, Economic) -> cega.stage.key[[3]]
+df %>% count(Social, Economic, Events) -> cega.stage.key[[4]]
+#define a stage key for each cut in the data 
+#Q: how does this change for asymmetries?
+cega.stage.key[[1]]$stage <- c("cega.w0")
+cega.stage.key[[2]]$stage <- c("cega.w1", "cega.w2")
+cega.stage.key[[3]]$stage <- c("cega.w3", "cega.w4", "cega.w5", "cega.w6")
+cega.stage.key[[4]]$stage <- c("cega.w8", "cega.w7", "cega.w9", "cega.w8", "cega.w7", "cega.w9", "cega.w9", "cega.w8", "cega.w9", "cega.w9", "cega.w8", "cega.w9")#this contains the structure
+
+##THIS IS FOR CEG-b
+cegb.w0 <- df %>% count(Social)
+cegb.w1 <- df %>% filter(Social=="High") %>% count(Economic)
+cegb.w2 <- df %>% filter(Social=="Low") %>% count(Economic)
+cegb.w3 <- df %>% filter(Social=="High", Economic=="High" | 
+                           Social == "High", Economic=="Low") %>% count(Events)
+cegb.w4 <- df %>% filter(Social=="Low", Economic=="High") %>% count(Events)
+cegb.w5 <- df %>% filter(Social=="Low", Economic=="Low") %>% count(Events)
+cegb.w6 <- df %>% filter((Social=="High" & Economic=="Low" & Events=="Low") | 
+                           (Social=="High" & Economic=="High" & Events=="Low")) %>% count(Admission)
+cegb.w7 <- df %>% filter((Social=="High" & Economic=="High"  & Events=="Average") | 
+                           (Social=="High" & Economic=="Low"  & Events=="Average") | 
+                           (Social=="Low" & Economic=="High"  & Events=="Low")|  
+                           (Social=="Low" & Economic=="High"  & Events=="Average")|  
+                           (Social=="Low" & Economic=="Low"  & Events=="Low")) %>% count(Admission)
+cegb.w8 <- df %>% filter((Social=="High" & Economic=="High"  & Events=="High") | 
+                      (Social=="High" & Economic=="Low"  & Events=="High") | 
+                        (Social=="Low" & Economic=="High"  & Events=="High")| 
+                      (Social=="Low" & Economic=="Low"  & Events=="Average") | 
+                      (Social=="Low" & Economic=="Low"  & Events=="High")) %>% count(Admission)
+cegb.struct <- list(cegb.w0, cegb.w1, cegb.w2, cegb.w3, cegb.w4, cegb.w5, cegb.w6, cegb.w7, cegb.w8)#this is the observed values for each of the stages
+
+#can initalize this, and prompt user to input the pathways for the particular tree
+cegb.stage.key <- list()
+count(df) -> cegb.stage.key[[1]]
+df %>% count(Social) -> cegb.stage.key[[2]]
+df %>% count(Social, Economic) -> cegb.stage.key[[3]]
+df %>% count(Social, Economic, Events) -> cegb.stage.key[[4]]
+#define a stage key for each cut in the data 
+#Q: how does this change for asymmetries?
+cegb.stage.key[[1]]$stage <- c("cegb.w0")##THIS MUST START AT 0 AND NUM MUST BE LAST CHAR
+cegb.stage.key[[2]]$stage <- c("cegb.w1", "cegb.w2")
+cegb.stage.key[[3]]$stage <- c("cegb.w3", "cegb.w3", "cegb.w4", "cegb.w5")
+cegb.stage.key[[4]]$stage <- c("cegb.w7", "cegb.w8","cegb.w6","cegb.w7",
+                               "cegb.w8","cegb.w6","cegb.w7","cegb.w8",
+                               "cegb.w7","cegb.w8","cegb.w8","cegb.w7")#this contains the structure
+cegb.stages <- list("cegb.w0", "cegb.w1", "cegb.w2", "cegb.w3", "cegb.w4", "cegb.w5", "cegb.w6", "cegb.w7", "cegb.w8")
 
 
-# #how do we store positions of the CEG in the dplyr function? 
-# df %>% group_by(Social) %>% tally() #w1
-# df %>% filter(Social=="High") %>% group_by(Economic) %>% tally() #w2
-# df %>% filter(Social=="Low") %>% group_by(Economic) %>% tally() #w3
-# df %>% filter(Social=="High") %>% group_by(Events) %>% tally() #w4
-# df %>% filter(Social=="Low", Economic=="High") %>% group_by(Events) %>% tally() #w5
-# df %>% filter(Social=="Low", Economic=="Low") %>% group_by(Events) %>% tally() #w6
-# df %>% filter(Social=="High",Events=="Low") %>% group_by(Admission) %>% tally() #w7
+##GET THE REFERENCE PRIORS
+cegb.prior <- get.ref.prior(df, cegb.struct, cuts, cegb.stage.key, cegb.stages)
+cega.prior <- get.ref.prior(df, cega.struct, cuts, cega.stage.key, cega.stages)
+
+#############################
+###FUNCTION TO GET THE REFERENCE PRIOR
+get.ref.prior <- function(df, st ruct, cuts, stage.key,stages) { #returns the reference prior of a CEG 
+  #FIND THE REFERENCE PRIOR for each stage 
+  n <- prod(apply(df, 2, function(x){length(levels(as.factor(x)))})) #total number of pathways in the CEG 
+  cuts <- colnames(df) #each of the cuts that each variable must pass through
+  alpha.bar <- max(apply(df, 2, function(x){length(levels(as.factor(x)))})) #max number of categories at each level in the dataset 
+  obsv <- lapply(struct, function(x){x$n}) #takes the observed values for each of the priors
+  ref.prior <- list()#will have prior for each stage (9 in case of CHDS example)
+  ref.prior[[1]] <- rep(n/length(levels(struct[[1]][[cuts[[1]]]])), length(levels(struct[[1]][[cuts[[1]]]]))) #initialize the prior for w0
+  counter=1
+  #print(ref.prior[[1]])
+  for (k in 2:length(cuts)){#start at the second cut
+    for (l in 1:length(unique(stage.key[[k]]$stage))){#for each unique stage in the cut
+      counter=counter+1 #which stage we're on
+      #       print(counter)
+      stage <- stages[counter]#moving through the stages top to bottom
+      #    print(stage)
+      in.paths<-stage.key[[k]][which(stage.key[[k]]$stage==stage),]#id the incoming pathways
+      stages.of.interest <- merge(in.paths[,1:(k-1)], stage.key[[(k-1)]][,c(1:(k-1),dim(stage.key[[(k-1)]])[2])])$stage
+      ref.prior.idx <- unlist(lapply(stages.of.interest, function(x){as.numeric(substr(x,nchar(x),nchar(x)))+1}))#gives the stage number, because of weird indexing, want 
+      #^this is actually the stage index
+      numtor <- sum(sapply(ref.prior[ref.prior.idx], FUN = `[[`, 1))#the 2 here is the index of the cut that we want it to pull out of the prior lists.
+      denom <- dim(struct[[counter]])[1]#number of outgoing edges
+      ref.prior[[counter]] <- rep(numtor/denom, denom)
+      #   print(ref.prior[[counter]])
+    }
+  }
+  return(ref.prior)
+}
+###############################################
+##BATCH MONTIOR FOR THE BN
+
 
 ###############################################
 ##BATCH MONITORS FOR THE CEG 
-ceg.batch.monitor <- function(df, struct){ 
-  colnames(df) -> cuts
+ceg.batch.monitor <- function(df, struct, stage.key, stages, which.cut){ 
+  #which.cut is an integer that determines the cut for which we want to compute the batch monitors of two CEGs.
+  colnames(df) -> cuts 
+  obsv <- stage.key[[which.cut]]$n #how many observed in each pathway through cut
+  prior <- get.ref.prior(df, struct, cuts, stage.key, stages) #compute the prior
+  which.to.add <- unlist(lapply(stage.key[[which.cut]]$stage, function(x){as.numeric(substr(x,nchar(x),nchar(x)))}))
+  expct.cut <- unlist(prior[unlist(lapply(unique(stage.key[[which.cut-1]]$stage), function(x){as.numeric(substr(x,nchar(x),nchar(x)))+1}))])
   
-  df %>%
-    group_by(Social, Economic, Events, Admission) %>%
-    tally() -> obsv #counts for all pathways in the CEG
-  
-  n.cat <- apply(df, 2, function(x){length(levels(as.factor(x)))})
-  alpha.bar=prod(n.cat)
+  prior.vec <- rep(0, length(unique(which.to.add)))
+  obsv.vec <- rep(0, length(unique(which.to.add)))
+  for (i in 1:length(unique(which.to.add))){
+    target.stage <- unique(which.to.add)[i]
+    prior.vec[i] <- sum(expct.cut[which(which.to.add==which.to.add[i])])
+    obsv.vec[i] <- sum(obsv[which(which.to.add==which.to.add[i])])
+  }
+
+  expct.vec <- (prior.vec/n)*dim(df)[1]#scale the expected vec
+  pearson <- sum((obsv.vec-expct.vec)^2/expct.vec)
+  return(pearson) #returns the pearson coefficient for the pathways which can be used to find the p-value
+  #go back in and add the discount factor
   }
  
-df %>%
-   group_by(Social, Economic, Events, Admission) %>%
-   tally() -> counts #counts for all pathways in the CEG
- #write.csv(counts,'counts.csv')
-
-#how do we code up a CEG; JH- as a list of vertices and priors associated with each one
-df %>% count(Social)
-df %>% count(Social, Economic)
-df %>% count(Social, Economic, Events)
-df %>% count(Social, Economic, Events, Admission)
+ cega.batch.monitor <- ceg.batch.monitor(df, cega.struct, cega.stage.key, cega.stages,3)
+ cegb.batch.monitor <- ceg.batch.monitor(df, cegb.struct, cegb.stage.key, cegb.stages,3)
  
 ###############################################################
 ##UNCONDITIONAL NODE MONITOR FOR BOTH BNS AND CEGS (ideal for root nodes in CEGs)
 #df is the data in question, col_name is the stage in question, prior is the set prior (must have right number of iterations), n is the max sample size we wish to consider.
  #df should be filtered first
- ceg.uncondtnl.node.monitor <- function(df, col_name="Events", prior, n=50, learn=FALSE) {#dataframes should also be added for the counts
+ ceg.uncondtnl.stage.monitor <- function(df, col_name="Events", prior, n=50, learn=FALSE) {#dataframes should also be added for the counts
   #add checks to make sure that prior has same number of items as counts in dataframe
   Zm <- rep(NA, n)
   Sm <- rep(NA, n)
@@ -95,8 +206,6 @@ plot(mod2[[1]],xlab='Relevant sample size', ylab = 'z statistic')
 lines(mod1[[1]])
 
 
-
-
 #############################################
 ##CONDITIONAL NODE MONITOR FOR BNS
 bn.cndtl.node.monitor <- function(df, parents, parent.values, child, n=50, learn=FALSE) {#dataframes should also be added for the counts
@@ -137,7 +246,7 @@ bn.cndtl.node.monitor <- function(df, parents, parent.values, child, n=50, learn
   return(list(Sm,Zm, Em, Vm))
 }
 
-##EXAMPLES
+##EXAMPLES OF BNS
 #testex
 bn.mod1 <- bn.cndtl.node.monitor(df, parents = "Social", parent.values = "High", child = "Economic",n=50)
 plot(bn.mod1[[1]]) 
@@ -161,50 +270,6 @@ plot(bn.modD[[1]])
 ##############################################
 
 
-##CONDITIONAL STAGE MONITOR FOR THE CEG 
-
-struct <- list(w0, w1, w2, w3, w4, w5, w6, w7, w8, w9)
-stages <- list("w0", "w1", "w2", "w3", "w4", "w5", "w6", "w7", "w8", "w9")
-#take the sturated tree
-saturated.tree <- count(df, Social, Economic, Events, Admission)
-
-#set the priors on the stages
-#HOW TO FUNCTIONIZE?  
-##THIS IS FOR CEG-a
-w0 <- df %>% count(Social)
-w1 <- df %>% filter(Social=="High") %>% count(Economic)
-w2 <- df %>% filter(Social=="Low") %>% count(Economic)
-w3 <- df %>% filter(Social=="High", Economic=="High") %>% count(Events)
-w4 <- df %>% filter(Social=="High", Economic=="Low") %>% count(Events)
-w5 <- df %>% filter(Social=="Low", Economic=="High") %>% count(Events)
-w6 <- df %>% filter(Social=="Low", Economic=="Low") %>% count(Events)
-w7 <- df %>% filter((Social=="High" & Economic=="High"  & Events=="Low") |  (Social=="High" & Economic=="Low"  & Events=="Low")) %>% count(Admission)
-w8 <- df %>% filter((Social=="High" & Economic=="High"  & Events=="Average") | 
-                      (Social=="High" & Economic=="Low"  & Events=="Average") | 
-                      (Social=="Low" & Economic=="High"  & Events=="Low") | 
-                      (Social=="Low" & Economic=="Low"  & Events=="Low")) %>% count(Admission)
-w9 <- df %>% filter((Social=="Low" & Economic=="High"  & Events=="Average") | 
-                             (Social=="Low" & Economic=="High"  & Events=="High") | 
-                             (Social=="High" & Economic=="High"  & Events=="High") | 
-                             (Social=="High" & Economic=="Low"  & Events=="High") |
-                             (Social=="Low" & Economic=="Low"  & Events=="High") |
-                             (Social=="Low" & Economic=="Low"  & Events=="Average")) %>% count(Admission)
-struct <- list(w0, w1, w2, w3, w5, w6, w7, w8, w9)#this is the observed values for each of the stages
-stage = "w8" #sample for buildling function
-
-#can initalize this, and prompt user to input the pathways for the particular tree
-stage.key <- list()
-count(df) -> stage.key[[1]]
-df %>% count(Social) -> stage.key[[2]]
-df %>% count(Social, Economic) -> stage.key[[3]]
-df %>% count(Social, Economic, Events) -> stage.key[[4]]
-#define a stage key for each cut in the data 
-#Q: how does this change for asymmetries?
-stage.key[[1]]$stage <- c("w0")
-stage.key[[2]]$stage <- c("w1", "w2")
-stage.key[[3]]$stage <- c("w3", "w4", "w5", "w6")
-stage.key[[4]]$stage <- c("w8", "w7", "w9", "w8", "w7", "w9", "w9", "w8", "w9", "w9", "w8", "w9")#this contains the structure
-
 
   
 #TODO: can implement checks that the counts in each cut sum to the number of observations in the dataframe 
@@ -212,7 +277,8 @@ stage.key[[4]]$stage <- c("w8", "w7", "w9", "w8", "w7", "w9", "w9", "w8", "w9", 
 #CEG cndtl stage monitor-- check to see what the contribution of a specific pathway is (say the impact of w0, w2, w5 on w8 in CEG A)
 #CEG uncndtnl stage monitor-- check the prior taking all contributions.
 
-ceg.uncndtl.node.monitor <- function(df, stage, stage.key, struct, n=50) {
+ceg.uncndtl.stage.monitor <- function(df, stage, stage.key, struct, n=50) {
+  #the stages start at w0 OTHERWISE YOU WILL LAND IN INDEXING HELL. 
   
   #figure out what the reference prior is on the stage of interest 
   n <- prod(apply(df, 2, function(x){length(levels(as.factor(x)))})) #total number of pathways in the CEG 
@@ -221,67 +287,28 @@ ceg.uncndtl.node.monitor <- function(df, stage, stage.key, struct, n=50) {
   
   obsv <- lapply(struct, function(x){x$n}) #takes the observed values for each of the priors
   
-  #find the reference prior for each thing in the stage 
+  #FIND THE REFERENCE PRIOR for each stage 
   ref.prior <- list()#will have prior for each stage (9 in case of CHDS example)
   ref.prior[[1]] <- rep(n/length(levels(struct[[1]][[cuts[[1]]]])), length(levels(struct[[1]][[cuts[[1]]]]))) #initialize the prior for w0
   counter=1
-print(ref.prior[[1]])
+#print(ref.prior[[1]])
     for (k in 2:length(cuts)){#start at the second cut
       for (l in 1:length(unique(stage.key[[k]]$stage))){#for each unique stage in the cut
         counter=counter+1 #which stage we're on
-        print(counter)
+ #       print(counter)
       stage <- stages[counter]#moving through the stages top to bottom
-      print(stage)
-        #in.paths<-stage.key[[k-1]][which(stage.key[[(k-1)]]$stage==stage),]#id the incoming pathways
+  #    print(stage)
         in.paths<-stage.key[[k]][which(stage.key[[k]]$stage==stage),]#id the incoming pathways
-        #colname of third to last col gives stage number
-        
-        
-      #stages.of.interest <- stage.key[[k-1]]$stage[which(in.paths[["Social"]]==stage.key[[2]][["Social"]] & in.paths[["Economic"]]==stage.key[[2]][["Economic"]])]
       stages.of.interest <- merge(in.paths[,1:(k-1)], stage.key[[(k-1)]][,c(1:(k-1),dim(stage.key[[(k-1)]])[2])])$stage
-      #stages.of.interest <- merge(in.paths[,1:(k-2)], stage.key)
       ref.prior.idx <- unlist(lapply(stages.of.interest, function(x){as.numeric(substr(x,2,2))+1}))#gives the stage number, because of weird indexing, want 
       #^this is actually the stage index
-      #now we need the index of the kth row, but these are actually all equal, so it shouldn't matter, can just take the first. 
-      
       numtor <- sum(sapply(ref.prior[ref.prior.idx], FUN = `[[`, 1))#the 2 here is the index of the cut that we want it to pull out of the prior lists.
       denom <- dim(struct[[counter]])[1]#number of outgoing edges
       ref.prior[[counter]] <- rep(numtor/denom, denom)
-      print(ref.prior[[counter]])
+   #   print(ref.prior[[counter]])
       }
     }
 
-  #to figure this out
-  ref.prior[[1]] <- c(12,12)
-  ref.prior[[2]] <- c(6,6)
-  ref.prior[[3]] <- c(6,6)
-  ref.prior[[4]] <- c(2,2,2)
-  ref.prior[[5]] <- c(2,2,2)
-  ref.prior[[6]] <- c(2,2,2)
-  ref.prior[[7]] <- c(2,2,2)
-  
-  #now for stage 8 
-  in.paths<-stage.key[[3]][which(stage.key[[3]]$stage=="w8"),]
-  stages.of.interest <- stage.key[[2]]$stage[which(in.paths[["Social"]]==stage.key[[2]][["Social"]] & in.paths[["Economic"]]==stage.key[[2]][["Economic"]])]
-  ref.prior.idx <- unlist(lapply(stages.of.interest, function(x){as.numeric(substr(x,2,2))+1}))#gives the stage number, because of weird indexing, want 
-  numtor <- sum(sapply(ref.prior[ref.prior.idx], FUN = `[[`, 2))#the 2 here is the index of the cut that we want it to pull out of the prior lists.
-  
-  
-  #take the cut-th factor level from prior and sum
-    
-  ref.prior[[1]] <- rep(n/length(levels(w0[[UQ(cuts[1])]])),length(levels(w0[[UQ(cuts[1])]])))   #for stage w0, divide n by number of levels
-  ref.prior[[2]] <- rep(12/length(levels(w0[[UQ(cuts[2)]]))),length(levels(w0[[UQ(cuts[2])]]))) #for stage w
-  ref.prior[[3]] <- rep(12/length(levels(w0[[UQ(cuts[2])]])),length(levels(w0[[UQ(cuts[2])]]))) #for stage w
-  ref.prior[[4]] <- rep(6/length(levels(w0[[UQ(cuts[3])]])),length(levels(w0[[UQ(cuts[3])]]))) #for stage w
-  ref.prior[[5]] <- rep(6/length(levels(w0[[UQ(cuts[3])]])),length(levels(w0[[UQ(cuts[3])]]))) #for stage w
-  ref.prior[[6]] <- rep(6/length(levels(w0[[UQ(cuts[3])]])),length(levels(w0[[UQ(cuts[3])]]))) #for stage w
-  ref.prior[[7]] <- rep(6/length(levels(w0[[UQ(cuts[3])]])),length(levels(w0[[UQ(cuts[3])]]))) #for stage w
-  
-  #figure out which edges are coming in
-  
-  
-  #prior <- rep(1, length(levels(df[[child]])))/length(levels(df[[child]]))
-  
   
   #initialize log penalty scores
   Zm <- rep(NA, n)
