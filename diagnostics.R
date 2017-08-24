@@ -89,7 +89,7 @@ cega.prior <- get.ref.prior(df, cega.struct, cuts, cega.stage.key, cega.stages)
 
 #############################
 ###FUNCTION TO GET THE REFERENCE PRIOR
-get.ref.prior <- function(df, st ruct, cuts, stage.key,stages) { #returns the reference prior of a CEG 
+get.ref.prior <- function(df, struct, cuts, stage.key,stages) { #returns the reference prior of a CEG 
   #FIND THE REFERENCE PRIOR for each stage 
   n <- prod(apply(df, 2, function(x){length(levels(as.factor(x)))})) #total number of pathways in the CEG 
   cuts <- colnames(df) #each of the cuts that each variable must pass through
@@ -120,7 +120,20 @@ get.ref.prior <- function(df, st ruct, cuts, stage.key,stages) { #returns the re
 ###############################################
 ##BATCH MONTIOR FOR THE BN
 
+bn.batch.monitor <- function(df, child, parents, parent.values){#returns pearson chi-square of diff between observed and expected values
+  #determine what the observed counts are 
+  for (j in 1: length(parents)){
+    df <- filter(df, UQ(sym(parents[j])) == parent.values[j])   
+  }
+  count(df, UQ(sym(child))) -> obsv.df
+  obsv <- unlist(obsv.df$n)
+  ref.prior <- rep(1/length(obsv.df$n), length(obsv.df$n))
+  expct <- ref.prior*sum(obsv.df$n)
+  pearson <- sum((obsv-expct)^2/expct)
+  return(pearson)
+}
 
+bn.batch.mod1 <- bn.batch.monitor(df, child = "Economic", parents = "Social", parent.values = "High") 
 ###############################################
 ##BATCH MONITORS FOR THE CEG 
 ceg.batch.monitor <- function(df, struct, stage.key, stages, which.cut){ 
@@ -137,7 +150,7 @@ ceg.batch.monitor <- function(df, struct, stage.key, stages, which.cut){
     target.stage <- unique(which.to.add)[i]
     prior.vec[i] <- sum(expct.cut[which(which.to.add==which.to.add[i])])
     obsv.vec[i] <- sum(obsv[which(which.to.add==which.to.add[i])])
-  }
+  }#this can be done with applys, but my head hurts
 
   expct.vec <- (prior.vec/n)*dim(df)[1]#scale the expected vec
   pearson <- sum((obsv.vec-expct.vec)^2/expct.vec)
@@ -146,13 +159,13 @@ ceg.batch.monitor <- function(df, struct, stage.key, stages, which.cut){
   }
  
  cega.batch.monitor <- ceg.batch.monitor(df, cega.struct, cega.stage.key, cega.stages,3)
- cegb.batch.monitor <- ceg.batch.monitor(df, cegb.struct, cegb.stage.key, cegb.stages,3)
+ cegb.batch.monitor <- ceg.batch.monitor(df, cegb.struct, cegb.stage.key, cegb.stages,3)#substantial improvement for ceg-B
  
 ###############################################################
-##UNCONDITIONAL NODE MONITOR FOR BOTH BNS AND CEGS (ideal for root nodes in CEGs)
+##UNCONDITIONAL NODE MONITOR FOR BNs 
 #df is the data in question, col_name is the stage in question, prior is the set prior (must have right number of iterations), n is the max sample size we wish to consider.
  #df should be filtered first
- ceg.uncondtnl.stage.monitor <- function(df, col_name="Events", prior, n=50, learn=FALSE) {#dataframes should also be added for the counts
+ bn.uncondtnl.stage.monitor <- function(df, col_name="Events", prior, n=50, learn=FALSE) {#dataframes should also be added for the counts
   #add checks to make sure that prior has same number of items as counts in dataframe
   Zm <- rep(NA, n)
   Sm <- rep(NA, n)
@@ -183,7 +196,7 @@ ceg.batch.monitor <- function(df, struct, stage.key, stages, which.cut){
         group_by_(col_name) %>% #groups by the stage of interest
         tally() -> u1 #stage1
       counts = u1$n 
-      p[i] = (lgamma(sum(prior)) + sum(lgamma(prior+counts)) - (sum(lgamma(prior)) + lgamma(sum(prior)+sum(counts))))#logprobability
+      p[i] = (lgamma(sum(newprior)) + sum(lgamma(newprior+counts)) - (sum(lgamma(newprior)) + lgamma(sum(newprior)+sum(counts))))#logprobability
       #compute the z statistics
       Sm[i]=-p[i]
       Em[i]=sum((newprior/sum(newprior))*sum(counts))
@@ -195,8 +208,8 @@ ceg.batch.monitor <- function(df, struct, stage.key, stages, which.cut){
   return(list(Sm,Zm, Em, Vm))
 }
 
-mod1 <- ceg.uncondtnl.node.monitor(df,col_name = "Social", prior=c(10,1),n=50)
-mod2 <- ceg.uncondtnl.node.monitor(df,col_name = "Social", prior=c(.05,.05),n=50)
+mod1 <- bn.uncondtnl.node.monitor(df,col_name = "Social", prior=c(10,1),n=50)
+mod2 <- bn.uncondtnl.node.monitor(df,col_name = "Social", prior=c(.05,.05),n=50)
 
 plot(mod2[[2]],xlab='Relevant sample size', ylab = 'Cumulative logarithmic penalty')
 lines(mod1[[2]])
@@ -246,7 +259,7 @@ bn.cndtl.node.monitor <- function(df, parents, parent.values, child, n=50, learn
   return(list(Sm,Zm, Em, Vm))
 }
 
-##EXAMPLES OF BNS
+##EXAMPLES OF BNS corresponding to BNs in the CEG book
 #testex
 bn.mod1 <- bn.cndtl.node.monitor(df, parents = "Social", parent.values = "High", child = "Economic",n=50)
 plot(bn.mod1[[1]]) 
@@ -269,73 +282,144 @@ plot(bn.modD[[1]])
 
 ##############################################
 
-
-
-  
 #TODO: can implement checks that the counts in each cut sum to the number of observations in the dataframe 
 
 #CEG cndtl stage monitor-- check to see what the contribution of a specific pathway is (say the impact of w0, w2, w5 on w8 in CEG A)
 #CEG uncndtnl stage monitor-- check the prior taking all contributions.
 
-ceg.uncndtl.stage.monitor <- function(df, stage, stage.key, struct, n=50) {
-  #the stages start at w0 OTHERWISE YOU WILL LAND IN INDEXING HELL. 
-  
-  #figure out what the reference prior is on the stage of interest 
-  n <- prod(apply(df, 2, function(x){length(levels(as.factor(x)))})) #total number of pathways in the CEG 
-  cuts <- colnames(df) #each of the cuts that each variable must pass through
-  alpha.bar <- max(apply(df, 2, function(x){length(levels(as.factor(x)))})) #max number of categories at each level in the dataset 
-  
-  obsv <- lapply(struct, function(x){x$n}) #takes the observed values for each of the priors
-  
-  #FIND THE REFERENCE PRIOR for each stage 
-  ref.prior <- list()#will have prior for each stage (9 in case of CHDS example)
-  ref.prior[[1]] <- rep(n/length(levels(struct[[1]][[cuts[[1]]]])), length(levels(struct[[1]][[cuts[[1]]]]))) #initialize the prior for w0
-  counter=1
-#print(ref.prior[[1]])
-    for (k in 2:length(cuts)){#start at the second cut
-      for (l in 1:length(unique(stage.key[[k]]$stage))){#for each unique stage in the cut
-        counter=counter+1 #which stage we're on
- #       print(counter)
-      stage <- stages[counter]#moving through the stages top to bottom
-  #    print(stage)
-        in.paths<-stage.key[[k]][which(stage.key[[k]]$stage==stage),]#id the incoming pathways
-      stages.of.interest <- merge(in.paths[,1:(k-1)], stage.key[[(k-1)]][,c(1:(k-1),dim(stage.key[[(k-1)]])[2])])$stage
-      ref.prior.idx <- unlist(lapply(stages.of.interest, function(x){as.numeric(substr(x,2,2))+1}))#gives the stage number, because of weird indexing, want 
-      #^this is actually the stage index
-      numtor <- sum(sapply(ref.prior[ref.prior.idx], FUN = `[[`, 1))#the 2 here is the index of the cut that we want it to pull out of the prior lists.
-      denom <- dim(struct[[counter]])[1]#number of outgoing edges
-      ref.prior[[counter]] <- rep(numtor/denom, denom)
-   #   print(ref.prior[[counter]])
-      }
-    }
 
-  
-  #initialize log penalty scores
+##UNCONDITIONAL STAGE MONITOR FOR CEGs 
+target.stage <- "cegb.w6"  
+ceg.uncondtnl.stage.monitor <- function(df, target.stage, target.cut, stages, stage.key, struct, n=50, learn=FALSE) {#dataframes should also be added for the counts
+  #add checks to make sure that prior has same number of items as counts in dataframe
+  #target.cut is the cut that the target.stage is in 
   Zm <- rep(NA, n)
   Sm <- rep(NA, n)
   Em <- rep(NA, n)
   Vm <- rep(NA, n)
   p <- rep(NA, n)
   
-  for (i in 1:n){
-    
-    df_cut <- df[1:i,] 
-    #for each parent, filter it off 
-    for (j in 1: length(parents)){
-      df_cut <- filter(df_cut, UQ(sym(parents[j])) == parent.values[j])   
+  prior <- get.ref.prior(df, struct,cuts,stage.key,stages)
+  target.stage.idx <- as.numeric(substr(target.stage,nchar(target.stage),nchar(target.stage)))+1
+  target.prior <- prior[target.stage.idx]
+  if(learn==FALSE){
+    for (i in 2:n){
+      df_cut <- df[2:i,] 
+      in.path.idx <- which(stage.key[[target.cut]]$stage==target.stage)
+      #conditions
+      for (j in 1:length(in.path.idx)){
+        for(k in 1:(length(colnames(stage.key[[target.cut]]))-2)){
+          df_counts <- filter(df_cut, df_cut[,k]==as.character(unlist(stage.key[[target.cut]][in.path.idx[j],k])))#filter according to the matching indices 
+          df_cut <- df_counts
+        }
+      }
+      obsv.stage.count <- count(df_cut,Events)#how many counts we observe in each stage
+      counts <-obsv.stage.count$n
+      target.prior.vec <- unlist(target.prior)
+      p[i] = (lgamma(sum(target.prior.vec)) + sum(lgamma(target.prior.vec+counts)) - (sum(lgamma(target.prior.vec)) + lgamma(sum(target.prior.vec)+sum(counts))))#logprobability
+      #compute the z statistics
+      Sm[i]=-p[i]
+      Em[i]=sum((target.prior.vec/sum(target.prior.vec))*sum(counts))
+      Vm[i]=sum(target.prior.vec*(sum(target.prior.vec)-target.prior.vec))/(sum(target.prior.vec)^2*(sum(target.prior.vec)+1))
+      Zm[i]=sum(na.omit(Sm)) - sum(na.omit(Em)) / sqrt(sum(na.omit(Vm)))
     }
-    
-    
-    df_cut %>% count(!!c.sym) -> counts.tbl
-    
-    counts = counts.tbl$n 
-    p[i] = (lgamma(sum(prior)) + sum(lgamma(prior+counts)) - (sum(lgamma(prior)) + lgamma(sum(prior)+sum(counts))))#logprobability
-    #compute the z statistics
-    Sm[i]=-p[i]
-    Em[i]=sum((prior/sum(prior))*sum(counts))
-    Vm[i]=sum(prior*(sum(prior)-prior))/(sum(prior)^2*(sum(prior)+1))
-    Zm[i]=sum(na.omit(Sm)) - sum(na.omit(Em)) / sqrt(sum(na.omit(Vm)))
+  }
+  else{
+    for (i in 2:n){
+        df_cut <- df[2:i,] 
+        in.path.idx <- which(stage.key[[target.cut]]$stage==target.stage)
+        #conditions
+        
+        
+        for (j in 1:length(in.path.idx)){
+          for(k in 1:(length(colnames(stage.key[[target.cut]]))-2)){
+            df_counts <- filter(df_cut, df_cut[,k]==as.character(unlist(stage.key[[target.cut]][in.path.idx[j],k])))#filter according to the matching indices 
+            df_cut <- df_counts
+          }
+        }
+        obsv.stage.count <- count(df_cut,Events)#how many counts we observe in each stage
+        counts <-obsv.stage.count$n
+        target.prior.vec <- unlist(target.prior)
+        p[i] = (lgamma(sum(target.prior.vec)) + sum(lgamma(target.prior.vec+counts)) - (sum(lgamma(target.prior.vec)) + lgamma(sum(target.prior.vec)+sum(counts))))#logprobability
+        #compute the z statistics
+        Sm[i]=-p[i]
+        Em[i]=sum((target.prior.vec/sum(target.prior.vec))*sum(counts))
+        Vm[i]=sum(target.prior.vec*(sum(target.prior.vec)-target.prior.vec))/(sum(target.prior.vec)^2*(sum(target.prior.vec)+1))
+        Zm[i]=sum(na.omit(Sm)) - sum(na.omit(Em)) / sqrt(sum(na.omit(Vm)))
+        target.prior + counts -> target.prior#THIS IS THE LEARNING STEP
+    }  
   }
   return(list(Sm,Zm, Em, Vm))
 }
+
+cega.uncondtnl.stage.monitor <- ceg.uncondtnl.stage.monitor(df, "cega.w6",4,cega.stages,cega.stage.key,cega.struct,n=100)
+cegb.uncondtnl.stage.monitor <- ceg.uncondtnl.stage.monitor(df, "cegb.w6",4,cegb.stages,cegb.stage.key,cegb.struct,n=100)
+
+######################################
+##CONDITIONAL STAGE MONITOR FOR THE CEGS
+target.stage <- "cegb.w6"
+condtnl.stage <- "cegb.w3"
+
+ceg.condtnl.stage.monitor <- function(df, target.stage, target.cut, condtnl.stage, stages, stage.key, struct, n=50, learn=FALSE) {#dataframes should also be added for the counts
+  #add checks to make sure that prior has same number of items as counts in dataframe
+  #target.cut is the cut that the target.stage is in 
+  Zm <- rep(NA, n)
+  Sm <- rep(NA, n)
+  Em <- rep(NA, n)
+  Vm <- rep(NA, n)
+  p <- rep(NA, n)
+  
+  prior <- get.ref.prior(df, struct,cuts,stage.key,stages)
+  target.stage.idx <- as.numeric(substr(target.stage,nchar(target.stage),nchar(target.stage)))+1
+  target.prior <- prior[target.stage.idx]
+  if(learn==FALSE){
+    for (i in 2:n){
+      df_cut <- df[2:i,] 
+      in.path.idx <- which(stage.key[[target.cut]]$stage==target.stage)
+      #conditions
+      for (j in 1:length(in.path.idx)){
+        for(k in 1:(length(colnames(stage.key[[target.cut]]))-2)){
+          df_counts <- filter(df_cut, df_cut[,k]==as.character(unlist(stage.key[[target.cut]][in.path.idx[j],k])))#filter according to the matching indices 
+          df_cut <- df_counts
+        }
+      }
+      obsv.stage.count <- count(df_cut,Events)#how many counts we observe in each stage
+      counts <-obsv.stage.count$n
+      target.prior.vec <- unlist(target.prior)
+      p[i] = (lgamma(sum(target.prior.vec)) + sum(lgamma(target.prior.vec+counts)) - (sum(lgamma(target.prior.vec)) + lgamma(sum(target.prior.vec)+sum(counts))))#logprobability
+      #compute the z statistics
+      Sm[i]=-p[i]
+      Em[i]=sum((target.prior.vec/sum(target.prior.vec))*sum(counts))
+      Vm[i]=sum(target.prior.vec*(sum(target.prior.vec)-target.prior.vec))/(sum(target.prior.vec)^2*(sum(target.prior.vec)+1))
+      Zm[i]=sum(na.omit(Sm)) - sum(na.omit(Em)) / sqrt(sum(na.omit(Vm)))
+    }
+  }
+  else{
+    for (i in 2:n){
+      df_cut <- df[2:i,] 
+      in.path.idx <- which(stage.key[[target.cut]]$stage==target.stage)
+      #conditions
+      
+      
+      for (j in 1:length(in.path.idx)){
+        for(k in 1:(length(colnames(stage.key[[target.cut]]))-2)){
+          df_counts <- filter(df_cut, df_cut[,k]==as.character(unlist(stage.key[[target.cut]][in.path.idx[j],k])))#filter according to the matching indices 
+          df_cut <- df_counts
+        }
+      }
+      obsv.stage.count <- count(df_cut,Events)#how many counts we observe in each stage
+      counts <-obsv.stage.count$n
+      target.prior.vec <- unlist(target.prior)
+      p[i] = (lgamma(sum(target.prior.vec)) + sum(lgamma(target.prior.vec+counts)) - (sum(lgamma(target.prior.vec)) + lgamma(sum(target.prior.vec)+sum(counts))))#logprobability
+      #compute the z statistics
+      Sm[i]=-p[i]
+      Em[i]=sum((target.prior.vec/sum(target.prior.vec))*sum(counts))
+      Vm[i]=sum(target.prior.vec*(sum(target.prior.vec)-target.prior.vec))/(sum(target.prior.vec)^2*(sum(target.prior.vec)+1))
+      Zm[i]=sum(na.omit(Sm)) - sum(na.omit(Em)) / sqrt(sum(na.omit(Vm)))
+      target.prior + counts -> target.prior#THIS IS THE LEARNING STEP
+    }  
+  }
+  return(list(Sm,Zm, Em, Vm))
+}
+
 
