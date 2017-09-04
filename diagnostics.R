@@ -118,25 +118,30 @@ cega.prior <- get.ref.prior(df, cega.struct, cuts, cega.stage.key, cega.stages)
 
 #############################################
 ###CEG VIZ 
-struct = cega.struct; stage.key = cega.stage.key; stages=cega.stages
+struct = cega.struct; stage.key = cega.stage.key; stages=cega.stages #set to ceg-A 
 render.ceg <- function(struct, cuts, stage.key, stages)
   #get the nodes
   short.stages <-lapply(stages,function(x){as.character(substr(x,nchar(x)-1,nchar(x)))})#stages w labels removed
-  nodes <- create_nodes(nodes = c(stage.key[[1]]$stage, stage.key[[2]]$stage))
-  #get the edges
   
  #match(interaction(stage.key[[4]]$Social, stage.key[[4]]$Economic),interaction(stage.key[[3]]$Social, stage.key[[3]]$Economic))#how to functionalize?
 
-edges <- create_edges(from = rep(stage.key[[1]]$stage, length(stage.key[[2]]$stage)), 
-                          to = stage.key[[2]]$stage,
-                          rel="related")
-for(i in 3:length(cuts)){
-  edges <- c(edges, create_edges(from = match(interaction(stage.key[[i]]$Social, stage.key[[i]]$Economic),
-                                              interaction(stage.key[[i-1]]$Social, stage.key[[i-1]]$Economic))
-                                 
-                                   to = unique(stage.key[[i]]$stage)))
+from.root <- c(rep(stage.key[[1]]$stage, length(stage.key[[2]]$stage))) 
+to.root <- c(stage.key[[2]]$stage)
+
+from.ceg <- c(); to.ceg <- c()                          
+for(i in 3:length(cuts)){##FIX THIS: need all previous labels for the pathway search applying recursive formulas in R
+  test.x <- unlist(stage.key[[i]][cuts[i-2]])
+  test.y <- as.factor(stage.key[[i]][cuts[i-1]])
+  test <- interaction(test.x, test.y)
+from.ceg <- match(interaction(stage.key[[i]][cuts[i-2]], stage.key[[i]][cuts[i-1]]))
+to.ceg <- interaction(stage.key[[i-1]][cuts[i-2]], stage.key[[i-1]][cuts[i-1]]))
 }
-  
+
+from.sink <-  rep(unique(stage.key[[length(cuts)]]$stage), length(levels(df[,length(cuts)]))) 
+to.sink <- rep("winf", (length(unique(stage.key[[length(cuts)]]$stage)))*(length(levels(df[,length(cuts)]))) )
+
+nodes <- c("winf", stages)
+edges <- c(create_edges(from = c(from.root, from.ceg, from.sink), to = c(to.root, to.ceg, to.sink)))
 graph <-
   create_graph(
     nodes_df = nodes,
