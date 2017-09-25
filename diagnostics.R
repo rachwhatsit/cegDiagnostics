@@ -170,7 +170,10 @@ bn.batch.monitor <- function(df, child, parents, parent.values){#returns pearson
 }
 
 #####EXAMPLES
-bn.batch.mod1 <- bn.batch.monitor(df, child = "Economic", parents = "Social", parent.values = "High") 
+bn.batch.mod1 <- bn.batch.monitor(df, child = "Events", parents = c("Social", "Economic"), parent.values = c("Low", "Low")) 
+bn.batch.mod2 <- bn.batch.monitor(df, child = "Events", parents = "Social", parent.values = "Low") 
+bn.batch.mod3 <- bn.batch.monitor(df, child = "Social", parents = "Economic", parent.values = "Low") 
+bn.batch.mod4 <- bn.batch.monitor(df, child = "Social", parents = "Events", parent.values = "Low") 
 
 ###############################################
 ##BATCH MONITORS FOR THE CEG 
@@ -251,7 +254,7 @@ ceg.batch.monitor <- function(df, struct, stage.key, stages, which.cut){
 
  ###EXAMPLES
 mod1 <- bn.uncondtnl.node.monitor(df,col_name = "Social", prior=c(10,1),n=25)
-mod2 <- bn.uncondtnl.node.monitor(df,col_name = "Social", prior=c(.05,.05),n=25)
+mod2 <- bn.uncondtnl.node.monitor(df,col_name = "Social", prior=c(5,5),n=25)
 
 plot(mod2[[1]],xlab='Relevant sample size', ylab = 'Cumulative logarithmic penalty')
 lines(mod1[[1]])
@@ -260,6 +263,9 @@ title("Diagnostics for u1")
 plot(mod2[[1]],xlab='Relevant sample size', ylab = 'z statistic')
 lines(mod1[[1]])
 
+par(mfrow=c(1,2))
+plot(mod1[[1]]); title("Social, prior=(10,1)")
+plot(mod2[[1]]); title("Social, prior=(5,5)")
 
 #############################################
 ##CONDITIONAL NODE MONITOR FOR BNS
@@ -305,7 +311,7 @@ bn.cndtl.node.monitor <- function(df, parents, parent.values, child, n=50, learn
 ##EXAMPLES OF BNS corresponding to BNs in the CEG book
 #testex
 bn.mod1 <- bn.cndtl.node.monitor(df, parents = "Social", parent.values = "High", child = "Economic",n=50)
-plot(bn.mod1[[2]]) #plots the z-score
+plot(bn.mod1[[2]])#plots the z-score
 
 #conditional node montiors for Events
 #BN-a 
@@ -323,6 +329,15 @@ plot(bn.modC[[1]])
 bn.modD <- bn.cndtl.node.monitor(df, parents = "Events", parent.values = "Low", child = "Social",n=50)
 plot(bn.modD[[1]]) 
 
+par(mfrow=c(2,2))
+plot(bn.modA[[1]])
+title("Economic | Social=High"); xlab("Log penalty")
+plot(bn.modB[[1]]) 
+title("Events | Social=Low"); xlab("Log penalty")
+plot(bn.modC[[1]]) 
+title("Social | Economic=Low"); xlab("Log penalty")
+plot(bn.modD[[1]]) 
+title("Social | Events=Low"); xlab("Log penalty")
 ##############################################
 
 #TODO: can implement checks that the counts in each cut sum to the number of observations in the dataframe 
@@ -397,19 +412,20 @@ ceg.uncondtnl.stage.monitor <- function(df, target.stage, target.cut, stages, st
 }
 
 ####EXAMPLES
-cega.uncondtnl.stage.monitor <- ceg.uncondtnl.stage.monitor(df, target.stage="cega.w6",target.cut=3,stages=cega.stages,stage.key=cega.stage.key,struct=cega.struct,n=100)
-cegb.uncondtnl.stage.monitor <- ceg.uncondtnl.stage.monitor(df, target.stage="cegb.w6",target.cut=4,stages=cegb.stages,stage.key=cegb.stage.key,struct=cegb.struct,n=100)
+cega.uncondtnl.stage.monitor <- ceg.uncondtnl.stage.monitor(df, target.stage="cega.w3",target.cut=3,stages=cega.stages,stage.key=cega.stage.key,struct=cega.struct,n=100)
+cegb.uncondtnl.stage.monitor <- ceg.uncondtnl.stage.monitor(df, target.stage="cegb.w3",target.cut=3,stages=cegb.stages,stage.key=cegb.stage.key,struct=cegb.struct,n=100)
 ##warnings are because for low path numbers, we don't have observations at all factor levels... TODO
 
-plot(cega.uncondtnl.stage.monitor[[1]])
-plot(cegb.uncondtnl.stage.monitor[[1]])
+par(mfrow=c(1,2))
+plot(cega.uncondtnl.stage.monitor[[1]]);title("Monitor for w3 in CEG A")
+plot(cegb.uncondtnl.stage.monitor[[1]]); title("Monitor for w3 in CEG B")
 ######################################
 ##CONDITIONAL STAGE MONITOR FOR THE CEGS
 
 #example using CEG-B
 target.stage <- "cegb.w6"; condtnl.stage <- "cegb.w3"; target.cut=4; cegb.stages->stages; stage.key=cegb.stage.key; struct=cegb.struct
 
-ceg.condtnl.stage.monitor <- function(df, target.stage, target.cut, condtnl.stage, stages, stage.key, struct, n=50, learn=FALSE) {#dataframes should also be added for the counts
+ceg.condtnl.stage.monitor <- function(df, target.stage, target.cut, condtnl.stage, cndtnl.stage.val,stages, stage.key, struct, n=50, learn=FALSE) {#dataframes should also be added for the counts
     #add checks to make sure that prior has same number of items as counts in dataframe
     #target.cut is the cut that the target.stage is in 
     Zm <- rep(NA, n)
@@ -420,7 +436,7 @@ ceg.condtnl.stage.monitor <- function(df, target.stage, target.cut, condtnl.stag
     
     prior <- get.ref.prior(df, struct, cuts, stage.key, stages)
     target.stage.idx <- as.numeric(substr(target.stage,nchar(target.stage),nchar(target.stage)))+1
-    condtnl.stage.idx <- as.numeric(substr(target.stage,nchar(condtnl.stage),nchar(condtnl.stage)))+1
+    condtnl.stage.idx <- as.numeric(substr(condtnl.stage,nchar(condtnl.stage),nchar(condtnl.stage)))+1
     target.prior <- prior[target.stage.idx]
     if(learn==FALSE){
       for (i in 2:n){
@@ -429,8 +445,6 @@ ceg.condtnl.stage.monitor <- function(df, target.stage, target.cut, condtnl.stag
         in.paths<-stage.key[[k]][which(stage.key[[k]]$stage==target.stage),]#id the incoming pathways
         stages.of.interest <- merge(in.paths[,1:(k-1)], stage.key[[(k-1)]][,c(1:(k-1),dim(stage.key[[(k-1)]])[2])])$stage
         ref.prior.idx <- unlist(lapply(stages.of.interest, function(x){as.numeric(substr(x,nchar(x),nchar(x)))+1}))#gives the stage number, because of weird indexing, want 
-        
-        f
         in.path.idx <- which(stage.key[[target.cut]]$stage==target.stage)
         #conditions
         df_cuts <- list()
@@ -441,6 +455,7 @@ ceg.condtnl.stage.monitor <- function(df, target.stage, target.cut, condtnl.stag
           }
         }
         df_paths <- do.call(rbind, df_cuts)
+        df_paths <- filter(df_paths,Economic==cndtnl.stage.val) 
         obsv.stage.count <- count(df_paths,UQ(sym(colnames(as.data.frame(struct[target.stage.idx]))[1])))#how many counts we observe in each stage
         counts <-obsv.stage.count$n
         target.prior.vec <- unlist(target.prior)
@@ -481,8 +496,15 @@ ceg.condtnl.stage.monitor <- function(df, target.stage, target.cut, condtnl.stag
 }
 
 ####EXAMPLES
-cega.condtnl.stage.monitor <- ceg.condtnl.stage.monitor(df, target.stage="cega.w6",target.cut=3,stages=cega.stages,stage.key=cega.stage.key,struct=cega.struct,n=100)
-cegb.condtnl.stage.monitor <- ceg.condtnl.stage.monitor(df, target.stage="cegb.w6",condtnl.stage = "cegb.w3",target.cut=4,stages=cegb.stages,stage.key=cegb.stage.key,struct=cegb.struct,n=100)
+cega.condtnl.stage.monitor <- ceg.condtnl.stage.monitor(df, target.stage="cega.w3",condtnl.stage = "cega.w1","High",
+                                                        target.cut=3,stages=cega.stages,
+                                                        stage.key=cega.stage.key,struct=cega.struct,n=100)
+cegb.condtnl.stage.monitor <- ceg.condtnl.stage.monitor(df, target.stage="cegb.w3",condtnl.stage = "cegb.w1",cndtnl.stage.val="High",
+                                                        target.cut=3,stages=cegb.stages,
+                                                        stage.key=cegb.stage.key,struct=cegb.struct,n=100)
 
-  
+par(mfrow=c(1,2))
+plot(cega.condtnl.stage.monitor[[1]]); title("Monitor for w3 | w1=High in CEG A")
+plot(cegb.condtnl.stage.monitor[[1]]); title("Monitor for w3 | w1=High in CEG B")
+
   
