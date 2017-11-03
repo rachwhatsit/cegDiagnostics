@@ -453,8 +453,7 @@ ceg.condtnl.stage.monitor <- function(df, target.stage, target.cut, condtnl.stag
           for(k in 1:(length(colnames(stage.key[[target.cut]]))-2)){
             df_cuts[[j]] <- filter(df_cuts[[j]], UQ(sym(colnames(df_cut)[k]))==as.character(unlist(stage.key[[target.cut]][in.path.idx[j],k])))#filter according to the matching indices 
           }
-        }
-        df_paths <- do.call(rbind, df_cuts)
+s        df_paths <- do.call(rbind, df_cuts)
         df_paths <- filter(df_paths,Economic==cndtnl.stage.val) 
         obsv.stage.count <- count(df_paths,UQ(sym(colnames(as.data.frame(struct[target.stage.idx]))[1])))#how many counts we observe in each stage
         counts <-obsv.stage.count$n
