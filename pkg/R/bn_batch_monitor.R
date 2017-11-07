@@ -23,3 +23,4 @@ bn.batch.monitor <- function(df, child, parents, parent.values){#returns pearson
   pearson <- sum((obsv-expct)^2/expct)
   return(pearson)
 }
+

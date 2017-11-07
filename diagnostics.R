@@ -1,10 +1,19 @@
 rm(list=ls())
 library(dplyr);library(ggplot2);library(tidyr)
 library(tidyverse);library(rlang); library(DiagrammeR)
-setwd("/Users/hoban/Documents/diagnostics/diagnostics")
+#("/Users/hoban/Documents/diagnostics/diagnostics")
 df<-read.csv(file = "CHDS.latentexample1.csv")
 radical <- read.csv(file= "data1.csv")
 
+
+#radicalization dataset
+rad.stages <- list("cega.w0", "cega.w1", "cega.w2", "cega.w3", "cega.w4", "cega.w5", "cega.w6", "cega.w7", "cega.w8")
+
+rad.w0 <- radical %>% count(Sex)
+rad.w1 <- radical %>% filter(Sex=="Male") %>% count(Age)
+rad.w2 <- radical %>% filter(Sex=="Female") %>% count(Age)
+rad.w3 <- radical %>% filter(Sex=="Male", Age) %>% count(Age)
+rad.w2 <- radical %>% filter(Sex=="Female") %>% count(Age)
 ##CHDS EXAMPLE
 
 #HOW TO FUNCTIONIZE?  
