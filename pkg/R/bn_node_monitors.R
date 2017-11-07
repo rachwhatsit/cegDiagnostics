@@ -1,0 +1,96 @@
+#' A function to compute the node monitors of the BN
+#'
+#' @param df data in question
+#' @param col_name
+#' @param prior
+#' @param n number of iterations
+#' @param learn
+#' @keywords bn node monitor
+#' @export
+#' @examples###############################################################
+##UNCONDITIONAL NODE MONITOR FOR BNs 
+#df is the data in question, col_name is the stage in question, prior is the set prior (must have right number of iterations), n is the max sample size we wish to consider.
+#df should be filtered first
+bn.uncondtnl.node.monitor <- function(df, col_name="Events", prior, n=50, learn=FALSE) {#dataframes should also be added for the counts
+  #add checks to make sure that prior has same number of items as counts in dataframe
+  Zm <- rep(NA, n)
+  Sm <- rep(NA, n)
+  Em <- rep(NA, n)
+  Vm <- rep(NA, n)
+  p <- rep(NA, n)
+  
+  if(learn==FALSE){
+    for (i in 2:n){
+      df_cut <- df[2:i,] 
+      df_cut %>%
+        group_by_(col_name) %>% #groups by the stage of interest
+        tally() -> u1 #stage1
+      counts = u1$n 
+      p[i] = (lgamma(sum(prior)) + sum(lgamma(prior+counts)) - (sum(lgamma(prior)) + lgamma(sum(prior)+sum(counts))))#logprobability
+      #compute the z statistics
+      Sm[i]=-p[i]
+      Em[i]=sum((prior/sum(prior))*sum(counts))
+      
+      Vm[i] = (sum(counts)*((sum(counts)+sum(prior))/(1+sum(prior))))*(prior/sum(prior))*(1-(prior/sum(prior)))
+      #Zm[i]=sum(na.omit(Sm)) - sum(na.omit(Em)) / sqrt(sum(na.omit(Vm)))
+    }
+    Zm = Sm-Em /sqrt(Vm)
+  }
+  else{
+    for (i in 2:n){
+      df_cut <- df[2:i,] 
+      df_cut %>%
+        group_by_(col_name) %>% #groups by the stage of interest
+        tally() -> u1 #stage1
+      counts = u1$n 
+      p[i] = (lgamma(sum(prior)) + sum(lgamma(prior+counts)) - (sum(lgamma(prior)) + lgamma(sum(prior)+sum(counts))))#logprobability
+      #compute the z statistics
+      Sm[i]=-p[i]
+      Em[i]=sum((prior/sum(prior))*sum(counts))
+      Vm[i] = (sum(counts)*((sum(counts)+sum(prior))/(1+sum(prior))))*(prior/sum(prior))*(1-(prior/sum(prior)))
+      prior <- (prior+counts)/sum(counts+1)
+    }
+    Zm = Sm-Em /sqrt(Vm)  
+  }
+  return(list(Sm,Zm, Em, Vm))
+}
+
+
+bn.cndtl.node.monitor <- function(df, parents, parent.values, child, n=50, learn=FALSE) {#dataframes should also be added for the counts
+  #add checks to make sure that prior has same number of items as counts in dataframe
+  
+  #passing col names to the filtering bit
+  #p.sym <- sym(parents)
+  #p.sym <- lapply(parents, sym)
+  c.sym <- sym(child)
+  alpha.bar <- max(apply(df, 2, function(x){length(levels(as.factor(x)))})) #max number of categories at each level in the dataset 
+  prior <- rep(alpha.bar, length(levels(df[[child]])))/length(levels(df[[child]]))
+  
+  #initialize log penalty scores
+  Zm <- rep(NA, n)
+  Sm <- rep(NA, n)
+  Em <- rep(NA, n)
+  Vm <- rep(NA, n)
+  p <- rep(NA, n)
+  
+  for (i in 1:n){
+    
+    df_cut <- df[1:i,] 
+    #for each parent, filter it off 
+    for (j in 1: length(parents)){
+      df_cut <- filter(df_cut, UQ(sym(parents[j])) == parent.values[j])   
+    }
+    
+    df_cut %>% count(!!c.sym) -> counts.tbl
+    counts = counts.tbl$n 
+    
+    p[i] = (lgamma(sum(prior)) + sum(lgamma(prior+counts)) - (sum(lgamma(prior)) + lgamma(sum(prior)+sum(counts))))#logprobability
+    #compute the z statistics
+    Sm[i]=-p[i]
+    Em[i]=sum((prior/sum(prior))*sum(counts))#expected value
+    Vm[i] = (sum(counts)*((sum(counts)+sum(prior))/(1+sum(prior))))*(prior/sum(prior))*(1-(prior/sum(prior)))
+    #Zm[i]=sum(na.omit(Sm)) - sum(na.omit(Em)) / sqrt(sum(na.omit(Vm)))
+  }
+  Zm = Sm-Em /sqrt(Vm)
+  return(list(Sm,Zm, Em, Vm))
+}
