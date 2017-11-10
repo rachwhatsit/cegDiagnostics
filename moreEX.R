@@ -82,9 +82,9 @@ plot(cegb.condtnl.stage.monitor[[1]]); title("Monitor for w3 | w1=High in CEG B"
 
 ##test to see if Economic and Admission are still independent in BN_A
 HEuncondtnl <- bn.uncondtnl.node.monitor(df, "Admission", prior=c(.8,.2), n=50) #to compute priors take proportions? 
-HEcond <- bn.cndtl.node.monitor(df, "Economic", c("High", "Low"), "Admission") #fair enough?
-plot(HEuncondtnl[[1]])
-lines(HEcond[[1]])
+HEcond <- bn.cndtl.node.monitor(df, "Economic", c("Low"), "Admission") #fair enough?
+plot(HEuncondtnl$Sm)
+lines(HEcond$Sm)
 
 #test dependence of Life events in BN-A 
 

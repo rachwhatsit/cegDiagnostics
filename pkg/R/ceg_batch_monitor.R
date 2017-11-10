@@ -28,6 +28,11 @@ ceg.batch.monitor <- function(df, struct, stage.key, stages, which.cut){
 
   expct.vec <- (prior.vec/n)*dim(df)[1]#scale the expected vec
   pearson <- sum((obsv.vec-expct.vec)^2/expct.vec)
-  return(pearson) #returns the pearson coefficient for the pathways which can be used to find the p-value
+  dscnt.fctr <- (sum(prior)+1)/(sum(prior)+sum(expct.vec))
+  adjst.prsn <- pearson*dscnt.fctr
+  d.free <- length(prior)-1
+  p.val <- pchisq(adjst.prsn,d.free,lower.tail = F)
+  results <- list(adjst.prsn,d.free,p.val)
+  return(results) #returns the pearson coefficient for the pathways which can be used to find the p-value
   #go back in and add the discount factor
 }

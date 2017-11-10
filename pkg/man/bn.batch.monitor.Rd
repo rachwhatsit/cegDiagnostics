@@ -4,7 +4,7 @@
 \alias{bn.batch.monitor}
 \title{A function to compute the batch monitor of a BN}
 \usage{
-bn.batch.monitor(df, child, parents, parent.values)
+bn.batch.monitor(df, child, parents, parent.values, prior)
 }
 \arguments{
 \item{df}{data in question}

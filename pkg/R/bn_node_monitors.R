@@ -19,13 +19,16 @@ bn.uncondtnl.node.monitor <- function(df, col_name="Events", prior, n=50, learn=
   Vm <- rep(NA, n)
   p <- rep(NA, n)
   
+  df %>% group_by_(col_name) %>% tally() -> empty
+  empty$n <- rep(0,length(empty$n))
   if(learn==FALSE){
     for (i in 2:n){
       df_cut <- df[2:i,] 
       df_cut %>%
         group_by_(col_name) %>% #groups by the stage of interest
         tally() -> u1 #stage1
-      counts = u1$n 
+      empty$n[which(empty[[col_name]] %in% u1[[col_name]])] <- u1$n
+      counts = empty$n 
       p[i] = (lgamma(sum(prior)) + sum(lgamma(prior+counts)) - (sum(lgamma(prior)) + lgamma(sum(prior)+sum(counts))))#logprobability
       #compute the z statistics
       Sm[i]=-p[i]
@@ -42,17 +45,21 @@ bn.uncondtnl.node.monitor <- function(df, col_name="Events", prior, n=50, learn=
       df_cut %>%
         group_by_(col_name) %>% #groups by the stage of interest
         tally() -> u1 #stage1
-      counts = u1$n 
-      p[i] = (lgamma(sum(prior)) + sum(lgamma(prior+counts)) - (sum(lgamma(prior)) + lgamma(sum(prior)+sum(counts))))#logprobability
+      empty$n[which(empty[[col_name]] %in% u1[[col_name]])] <- u1$n
+      counts = empty$n 
+      p[i] = (lgamma(sum(prior)) + sum(lgamma(prior+counts)) - (sum(lgamma(prior)) + lgamma(sum(prior)+sum(counts))))#log probability
       #compute the z statistics
       Sm[i]=-p[i]
-      Em[i]=sum((prior/sum(prior))*sum(counts))
-      Vm[i] = (sum(counts)*((sum(counts)+sum(prior))/(1+sum(prior))))*(prior/sum(prior))*(1-(prior/sum(prior)))
+      Em[i]=sum(exp(na.omit(p[i]))*na.omit(Sm[i]))
+      Vm[i]=sum(exp(na.omit(p[i]))*(na.omit(p[i])^2) - na.omit(Em[i])^2)          
+      #Vm[i] = (sum(counts)*((sum(counts)+sum(prior))/(1+sum(prior))))*(prior/sum(prior))*(1-(prior/sum(prior)))
       prior <- (prior+counts)/sum(counts+1)
     }
     Zm = Sm-Em /sqrt(Vm)  
   }
-  return(list(Sm,Zm, Em, Vm))
+  results <-data.frame(cbind(Sm, Zm, Em, Vm))
+  colnames(results) <- c("Sm", "Zm", "Em", "Vm")
+  return((results))
 }
 
 
@@ -92,5 +99,7 @@ bn.cndtl.node.monitor <- function(df, parents, parent.values, child, n=50, learn
     #Zm[i]=sum(na.omit(Sm)) - sum(na.omit(Em)) / sqrt(sum(na.omit(Vm)))
   }
   Zm = Sm-Em /sqrt(Vm)
-  return(list(Sm,Zm, Em, Vm))
+  results <-data.frame(cbind(Sm, Zm, Em, Vm))
+  colnames(results) <- c("Sm", "Zm", "Em", "Vm")
+  return((results))
 }

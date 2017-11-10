@@ -72,7 +72,9 @@ ceg.uncondtnl.stage.monitor <- function(df, target.stage, target.cut, stages, st
       target.prior+counts -> target.prior
     }  
   }
-  return(list(Sm,Zm, Em, Vm))
+  results <-data.frame(cbind(Sm, Zm, Em, Vm))
+  colnames(results) <- c("Sm", "Zm", "Em", "Vm")
+  return((results))
 }
 
 ceg.condtnl.stage.monitor <- function(df, target.stage, target.cut, condtnl.stage, cndtnl.stage.val,stages, stage.key, struct, n=50, learn=FALSE) {#dataframes should also be added for the counts
@@ -142,6 +144,8 @@ ceg.condtnl.stage.monitor <- function(df, target.stage, target.cut, condtnl.stag
         target.prior+counts -> target.prior
       }  
     }
-    return(list(Sm,Zm, Em, Vm))
+  results <-data.frame(cbind(Sm, Zm, Em, Vm))
+  colnames(results) <- c("Sm", "Zm", "Em", "Vm")
+  return((results))
   }
   
