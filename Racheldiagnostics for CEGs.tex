@@ -240,6 +240,7 @@ Parent-child monitors are presented in \cite{diagnostics} as the probability of 
 -\log p_m (x_k | X_{pa(k)}=\rho)
 \end{equation}
 
+These can be calculated directly from the conditional probability tables for a BN. 
 
 %The probability distribution for each root to leaf path $\lambda \in \Lambda$, is given by $ \pi (\lambda) = \prod_{j=0}^{n[\lambda]-1} \pi(v_{j+1, \lambda} | v_{j,\lambda})$
 %\textcolor{red}{do we think of monitors in the sense of each of the individual events acting or the whole root to leaf node? }
@@ -351,7 +352,13 @@ After the stage and position structure is verified, a parameter monitor checks t
 %Using this we can assess the goodness of fit at each time point $1 \leq t \leq T$.
 
 
-%\subsection{Parent-child monitors}
+%
+\subsection{Parent-child monitors}
+
+The parent child monitor for the CEG returns the probability distribution of each of the pathways given the settings of the pathways that led to that particular stage. For a particular stage $u_k$, the variables in previous cuts are equal to the settings observed on the incoming pathways. %WTF notation
+\[
+-\log p_m(u_k | \bm{U}_{pa(k)} = \bm{u}
+\]
 %
 %%It is sometimes important to assess the impact of one of the parent events on one of hte
 %%The scoring metrics offer a means to assess the structural integrity of the elicited tree.
@@ -365,7 +372,8 @@ After the stage and position structure is verified, a parameter monitor checks t
 %%The probability distribution for each root to leaf path $\lambda \in \Lambda$, is given by $ \pi (\lambda) = \prod_{j=0}^{n[\lambda]-1} \pi(v_{j+1, \lambda} | v_{j,\lambda})$
 %%\textcolor{red}{do we think of monitors in the sense of each of the individual events acting or the whole root to leaf node? }
 \subsection{Batch monitors}
-In addition to the prequential diagnostics, CEGs also admit a batch diagnostic. The null hypothesis is that the reference prior is appropriate. At each cut in the tree, we can compute an adjusted Pearson's Chi-square coefficient analgous to the one for BNs.
+In addition to the prequential diagnostics, CEGs also admit a batch diagnostic. The null hypothesis is that the reference prior is appropriate. At each cut in the tree, we can compute an adjusted Pearson's Chi-square coefficient analgous to the one for BNs. 
+The batch monitor calculates the observed and expected counts of each situation in a cut of variables. 
 %
 %Batch monitors are invariant to the ordering of the data. For a particular stage, we can calculate the expected counts using the adjusted Pearsons $\chi^2$ statistic.   
 %
@@ -456,5 +464,7 @@ The number of counts in each pathway:
 \begin{figure}
 	\includegraphics{Rplot.png}
 \end{figure}
+
+The reference prior is calculated by taking the total number of root to sink paths and dividing it by the number of variables at each floret. We compute the 
 
 \end{document}
