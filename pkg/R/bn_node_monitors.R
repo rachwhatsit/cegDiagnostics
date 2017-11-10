@@ -63,7 +63,7 @@ bn.uncondtnl.node.monitor <- function(df, col_name="Events", prior, n=50, learn=
 }
 
 
-bn.cndtl.node.monitor <- function(df, parents, parent.values, child, n=50, learn=FALSE) {#dataframes should also be added for the counts
+bn.parent.child.monitor <- function(df, parents, parent.values, child, n=50, learn=FALSE) {#dataframes should also be added for the counts
   #add checks to make sure that prior has same number of items as counts in dataframe
   
   #passing col names to the filtering bit

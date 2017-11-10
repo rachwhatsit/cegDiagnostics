@@ -228,37 +228,6 @@ This gives the following equation for the $Z_m$, the prequential monitor.
 Z_m = \frac{\sum_{m=1}^{M} S_m - \sum_{m=1}^{M} E_m}{\sqrt{\sum_{m=1}^{M} V_m}}
 \]
 
-%Given the probability distributions above, the expression for the subsequent logarithmic scoring mechanism for $M$ subsequent cases of the particular situation $v$ is given by: 
-%
-%\begin{equation}
-%S = -\log \prod_{m=1}^{M} \pi (v_m)
-%\end{equation}
-%
-%Thus the overall score for an event tree $\mathcal{T}$ is 
-%
-%\begin{equation}
-%-\log \prod_{m=1}^{M} p_m(v_m)
-%\end{equation}
-
-%If we have a dataset with series of observations $m_j \, 1 \leq j \leq M$ to verify our elicited model, then we can use the determine the probability of the next observation given past observations $p(w_i | \bm{w}^{i-1})$. This provides a framework for considering the cases at each stage and determining how accurate sequential predictions will be. 
-%
-%Thus, we can estimate the log score of case $i$ for stage $w_i$ as $S_i = -\log \pi(w_i)$. Then over a series of time ordered events from $1 \leq i \leq M$ the score is 
-%\[
-%S= -\log\prod_{i=1}^M \pi(w_i) =  -\log \prod_{i=1}^{M} \pi(w_i| \bm{w}^{i-1})
-%\]
-%
-
-%\paragraph{Absolute monitors}
-%Our null hypothesis it that the model is correct. Thus, events occur with probabilities stated by the system before we observe each situation $v_t$, and the expectation value and variance are given by the following equations: 
-%
-%\begin{equation}
-%E_t = - \sum_{k=1}^K \pi_t(d_k) \log \pi_t(d_k) \qquad
-%V_t = - \sum_{k=1}^K \pi_t(d_k) \log^2 \pi_t(d_k) - E_t^2
-%\end{equation}
-% 
-%where $d_k$ for $1 \leq k \leq K$ represents the possible values at the situation $t$. 
-%
-%Using this we can assess the goodness of fit at each time point $1 \leq t \leq T$.
 
 
 \subsection{Parent-child monitors}
@@ -276,34 +245,13 @@ Parent-child monitors are presented in \cite{diagnostics} as the probability of 
 %\textcolor{red}{do we think of monitors in the sense of each of the individual events acting or the whole root to leaf node? }
 \subsection{Batch monitors}
 
+In addition to the prequential methods described in this paper, batch monitors are invaraint to the ordering of the data. From a frequentist perspective, we calculate the probability of getting such an extreme value of the logarithmic penalty.  The adjusted Pearsons coefficient can be used as shown in \cite{Spiegelhalter1994}, with the discount factor accounting for the imprecision of the expert under the null hypothesis that the prior is appropriate. 
 Batch monitors are invariant to the ordering of the data. For a particular stage, we can calculate the expected counts using the adjusted Pearsons $\chi^2$ statistic.   
 
 \subsection{Node monitors}
 
 \subsection{Global monitors}
 
-%In order to assess how the score fits the system, establish a relative system with associated penalty. 
-%
-%\[
-%\exp(S_{\text{ref}} - S) = \frac{p(\text{all data} \,|\, \text{experts prior})}{p(\text{all data} \,|\, \text{reference prior})}
-%\]
-%For our purposes, we take the reference prior to be the Dirichlet distribution $\mathcal
-%{D}(\frac{1}{K}, \ldots ,\frac{1}{K})$
-%
-%Situation monitors offer a way of assessing if each situation contributes to poor structure or poor associated probabilities.
-%Suppose in the event tree, all of the evidence in $\mathcal{E}(\mathcal{T})$ is propogated except that given by $s_i(j)$, then we can calculate the contribution  by
-%
-%\[
-%- \log(\pi_{s_i})(s_i j \,|\, \mathcal{E}(\mathcal{T}) \backslash s_i)
-%\]
-
-
-%For a random varibale $\bm{X}$ with $n$ observations $\{x_1, \ldots, x_n\}$ and probability distribution $P$ with associated marginal likelihood 
-%\[
-%p(x_1,\ldots,x_n) = p(x_1)p(x_2 | x_1), p(x_n | \bm{x}^{n-1})
-%\]
-%
-%Then, define a new variable $Y_i = F_i(x_i | \bm{x}^{i-1})$ where $F$ is invertible, then we can prove
 
 For our purposes, mirroring the methodology in \cite{diagnostics} suffices. The prequential methods in \cite{diagnostics} can be adapted to CEGs to obtain the desired goals. Prequential refers to methods that enable us to identify how good are the predictions the graph makes sequentially. 
 
@@ -313,7 +261,7 @@ Preliminary checks of the structure of the CEG include checking that the partial
 In addition to the information provided by domain experts, causal discovery algorithms also provide information about the variable ordering. The IC algorithm of Verma and Pearl provides information about the variable ordering through the discovery of arcs in the BN. The Agglomerative Hierarchical Clustering algorithm used to discover CEGs from data can also be used to provide information about the ordering. Where there are multiple CEGs that are statistically equivalent, the ordering does not provide us with additional causal information %RIGHT?
 
 Diagnostics in the CEG are more nuanced than those of the BN. As in the BN, we can use the monitors to determine if conditional independence relationships edure throughout the dataset. Conditional independences for CEGs can be read off the graph in the manner described in the previous section. %HOW DOES THIS ACTUALLY WORK? 
-Checking the structure of the CEG necessitates checking stage and position homogenaity: that the situations in the same position agree with the observations. Two situations are in the same stage if they have equivalent floret distributions, and they are in the same position if they induce equivalent subtrees with equivalent floret distributions. 
+Checking the structure of the CEG necessitates verifying stage and position homogenaity: that the situations in the same position agree with the observations. Two situations are in the same stage if they have equivalent floret distributions, and they are in the same position if they induce equivalent subtrees with equivalent floret distributions. 
 When the stage monitors is inconsistent with the observation, then a stage monitor can help us to know if we should merge or separate situations in a stage. 
 After the stage and position structure is verified, a parameter monitor checks the consistency of the parameters for each of the florets, analagous to the conditional and unconditional node monitors in the BN. 
  
@@ -416,7 +364,8 @@ After the stage and position structure is verified, a parameter monitor checks t
 %
 %%The probability distribution for each root to leaf path $\lambda \in \Lambda$, is given by $ \pi (\lambda) = \prod_{j=0}^{n[\lambda]-1} \pi(v_{j+1, \lambda} | v_{j,\lambda})$
 %%\textcolor{red}{do we think of monitors in the sense of each of the individual events acting or the whole root to leaf node? }
-%\subsection{Batch monitors}
+\subsection{Batch monitors}
+In addition to the prequential diagnostics, CEGs also admit a batch diagnostic. The null hypothesis is that the reference prior is appropriate. At each cut in the tree, we can compute an adjusted Pearson's Chi-square coefficient analgous to the one for BNs.
 %
 %Batch monitors are invariant to the ordering of the data. For a particular stage, we can calculate the expected counts using the adjusted Pearsons $\chi^2$ statistic.   
 %

@@ -77,7 +77,8 @@ ceg.uncondtnl.stage.monitor <- function(df, target.stage, target.cut, stages, st
   return((results))
 }
 
-ceg.condtnl.stage.monitor <- function(df, target.stage, target.cut, condtnl.stage, cndtnl.stage.val,stages, stage.key, struct, n=50, learn=FALSE) {#dataframes should also be added for the counts
+#no conditional parent monitor here. 
+ceg.child.parent.monitor <- function(df, target.stage, target.cut, condtnl.stage, stages, stage.key, struct, n=50, learn=FALSE) {#dataframes should also be added for the counts
   #add checks to make sure that prior has same number of items as counts in dataframe
   #target.cut is the cut that the target.stage is in 
   Zm <- rep(NA, n)
@@ -94,8 +95,8 @@ ceg.condtnl.stage.monitor <- function(df, target.stage, target.cut, condtnl.stag
     for (i in 2:n){
       df_cut <- df[2:i,] 
       
-      in.paths<-stage.key[[k]][which(stage.key[[k]]$stage==target.stage),]#id the incoming pathways
-      stages.of.interest <- merge(in.paths[,1:(k-1)], stage.key[[(k-1)]][,c(1:(k-1),dim(stage.key[[(k-1)]])[2])])$stage
+      in.paths<-stage.key[[target.cut]][which(stage.key[[target.cut]]$stage==target.stage),]#id the incoming pathways
+      stages.of.interest <- merge(in.paths[,1:(target.cut-1)], stage.key[[(target.cut-1)]][,c(1:(target.cut-1),dim(stage.key[[(target.cut-1)]])[2])])$stage
       ref.prior.idx <- unlist(lapply(stages.of.interest, function(x){as.numeric(substr(x,nchar(x),nchar(x)))+1}))#gives the stage number, because of weird indexing, want 
       in.path.idx <- which(stage.key[[target.cut]]$stage==target.stage)
       #conditions
@@ -105,8 +106,9 @@ ceg.condtnl.stage.monitor <- function(df, target.stage, target.cut, condtnl.stag
         for(k in 1:(length(colnames(stage.key[[target.cut]]))-2)){
           df_cuts[[j]] <- filter(df_cuts[[j]], UQ(sym(colnames(df_cut)[k]))==as.character(unlist(stage.key[[target.cut]][in.path.idx[j],k])))#filter according to the matching indices 
         }
+      }
         df_paths <- do.call(rbind, df_cuts)
-        df_paths <- filter(df_paths,Economic==cndtnl.stage.val) 
+       # df_paths <- filter(df_paths,Economic==cndtnl.stage.val) 
         obsv.stage.count <- count(df_paths,UQ(sym(colnames(as.data.frame(struct[target.stage.idx]))[1])))#how many counts we observe in each stage
         counts <-obsv.stage.count$n
         target.prior.vec <- unlist(target.prior)
@@ -116,7 +118,6 @@ ceg.condtnl.stage.monitor <- function(df, target.stage, target.cut, condtnl.stag
         Em[i]=sum((target.prior.vec/sum(target.prior.vec))*sum(counts))
         Vm[i]=sum(target.prior.vec*(sum(target.prior.vec)-target.prior.vec))/(sum(target.prior.vec)^2*(sum(target.prior.vec)+1))
         Zm[i]=sum(na.omit(Sm)) - sum(na.omit(Em)) / sqrt(sum(na.omit(Vm)))
-      }
     }
   }
     else{
