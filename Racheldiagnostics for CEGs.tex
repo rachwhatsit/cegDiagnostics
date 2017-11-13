@@ -58,6 +58,7 @@
 \begin{document}
 
 \title{A Suite of Bayesian Diagnostics for the Chain Event Graph}
+
 \author{Rachel L. Wlikerson and Jim Q. Smith \\
 %EndAName
 Univeristy of Warwick and the Alan Turing Institute}
@@ -75,15 +76,15 @@ restrictive class of Bayesian Network models. These are designed to check
 the continued validity of the selected model as data about a population
 continues to be collected. The efficacy of our methods are illustrated
 through a simulation study and then the study of\ two well known CEG
-studies: the first on a study of Childhood illness in the New Zealand and
-the second on prison radicalization processes.    
+studies: the first on a study of childhood illness in the New Zealand and
+the second on food insecurity processes.
 \end{abstract}
 
 \section{Introduction }
 
 Decision makers and stakeholders often need to know the structure in order to identify the most efficient interventions in the system. Bayesian networks are the primary tool used for structural elicitation \cite{Lord2016,Pitchforth2013}. The content, structure, and probabilitites of a BN may be obtained via elicitation, and protocols for this procedure have been outlined in \cite{EFSA} \cite{Ohagan}. 
 
-The BN framework necessitates framing causal queries in terms of random variables. However, people describe causes as events rather than as configurations of sets of random variables. Coercing a narrative about a series of events to a BN is possible, and may indeed be helpful, but framing queries as a series of events is often more natural. 
+The BN framework necessitates framing causal queries in terms of random variables. However, people tend to describe causes as events rather than as configurations of sets of random variables. Fitting a narrative about a series of events to a BN is possible, and may indeed be helpful, but framing queries as a series of events is often more natural. 
 
 %%CITE
 
@@ -98,20 +99,17 @@ The BN framework necessitates framing causal queries in terms of random variable
 
 The causal hypotheses encoded by the BN may require settings of variables that do not faithfully represent the reality of what happens with a graph. As shown in \cite{SPIRTES}, to consider causes as settings of random variables rather than events using valid methods, the entire set of possible setting of each of the variables $x \in \mathbb{X}$ should be specified. But in practice, people do not stop to check that each of the possible configurations of variable settings is coherent as they tell their story! 
 
-
 Causality has long been expressed in terms of event trees--a more suitable framework for elicited structures \cite{Shafer1996}.
-Event trees are a finite tree $\mathcal{T} = (V(\mathcal{T}), E(\mathcal{T}))$ on a set of vertices and edges where the vertices are chance nodes and the edges of the tree label the possible events that can happen. A non-leaf vertex of a tree is called a situation and $S(\mathcal{T})$ denotes the set of situations \cite{Barclay2015}. 
-On the path from the root vertex to a situation $s_i \in S(\mathcal{T})$ is a sequence of possible unfolding events.
+Event trees are a finite tree $\mathcal{T} = (V(\mathcal{T}), E(\mathcal{T}))$ on a set of vertices and edges where the vertices are chance nodes and the edges of the tree label the possible events that can happen. A non-leaf vertex of a tree is called a situation and $S(\mathcal{T})$ denotes the set of situations \cite{Barclay2015}. On the path from the root vertex to a situation $s_i \in S(\mathcal{T})$ is a sequence of possible unfolding events.
 
 Smith and Thwaites developed a new class of graphical model called chain event graphs building on the framework of probability trees. These express a much richer class of probabilities than that of the BN. %CITE. 
-They extend the BN machinery to a different class of model in which the nodes are events rather than random variables.
+They extend the BN machinery to a different class of model in which the nodes are events rather than random variables. This is a powerful model for participatory research, as participants often think in terms of a series of events rather than as a series of controlled measurements in a particular scenario. 
 
-This is a powerful model for participatory research, as participants often think in terms of a series of events rather than as a series of controlled measurements in a particular scenario. 
-
-The aim of an expert elicitation session is to have a robust model that says something about the population we want to model
-models holds for similar problems in different areas (in the case of the bracken for ex., in the crime example to have profiles of the series of events that leads to radicalization of people online, in the food poverty examples, we want to understand the narrative that leads to people having insufficient food.) 
+The aim of an expert elicitation session is to produce a robust model to variations in the context. A good model will encode conditional independence relationships that agree with the data on observed variables.
 
 \section{Chain Event Graphs, their meaning and estimation}
+
+We must first understand what chain event graphs 
 
 Let $T =( V(T),E(T))$ denote a directed tree with $V(T)$ and $E(T)$ denoting the node and edge set respectively. $L(T)$ represents the leaf nodes and $S(T) = \{s_1, \ldots, s_m\} =  \{v: v \in V(T) \setminus L(T)\}$ is the set of situation nodes. $\lambda (v,v')$ is the path from $v \in S(T)$ to $v \in V(T)$ and $\mathbb{X} = \Lambda(v_0,T) $ is the set of root to leaf paths where $v_0$ indicates the root node.  
 
@@ -125,12 +123,11 @@ There is a finer partition of events using the notion of situations in the same 
 
 Building on the concepts of stages and positions, a CEG may be constructed from a staged event tree by collapsing the nodes over the positions. Formally, a CEG $\mathcal{C} = V(\mathcal{C}), E(\mathcal{C})$ where $V(\mathcal{C}) = W(T) \cup w_\infty$, the staged tree positions plus the leaf nodes denoted $w_\infty$. 
 
-%\{Review Ch 4, 5 ,6 and \& of book referenced back to sources. So the key
-thing here to focus on is
+%\{Review Ch 4, 5 ,6 and \& of book referenced back to sources. So the key thing here to focus on is
 
-%CEGs are composed of situations $v_1, \ldots, v_\infty$. It may be that for some set of situations in the event tree, the probability distribution among the florets is independent of the preceding events. In this case, we say those situations are in the same stage.  
+%CEGs are composed of situations  $v_1, \ldots, v_\infty$. It may be that for some set of situations in the event tree, the probability distribution among the florets is independent of the preceding events. In this case, we say those situations are in the same stage.  
 
-The implications of a CEG models especially its stage structure which
+Framing the narrative in this way The implications of a CEG models especially its stage structure which
 is the analogue of the graphical conditional independence in the BN
 \cite{Dawid 1979} \cite{Studen 2005} %add these to mendeley
 The stage structure. For a staged tree $T = V(T), E(T)$ and corresponding CEG, $\mathcal{C}$, a set of situations $W \subseteq V$, indicates a fine cut if the disjoint union of events equals the whole set of roof to leaf nodes. That is, no event in $W$ is upstream or downstream of another situation in the set and $\cup_{w \in W} \lambda(w) = \Lambda (T)$.
@@ -145,40 +142,51 @@ Let $Y_{\prec W} = (Y_w | w \text{ upstream of } W)$ and $ Y_{W\preceq} = (Y_{w'
 \end{itemize}
 
 Thus, situations in the same stage are independent conditional on their respective histories. The proof of the above statements can be found in \cite{SmithAnderson} \cite{ThwaitesSmith}. %add to mendeley
-
-
-%There are many ways to graphically express conditional independence. In Bayesian networks, each variable is independent of its nondescendants given its parents. \cite{ Boutilier 1996} and \cite{GeigerandHeckerman1996} proposed ``context specific independence.''
   
-
- The conjugate analysis especially the implications for the one step
-ahead predictive distributions. This has not been done yet explicitly but I
-know how this works and is closely analogous to the BN predictives. This
-would be one of the novelties of the paper \}
-
-Check Freeman and Smith 2011.
-
-
+CEGs admit a conjugate analysis for the one step ahead predictive distributions. This can be shown in a manner analogous to \cite{Freeman and Smith 2011}. This enables us to find a closed form expression for the sequential forecasts. 
 
 \section{Model Diagnostics for Bayesian Networks}
 
-\{Review of Cowell et al plus some others like Korb and Nicholson.\ Here we
-need to check stage homogeneity - a sort of Bayesian hypothesis test on the
-fact that data from the application really does have the same conditional
-distributions where it says it does, Howeverr. I would place our main focus
-here on the prequential methods on Dawid as discussed for BNs in Cowell.
-These will link not only to predictives on the different stages but the
-composite system as well\}
+A Bayesian Network model has a valid structure if it in line with observed data. A reliable model will be able to detect changes in parameters, be resilient to outlying observations, and make accurate forecasts for future observations \cite{Dawid1984}. 
+Several methods for determining how well the data suits the model are available for BNs. One such measure in \cite{KORB} uses a metric called the conflict measure to detect incoherence in the data. Given some evidence $\bm{E}=\{E_i=e_1,\ldots,E_m=e_m\}$, then the conflict measure is $C(\bm{E})=\log(P(E_1=e_1),\ldots,P(E_m=e_m))$. If the conflict measure is positive, the existing evidence must be conflicting. If the conflict is due to flawed data, the conflict measure traces the source of the discrepancy. 
 
-We want to check that the structure of our model is in line with observed data. A reliable model will be able to detect changes in parameters, be resilient to outlying observations, and make accurate forecasts for future observations\cite{Dawid1984}. The literature contains several methods for determining how well the data suits the model. One such measure in \cite{KORB} uses a metric called the conflict measure to detect incoherence in the data. Given some evidence $\bm{E}=\{E_i=e_1,\ldots,E_m=e_m\}$, then the conflict measure is $C(\bm{E})=\log(P(E_1=e_1),\ldots,P(E_m=e_m))$. If the conflict measure is positive, that means the existing evidence must be conflicting. If the conflict is due to flawed data, we can then trace the source of the discrepancy. Algorithms for evaluating the efficacy of decision trees are also featured in \cite{KORB}. Beginning with the nodes that only have children, the utility of the chance nodes is a product of the probability of the outgoing links. The algorithm also computes the expected utility of each decision nodes. Thus, we have a measure for evaluating decision trees which makes sequential decisions. 
+The decision theoretic framework provides another method for testing the validity of a BN structure if the model is being used for sequential decisions rather than sequential forecasts. Algorithms for evaluating the efficacy of decision trees are also featured in \cite{KORB}. Beginning with the nodes that only have children, the utility of the chance nodes is a product of the probability of the outgoing links. The algorithm also computes the expected utility of each decision nodes, providing another perspective on the validity of the model.
 
-BN parameters may be adapted using several different methodologies. Fractional updating performs Bayesian propogations to get the posterior distribution over the unobserved values \cite{Spiegelhalter and Lauritzen}%add to mendeley
-. Another technique, fading uses the time decay factor to underweight old data relative to the new data \cite{JENSEN}. Methods to test the structural integrity of the models are fewer. \cite{JENSEN} proposes accumulating cases and running a discovery algorithm again to incrementally adapt the structure. \cite{KORB} suggests a technique called Causal Minimium message Length (CaMML) in which the probabilities of each link in the network is reported after sampling. By retaining the priors on the links and reusing them while sampling, the structure may be adapted. 
+\cite{JENSEN} proposes accumulating cases and running a discovery algorithm again to incrementally adapt the structure in order to detect changes in the data structure over time. This method is computationally intensive and seems prone to overfitting. 
 
-\cite{DAWID} developed prequential methods to determine which probabilities are a suitable model fit. Diagnostic methods outlined there use a transformation of distributions to determine if the expected values are in line with the distribution. They may also be used to determine if one distribution for an element of the grpahical model is preferred over another or not.
+To determine the efficacy of sequential forecasts of a BN, \cite{KORB}  suggests a technique called Causal Minimum message Length (CaMML) in which the probabilities of each link in the network is reported after sampling. By retaining the priors on the links and reusing them while sampling, the structure may be adapted. 
 
+Checks on parameters can be used alongside the aforementioned checks on model structure. For example, fractional updating uses Bayesian propogations to calculate the posterior distribution over the unobserved values \cite{Spiegelhalter and Lauritzen}.  Another technique, fading, underweights old data relative to the new data using a time decay factor \cite{JENSEN}. 
+
+\paragraph{Dawid's prequential diagnostics for Bayesian Networks}
+\cite{DAWID} developed prequential methods to determine how suitable the model structure and parameters are.  
+The twofold approach consists of an absolute and relative techniques. The former uses a transformation of the predictive distributions to determine if the expected values are in line with the distribution. The relative approach compares the prior of an expert with some alternative reference prior and uses a ratio of the Bayes factor to determine the fit.
+\cite{diagnostics} describes several different kinds of monitors, checks of the model against data. The parent child monitors given by $-\log p_m (x_k | X_{pa(k)}=\rho)$ can be used to determine the relevance of the expert prior for a particular parent-child pair through the dataset. The monitors are given both with and without learning. The parent child monitor may be used for a BN to as a check how accurately a parent forecasts for a child node. 
+
+Batch monitors determine if the observed counts are in line with the priors of the model from the whole dataset. These are not prequential methods as batch monitors are invariant to the ordering of the data.   From a frequentist perspective, we calculate the probability of getting such an extreme value of the logarithmic penalty using an adjusted Pearson's chi square statistic developed in \cite{box} .  The adjusted Pearsons coefficient can be used as shown in \cite{Spiegelhalter1994}, with the discount factor accounting for the imprecision of the expert under the null hypothesis that the prior is appropriate. 
+
+A third type of prequential monitor, node monitors, examines how sequential evidence propagates through the network. The unconditional node monitor calculates $-\log(p_m(x_v | E_{m-1}))$ using the evidence from the $m-1$ cases. Similarly, the conditional node monitor calculates $-log(p_m)$ using the evidence from the $m-1$ cases as well as that of the variables in case $m$. The variables use the message propagation algorithm for BNs to compute the probability of the evidence. Again, node monitors can be computed with and without learning. 
+
+Lastly, global monitors take the logarithmic score of all the evidence observed. Calculating the global monitor for two different systems provides an immediately interpretable comparison between models.
+
+These monitors have been shown to provide quick checks of BN structure against data. %could find some more citations
+Mirroring the methodology in \cite{diagnostics} for the chain event graph, provides prequential diangostics for a new class of model that may be used as a more natural representation of a problem. 
+
+\section{Checking the CEG Structure}
+
+Preliminary checks of the structure of the CEG include checking that the partial ordering of the data is consistent with the observed data. This order can be specified by the domain experts. The order of variables in the model should not contradict the total ordering implicit in the natural language expression of the problem. BNs admit at best a partial ordering, and additional context must be provided to obtain a total ordering. On the other hand, constructing a CEG demands a total ordering.
+As an alternative to the information provided by domain experts, causal discovery algorithms may be used to obtain information about the variable ordering. The IC algorithm of Verma and Pearl provides information about the variable ordering through the discovery of arcs in the BN. For the CEGs, the Agglomerative Hierarchical Clustering algorithm determines the best CEG fit from data, implying a variable order.  Where there are multiple CEGs that are statistically equivalent, the ordering does not provide us with additional causal information. %RIGHT?
+
+Diagnostics in the CEG are more nuanced than those of the BN. As in the BN, we can use the monitors to determine if conditional independence relationships endure throughout the dataset. Conditional independences for CEGs can be read off the graph in the manner described in the previous section. %HOW DOES THIS ACTUALLY WORK? 
+Checking the structure of the CEG necessitates verifying stage and position homogenaity: that the situations in the same position agree with the observations. Two situations are in the same stage if they have equivalent floret distributions, and they are in the same position if they induce equivalent subtrees with equivalent floret distributions. 
+
+When the stage monitors is inconsistent with the observation, then a stage monitor can help us to know if we should merge or separate situations in a stage. 
+After the stage and position structure is verified, a parameter monitor checks the consistency of the parameters for each of the florets, analagous to the conditional and unconditional node monitors in the BN. 
+ 
 \subsection{Scoring rules}
 
-Assessing the structure of a BN first requires a scoring metric. Brier scores and logarithmic scores are two available scoring rules. 
+
+Assessing the structure of a CEG first requires a scoring metric. Brier scores and logarithmic scores are two available scoring rules. 
 
 Each stage $u$ has probability distribution:
 \[
@@ -191,27 +199,27 @@ Then suppose we observe several cases of observed events at each stage with $n_k
 p(\pi_u | d) \propto \prod_{k=1}^{r_u} \pi_{uk}^{n_{uk} +\alpha_{uk} -1}
 \]
 
-where $\alpha_u = \sum_{k=1}^{u_r} \alpha_{uk}$ and $n = \sum_{k=1}^{u_r} u_{uk}$ 
-\[
+Then the marginal probability is given by: \[
 p(d | \alpha_{u1}, \ldots, \alpha_{uk}) = \frac{\Gamma(\alpha_u)}{\prod_{k=1}^{u_r} \Gamma(\alpha_{uk})} \frac{\prod_{k=1}^{u_r}\Gamma(\alpha_{uk} + n_{uk})}{\Gamma(\alpha_u + n)}
 \]
 
-Thus, the scoring metric is 
+where $\alpha_u = \sum_{k=1}^{u_r} \alpha_{uk}$ and $n = \sum_{k=1}^{u_r} u_{uk}$. Thus, the scoring metric is 
 \[
 S_m = -\log \left(\frac{\Gamma(\alpha_u)}{\prod_{k=1}^{u_r} \Gamma(\alpha_{uk})} \frac{\prod_{k=1}^{u_r}\Gamma(\alpha_{uk} + n_{uk})}{\Gamma(\alpha_u + n)}\right)
 \]
 
-To assess whether the total observed penalty $S$ is an issue or not, we need to calibrate its value. The relative approach involves establish a reference prior (such as a Dirichlet) and scoring the two as follows.
+\paragraph{Relative standardization} To assess whether the total observed penalty $S$ is an issue or not, we need to calibrate its value. The relative approach involves establish a reference prior (such as a Dirichlet) and scoring the two as follows.
 
 \[
 \exp(S^{\text{ref}} - S) = \frac{p(\text{all data } | \text{ expert's prior})}{p(\text{all data } | \text{ reference prior})}
 \]
 
+The reference prior may be calculated by taking the total number of paths in the CEG $\mathcal{C}$ and dividing it by the number of stages in each cut. The R code for this is found in \texttt{get.ref.prior}. 
 
-The absolute approach does not involve an alternative system $S^{\text{ref}}$. Instead, we test the null hypothesis that the observed events are occurring with the probabilities encoded in the CEG. To use the prequential methods, we have $1 \leq m \leq M$ cases. Each case $m$  incurs the random penalty with the following expectation and variance given the expectation and variance where $p_m$ is 
+\paragraph{Absolute standardization} The absolute approach does not involve an alternative system $S^{\text{ref}}$. Instead, we test the null hypothesis that the observed events are occurring with the probabilities encoded in the CEG. To use the prequential methods, we have $1 \leq m \leq M$ cases. Each case $m$  incurs the random penalty with the following expectation and variance given the expectation and variance where $p_m$ is 
 
 \begin{equation}
-p_m= \frac{\Gamma(\alpha_u)}{\prod_{k=1}^{u_r} \Gamma(\alpha_{uk})} \frac{\prod_{k=1}^{u_r}\Gamma(\alpha_{uk} + n_{uk})}{\Gamma(\alpha_u + n)})
+(\pi_u)_m= \frac{\Gamma(\alpha_u)}{\prod_{k=1}^{u_r} \Gamma(\alpha_{uk})} \frac{\prod_{k=1}^{u_r}\Gamma(\alpha_{uk} + n_{uk})}{\Gamma(\alpha_u + n)})
 \end{equation}
 
 \begin{equation}
@@ -228,109 +236,20 @@ This gives the following equation for the $Z_m$, the prequential monitor.
 Z_m = \frac{\sum_{m=1}^{M} S_m - \sum_{m=1}^{M} E_m}{\sqrt{\sum_{m=1}^{M} V_m}}
 \]
 
-
-
-\subsection{Parent-child monitors}
-
-%It is sometimes important to assess the impact of one of the parent events on one of hte
-%The scoring metrics offer a means to assess the structural integrity of the elicited tree.
-%
-Parent-child monitors are presented in \cite{diagnostics} as the probability of a particular observation $X_k = x_k$ given the setting of its parents in a general chain graph model as:
-\begin{equation}
--\log p_m (x_k | X_{pa(k)}=\rho)
-\end{equation}
-
-These can be calculated directly from the conditional probability tables for a BN. 
-
-%The probability distribution for each root to leaf path $\lambda \in \Lambda$, is given by $ \pi (\lambda) = \prod_{j=0}^{n[\lambda]-1} \pi(v_{j+1, \lambda} | v_{j,\lambda})$
-%\textcolor{red}{do we think of monitors in the sense of each of the individual events acting or the whole root to leaf node? }
-\subsection{Batch monitors}
-
-In addition to the prequential methods described in this paper, batch monitors are invaraint to the ordering of the data. From a frequentist perspective, we calculate the probability of getting such an extreme value of the logarithmic penalty.  The adjusted Pearsons coefficient can be used as shown in \cite{Spiegelhalter1994}, with the discount factor accounting for the imprecision of the expert under the null hypothesis that the prior is appropriate. 
-Batch monitors are invariant to the ordering of the data. For a particular stage, we can calculate the expected counts using the adjusted Pearsons $\chi^2$ statistic.   
-
-\subsection{Node monitors}
-
-\subsection{Global monitors}
-
-
-For our purposes, mirroring the methodology in \cite{diagnostics} suffices. The prequential methods in \cite{diagnostics} can be adapted to CEGs to obtain the desired goals. Prequential refers to methods that enable us to identify how good are the predictions the graph makes sequentially. 
-
-\section{Checking the CEG Structure}
-
-Preliminary checks of the structure of the CEG include checking that the partial ordering of the data is consistent with the observed data. This order can be specified by the domain experts. BNs admit at best a partial ordering, and additional context must be provided to obtain a total ordering. On the other hand, constructing a CEG demans a total ordering. This total ordering is often expressed in natural language as a series of events. 
-In addition to the information provided by domain experts, causal discovery algorithms also provide information about the variable ordering. The IC algorithm of Verma and Pearl provides information about the variable ordering through the discovery of arcs in the BN. The Agglomerative Hierarchical Clustering algorithm used to discover CEGs from data can also be used to provide information about the ordering. Where there are multiple CEGs that are statistically equivalent, the ordering does not provide us with additional causal information %RIGHT?
-
-Diagnostics in the CEG are more nuanced than those of the BN. As in the BN, we can use the monitors to determine if conditional independence relationships edure throughout the dataset. Conditional independences for CEGs can be read off the graph in the manner described in the previous section. %HOW DOES THIS ACTUALLY WORK? 
-Checking the structure of the CEG necessitates verifying stage and position homogenaity: that the situations in the same position agree with the observations. Two situations are in the same stage if they have equivalent floret distributions, and they are in the same position if they induce equivalent subtrees with equivalent floret distributions. 
-When the stage monitors is inconsistent with the observation, then a stage monitor can help us to know if we should merge or separate situations in a stage. 
-After the stage and position structure is verified, a parameter monitor checks the consistency of the parameters for each of the florets, analagous to the conditional and unconditional node monitors in the BN. 
- 
-%\subsection{Scoring rules}
-%
-%
-%Assessing the structure of a CEG first requires a scoring metric. Brier scores and logarithmic scores are two available scoring rules. 
-%
-%Each stage $u$ has probability distribution:
-%\[
-%p(\pi_u) = \frac{\Gamma (\alpha_u)}{\prod_{k=1}^{r_u} \Gamma (\alpha_{uk})} \prod_{k=1}^{r_u} \pi_{uk} ^{\alpha_{uk}-1}
-%\]
-%
-%Then suppose we observe several cases of observed events at each stage with $n_k$ representing the counts in each of the $k$ edges emanating from the stage. Then the  revised distribution for $\pi_{uk}$ is given by 
-%
-%\[
-%p(\pi_u | d) \propto \prod_{k=1}^{r_u} \pi_{uk}^{n_{uk} +\alpha_{uk} -1}
-%\]
-%
-%where $\alpha_u = \sum_{k=1}^{u_r} \alpha_{uk}$ and $n = \sum_{k=1}^{u_r} u_{uk}$ 
-%\[
-%p(d | \alpha_{u1}, \ldots, \alpha_{uk}) = \frac{\Gamma(\alpha_u)}{\prod_{k=1}^{u_r} \Gamma(\alpha_{uk})} \frac{\prod_{k=1}^{u_r}\Gamma(\alpha_{uk} + n_{uk})}{\Gamma(\alpha_u + n)}
-%\]
-%
-%Thus, the scoring metric is 
-%\[
-%S_m = -\log \left(\frac{\Gamma(\alpha_u)}{\prod_{k=1}^{u_r} \Gamma(\alpha_{uk})} \frac{\prod_{k=1}^{u_r}\Gamma(\alpha_{uk} + n_{uk})}{\Gamma(\alpha_u + n)}\right)
-%\]
-%
-%To assess whether the total observed penalty $S$ is an issue or not, we need to calibrate its value. The relative approach involves establish a reference prior (such as a Dirichlet) and scoring the two as follows.
-%
-%\[
-%\exp(S^{\text{ref}} - S) = \frac{p(\text{all data } | \text{ expert's prior})}{p(\text{all data } | \text{ reference prior})}
-%\]
-%
-%
-%The absolute approach does not involve an alternative system $S^{\text{ref}}$. Instead, we test the null hypothesis that the observed events are occurring with the probabilities encoded in the CEG. To use the prequential methods, we have $1 \leq m \leq M$ cases. Each case $m$  incurs the random penalty with the following expectation and variance given the expectation and variance where $p_m$ is 
-%
-%\begin{equation}
-%p_m= \frac{\Gamma(\alpha_u)}{\prod_{k=1}^{u_r} \Gamma(\alpha_{uk})} \frac{\prod_{k=1}^{u_r}\Gamma(\alpha_{uk} + n_{uk})}{\Gamma(\alpha_u + n)})
-%\end{equation}
-%
-%\begin{equation}
-%E_m = \sum_{k=1}^{r_u}  \log (p_m)
-%\end{equation} 
-%
-%\begin{equation}
-%V_m = \sum_{k=1}^{r_u} (p_m) \log^2 (p_m) - E_m^2
-%\end{equation}
-%
-%This gives the following equation for the $Z_m$, the prequential monitor. 
-%
-%\[
-%Z_m = \frac{\sum_{m=1}^{M} S_m - \sum_{m=1}^{M} E_m}{\sqrt{\sum_{m=1}^{M} V_m}}
-%\]
+This is given by the function \texttt{log.penalty}, which returns the arguments $S_m, E_m, V_m,$ and $Z_m$.
 
 %Given the probability distributions above, the expression for the subsequent logarithmic scoring mechanism for $M$ subsequent cases of the particular situation $v$ is given by: 
 %
 %\begin{equation}
-%S = -\log \prod_{m=1}^{M} \pi (v_m)
+%S(v) = -\log \prod_{m=1}^{M} \pi (v_m)
 %\end{equation}
 %
 %Thus the overall score for an event tree $\mathcal{T}$ is 
 %
 %\begin{equation}
-%-\log \prod_{m=1}^{M} p_m(v_m)
+%S(\mathcal{T}) = -\log \prod_{m=1}^{M} p_m(v_m)
 %\end{equation}
-
+%
 %If we have a dataset with series of observations $m_j \, 1 \leq j \leq M$ to verify our elicited model, then we can use the determine the probability of the next observation given past observations $p(w_i | \bm{w}^{i-1})$. This provides a framework for considering the cases at each stage and determining how accurate sequential predictions will be. 
 %
 %Thus, we can estimate the log score of case $i$ for stage $w_i$ as $S_i = -\log \pi(w_i)$. Then over a series of time ordered events from $1 \leq i \leq M$ the score is 
@@ -338,7 +257,7 @@ After the stage and position structure is verified, a parameter monitor checks t
 %S= -\log\prod_{i=1}^M \pi(w_i) =  -\log \prod_{i=1}^{M} \pi(w_i| \bm{w}^{i-1})
 %\]
 %
-
+%
 %\paragraph{Absolute monitors}
 %Our null hypothesis it that the model is correct. Thus, events occur with probabilities stated by the system before we observe each situation $v_t$, and the expectation value and variance are given by the following equations: 
 %
@@ -350,16 +269,24 @@ After the stage and position structure is verified, a parameter monitor checks t
 %where $d_k$ for $1 \leq k \leq K$ represents the possible values at the situation $t$. 
 %
 %Using this we can assess the goodness of fit at each time point $1 \leq t \leq T$.
-
-
+%
+%
 %
 \subsection{Parent-child monitors}
 
-The parent child monitor for the CEG returns the probability distribution of each of the pathways given the settings of the pathways that led to that particular stage. For a particular stage $u_k$, the variables in previous cuts are equal to the settings observed on the incoming pathways. %WTF notation
+The parent-child monitor for the CEG returns the logarithmic penalties incurred after observing the values of a particular stage given the settings of the incoming stages:
+
 \[
--\log p_m(u_k | \bm{U}_{pa(k)} = \bm{u}
+-\log p_m( u | \pi_u, \text{pa}(u) = \rho)
 \]
-%
+ 
+ \[
+=-\log \left[ \prod_{k=1} ^ {r_u} \frac{\Gamma (\sum_v \alpha_v)}{\Gamma(\sum_v n_v^k + \alpha_v)}  \frac{\Gamma(n_v^k + \alpha_v)}{\Gamma(\alpha_v)} \right]
+ \]
+  where $n_v^k$ indicates the number of observations that follow outgoing edge $k=r_i$ from the incoming observations in category $v$ where $\text{pa}(u) = \rho$. This assesses the suitability of the prior for the stage $u$ given its parents  $\text{pa}(u) = \rho$, and can be help to detect possible changes in the structure. \textcolor{red}{this is some awkward notation}
+  
+  It is given by the function $\texttt{bn.parent.child.monitor}$ and $\texttt{ceg.parent.child.monitor}$. 
+
 %%It is sometimes important to assess the impact of one of the parent events on one of hte
 %%The scoring metrics offer a means to assess the structural integrity of the elicited tree.
 %%
@@ -372,29 +299,12 @@ The parent child monitor for the CEG returns the probability distribution of eac
 %%The probability distribution for each root to leaf path $\lambda \in \Lambda$, is given by $ \pi (\lambda) = \prod_{j=0}^{n[\lambda]-1} \pi(v_{j+1, \lambda} | v_{j,\lambda})$
 %%\textcolor{red}{do we think of monitors in the sense of each of the individual events acting or the whole root to leaf node? }
 \subsection{Batch monitors}
-In addition to the prequential diagnostics, CEGs also admit a batch diagnostic. The null hypothesis is that the reference prior is appropriate. At each cut in the tree, we can compute an adjusted Pearson's Chi-square coefficient analgous to the one for BNs. 
-The batch monitor calculates the observed and expected counts of each situation in a cut of variables. 
-%
-%Batch monitors are invariant to the ordering of the data. For a particular stage, we can calculate the expected counts using the adjusted Pearsons $\chi^2$ statistic.   
-%
-%\subsection{Node monitors}
-%
-%\subsection{Global monitors}
-
-%In order to assess how the score fits the system, establish a relative system with associated penalty. 
-%
-%\[
-%\exp(S_{\text{ref}} - S) = \frac{p(\text{all data} \,|\, \text{experts prior})}{p(\text{all data} \,|\, \text{reference prior})}
-%\]
-%For our purposes, we take the reference prior to be the Dirichlet distribution $\mathcal
-%{D}(\frac{1}{K}, \ldots ,\frac{1}{K})$
-%
-%Situation monitors offer a way of assessing if each situation contributes to poor structure or poor associated probabilities.
-%Suppose in the event tree, all of the evidence in $\mathcal{E}(\mathcal{T})$ is propogated except that given by $s_i(j)$, then we can calculate the contribution  by
-%
-%\[
-%- \log(\pi_{s_i})(s_i j \,|\, \mathcal{E}(\mathcal{T}) \backslash s_i)
-%\]
+In addition to the prequential diagnostics, CEGs also admit a batch diagnostic. The null hypothesis is that the reference prior is appropriate. At each cut in the tree, we can compute an adjusted Pearson's Chi-square coefficient analogous to the one for BNs. The batch monitor calculates the observed and expected counts of each situation in a cut of variables.
+ 
+ The batch monitors are given by 
+\subsection{Node monitors}
+ Node monitors are
+\subsection{Global monitors}
 
 \section{Simulations and Experiments}
 
@@ -405,7 +315,7 @@ There are a number of these fitted in the book included two BNs which are
 also CEGs - the results of the different diagnostics could be developed for
 each of these. 
 
-The idea would be to dicsuss possible deficiencies. We might
+The idea would be to discuss possible deficiencies. We might
 then run another example (Rodrigo has created another data set on Prison
 radicalisation but we have some other possiblities- the Cerebal Palsy
 example, an example concerning New Zealand tourism and also posibly a new
@@ -466,5 +376,9 @@ The number of counts in each pathway:
 \end{figure}
 
 The reference prior is calculated by taking the total number of root to sink paths and dividing it by the number of variables at each floret. We compute the 
+
+
+\subsection{Food insecurity: summer meals example} 
+
 
 \end{document}
