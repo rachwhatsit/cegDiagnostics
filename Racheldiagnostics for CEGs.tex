@@ -165,7 +165,7 @@ The twofold approach consists of an absolute and relative techniques. The former
 
 Batch monitors determine if the observed counts are in line with the priors of the model from the whole dataset. These are not prequential methods as batch monitors are invariant to the ordering of the data.   From a frequentist perspective, we calculate the probability of getting such an extreme value of the logarithmic penalty using an adjusted Pearson's chi square statistic developed in \cite{box} .  The adjusted Pearsons coefficient can be used as shown in \cite{Spiegelhalter1994}, with the discount factor accounting for the imprecision of the expert under the null hypothesis that the prior is appropriate. 
 
-A third type of prequential monitor, node monitors, examines how sequential evidence propagates through the network. The unconditional node monitor calculates $-\log(p_m(x_v | E_{m-1}))$ using the evidence from the $m-1$ cases. Similarly, the conditional node monitor calculates $-log(p_m)$ using the evidence from the $m-1$ cases as well as that of the variables in case $m$. The variables use the message propagation algorithm for BNs to compute the probability of the evidence. Again, node monitors can be computed with and without learning. 
+A third type of prequential monitor, node monitors, examines how sequential evidence propagates through the network. The unconditional node monitor calculates $-\log(p_m(x_v | E_{m-1}))$ using the evidence from the $m-1$ cases. Similarly, the conditional node monitor calculates $-\log(p_m)$ using the evidence from the $m-1$ cases as well as that of the variables in case $m$. The variables use the message propagation algorithm for BNs to compute the probability of the evidence. Again, node monitors can be computed with and without learning. 
 
 Lastly, global monitors take the logarithmic score of all the evidence observed. Calculating the global monitor for two different systems provides an immediately interpretable comparison between models.
 
@@ -272,9 +272,9 @@ This is given by the function \texttt{log.penalty}, which returns the arguments 
 %
 %
 %
-\subsection{Parent-child monitors}
+\subsection{Floret parameter monitors} %parent child monitors
 
-The parent-child monitor for the CEG returns the logarithmic penalties incurred after observing the values of a particular stage given the settings of the incoming stages:
+Analogous to the parent-child monitor for the CEG returns the logarithmic penalties incurred after observing the values of a particular stage given the settings of the incoming stages:
 
 \[
 -\log p_m( u | \pi_u, \text{pa}(u) = \rho)
@@ -298,39 +298,41 @@ The parent-child monitor for the CEG returns the logarithmic penalties incurred 
 %
 %%The probability distribution for each root to leaf path $\lambda \in \Lambda$, is given by $ \pi (\lambda) = \prod_{j=0}^{n[\lambda]-1} \pi(v_{j+1, \lambda} | v_{j,\lambda})$
 %%\textcolor{red}{do we think of monitors in the sense of each of the individual events acting or the whole root to leaf node? }
-\subsection{Batch monitors}
+
+\subsection{Batch cut monitors}
 In addition to the prequential diagnostics, CEGs also admit a batch diagnostic. The null hypothesis is that the reference prior is appropriate. At each cut in the tree, we can compute an adjusted Pearson's Chi-square coefficient analogous to the one for BNs.  The batch monitors for the BN calculate the observed and expected counts for categorical variables of a node given the settings of the parents. For a CEG, the batch monitor calculates the observed and expected counts of each situation in a cut of variables.
 Again, the $\chi^2$ statistic must be discounted by a factor $\frac{\alpha_+ + 1}{\alpha_+ + n }$ where $\alpha_+ = \sum_{k=1}^K \alpha_k$. The batch monitors are coded in \texttt{bn.batch.monitor} and \texttt{ceg.batch.monitor} repsectively.
 
  
 
-\subsection{Node monitors}
- Node monitors are
-\subsection{Global monitors}
+\subsection{Stage monitors}
+ 
+ Unconditional stage monitors calculate $-\log (p_m(u_k | \mathcal{E}^{m-1})$, the probability of stage $u_k$ given evidence in the $m-1$ cases. 
+ Conditional stage monitors calculate $-\log (p_m(u_k | \mathcal{E}^m \setminus \mathcal{E}_m(u_k)))$, that is the conditional probability of stage $u_k$ given the evidence for $m$ cases excluding the evidence for $u_k$ in case $m$. These probabilities can be computed from the belief propagation algorithm given in \CEGBOOK. The pseudocode from Collazo is shown below:
+ 
+ The node monitors can be used to determine when the structure of the CEG is not well fitted to the data.
+ 
+ 
+ Stage monitors are coded in \texttt{ceg.condtnl.stage.monitors} and \texttt{ceg.uncondtnl.stage.monitors} using the implementation of the pseudocode above in \texttt{pass.message}.
+
+ 
+ 
+\subsection{Global CEG monitors}
+
+The global monitor take the evidence for $u_k$ given all available evidence $\mathcal{E}$. This is coded in \texttt{ceg.global.stage.monitors}. 
+
 
 \section{Simulations and Experiments}
 
-Here simulations are not that useful - in a sense they are bound to work and
-we can work things out in closed form. However the diagnostics on real data
-sets can pick up deficiencies in the fit of a chosen CEG fitted to the data.
-There are a number of these fitted in the book included two BNs which are
-also CEGs - the results of the different diagnostics could be developed for
-each of these. 
+Diagnostics on available data can pick up deficiencies in the fit of a CEG fitted to the data. A number of fitted CEGs have been explored in \cite{CEGbook}. As BNs are a special class of CEGs, we can also use these monitors to evaluate the fit of these BNs to the data. 
 
-The idea would be to discuss possible deficiencies. We might
-then run another example (Rodrigo has created another data set on Prison
-radicalisation but we have some other possiblities- the Cerebal Palsy
-example, an example concerning New Zealand tourism and also posibly a new
-food study if we have the data for this? 
+A second, new example uses data on a program used to combat food insecurity. This enables us to see 
 
 
 \subsection{CHDS}
 
-Intro to the Christchurch dataset...
+The Christchurch dataset (CHDS) has been used in Barclay 2013, Cowell and Smith 2014, and Collazzo and Smith 2016 to illustrate the expressiveness of CEGs. The study was conducted at the University of Otango, New Zealand (Fergusson et al 1986). It encompassed a five year longitudinal study of several explanatory variables including: 
 
-The Christchurch dataset has been used in Barclay 2013, Cowell and Smith 2014, and Collazzo and Smith 2016 to illustrate the expressveness of CEGs. 
-
-The Christchurch Health and Development Study (CHDS) was conducted at the University of Otango, New Zealand (Fergusson et al 1986). It encompassed a five year longitudinal study of several explanatory variables including: 
 \begin{itemize}
 	\item Family social background, a categorical variable differentiating between high and low levels according to educational, socio-economic, ethnic measures and information about the children’s birth.
 	\item Family economic status, a categorical variable distinguishing between high and
@@ -340,47 +342,58 @@ The Christchurch Health and Development Study (CHDS) was conducted at the Univer
 \end{itemize}
 
 
-The BN representation of this dataset can be seen in Figure \ref{fig:bn}. The conditional probability tables can be computed from the data in R using the pacakge bnlearn. We would like to assess the impor
+The candidate CEGs are shown in the figures below. Tables show the conditional probability tables and the reference prior for each stage.
 
-\tikzstyle{block} = [rectangle, draw, text centered, minimum height=2em, node distance=2cm]
-\tikzstyle{plain} = [draw=none, fill=none, node distance=2cm]
+The floret parameter monitor is shown for position $w_4$ in CEG A and $w_3$ in CEG B.
 
-\begin{figure}[!h]
-	\centering
-	\begin{tikzpicture}\label{fig:bn}
-	
-	\node (s) [plain] {Social Background $s$};
-	\node (f) [plain, below=.5cm of s]{Family Life Events $f$};
-	\node (e) [plain,left=.5cm of f] {Economic Situation $e$};
-	\node (h) [plain,right=.5cm of f] {Hospital Admissions $h$};
-	
-	\draw[->, >=stealth] (s) -- (e);
-	\draw[->, >=stealth] (e) -- (f);
-	\draw[->, >=stealth] (f) -- (h);
-	\draw[->, >=stealth] (s) -- (h);
-	\end{tikzpicture}
-\end{figure}
+Computing the batch cut monitor for pathways leading into cut $X_l$ is show below, alongside the tables of observed and expected counts.
 
-The number of counts in each pathway: 
+The stage monitor is show for each stage in the network for CEG B for both conditional and unconditional stages. From this we might conclude..
 
-
-
-\begin{tabular}{l|l|l|l|l}%
-  Social &  Economics & Events & Admission & n% specify table head
- \csvreader[head to column names]{counts.csv}{}% use head of csv as column names
- {\\\hline\csvcolii&\csvcoliii&\csvcoliv&\csvcolv&\csvcolvi}% specify your coloumns here
+Lastly, the global monitor for CEG A and CEG B is ...
  
-\end{tabular}
-    
-    \textcolor{red}{How do we pick the priors?}
-\begin{figure}
-	\includegraphics{Rplot.png}
-\end{figure}
+%
+%\tikzstyle{block} = [rectangle, draw, text centered, minimum height=2em, node distance=2cm]
+%\tikzstyle{plain} = [draw=none, fill=none, node distance=2cm]
+%
+%\begin{figure}[!h]
+%	\centering
+%	\begin{tikzpicture}\label{fig:bn}
+%	
+%	\node (s) [plain] {Social Background $s$};
+%	\node (f) [plain, below=.5cm of s]{Family Life Events $f$};
+%	\node (e) [plain,left=.5cm of f] {Economic Situation $e$};
+%	\node (h) [plain,right=.5cm of f] {Hospital Admissions $h$};
+%	
+%	\draw[->, >=stealth] (s) -- (e);
+%	\draw[->, >=stealth] (e) -- (f);
+%	\draw[->, >=stealth] (f) -- (h);
+%	\draw[->, >=stealth] (s) -- (h);
+%	\end{tikzpicture}
+%\end{figure}
 
-The reference prior is calculated by taking the total number of root to sink paths and dividing it by the number of variables at each floret. We compute the 
+%The number of counts in each pathway: 
+%
+%
+%
+%\begin{tabular}{l|l|l|l|l}%
+%  Social &  Economics & Events & Admission & n% specify table head
+% \csvreader[head to column names]{counts.csv}{}% use head of csv as column names
+% {\\\hline\csvcolii&\csvcoliii&\csvcoliv&\csvcolv&\csvcolvi}% specify your coloumns here
+% 
+%\end{tabular}
+%    
+%    \textcolor{red}{How do we pick the priors?}
+%\begin{figure}
+%	\includegraphics{Rplot.png}
+%\end{figure}
+%
+%The reference prior is calculated by taking the total number of root to sink paths and dividing it by the number of variables at each floret. We compute the 
 
 
-\subsection{Food insecurity: summer meals example} 
+%\subsection{Food insecurity: summer meals example} 
+
+%The data was obtained through
 
 \section{Discussion}
  
