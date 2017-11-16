@@ -86,3 +86,4 @@ cegb.stages <- list("cegb.w0", "cegb.w1", "cegb.w2", "cegb.w3", "cegb.w4", "cegb
 
 
 stages=cegb.stages; struct=cegb.struct; stage.key=cegb.stage.key
+stages=cega.stages; struct=cega.struct; stage.key=cega.stage.key

@@ -123,3 +123,11 @@ SMuncond2 <- bn.cndtl.node.monitor(meal, 's','No','m',n=2000)
 plot(SM[[1]])
 lines(SMuncond[[1]])
 lines(SMuncond2[[1]])
+
+#TO DO
+#generate the conditional probability tables and shade ones that have the same probabilites the same color
+#generate this table for each time setp. 
+#add the global monitor that takes the log prob of alllll the evidence
+#show how this changes for the conditional probability table for CEG A and CEG B
+
+
