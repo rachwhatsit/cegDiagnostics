@@ -13,16 +13,13 @@ return(edge.path.key)}
 #takes a well ordered CEG and C-copmatible information I 
 #outputs: an uncolored CEG with pi_hat
 
-evidence <- df[1:5,] #how much evidencd do you have at each time?? yo ne se.
-posterior <- rep(NA, length(prior))
-for (i in (1:length(prior))){posterior[i] <- list(unlist(prior[i])+unlist(struct[[i]]$n))}
-post.mean <- rep(NA, length(prior))
-for (i in (1:length(prior))){post.mean[i] <- list(unlist(posterior[i])/sum(unlist(posterior[i])))}
 
 
-pass.message <- function(df, stage.key, evidence,post.mean){#what's the most natural way to put the evidence into the system?
+pass.message <- function(df, stage.key, struct, stages, evidence,post.mean){#what's the most natural way to put the evidence into the system?
   #prior <- get.ref.prior(df, struct, cuts, stage.key, stages)
+  prior <- get.ref.prior(df, struct, cuts, stage.key, stages)
   
+  tau <- c()
   for (i in 2:length(stage.key)){
     cuts <- colnames(df)
     stage.key[[i]]<-mutate(stage.key[[i]], pi = n/dim(df)[1])
@@ -31,7 +28,7 @@ pass.message <- function(df, stage.key, evidence,post.mean){#what's the most nat
   left_join(evidence,edge.path.key) -> ev.paths
   dplyr::select(ev.paths,-(1:length(cuts))) %>% as.list() %>% unlist() %>% unique() -> ev.stages
     
-    
+  prior <- get.ref.prior(df, struct, cuts, stage.key, stages)
       sk.idx <- 1
     for (i in 1:length(prior)){
       if (!stages[[i]] %in% stage.key[[sk.idx]]$stage){sk.idx <- sk.idx+1}
@@ -56,10 +53,6 @@ pass.message <- function(df, stage.key, evidence,post.mean){#what's the most nat
 }
 
 
-newpi <- pass.message(df,stage.key,df[1:2,],post.mean)
-newpi2 <- pass.message(df, stage.key,df[1:4,],post.mean)
-newpi3 <- pass.message(df, stage.key,df[1:10,],post.mean)
-newpi5 <- pass.message(df, stage.key,df[1:50,],post.mean)
 
 #EVERYTHING IS GARBAGE BELOW HERE  
 #   stages %in% ev.stages

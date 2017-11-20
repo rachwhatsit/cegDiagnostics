@@ -3,6 +3,7 @@
 export(bn.batch.monitor)
 export(bn.uncondtnl.node.monitor)
 export(ceg.batch.monitor)
-export(ceg.uncondtnl.stage.monitor)
+export(ceg.child.parent.monitor)
 export(get.ref.prior)
+export(posterior)
 export(render.ceg)

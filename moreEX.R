@@ -130,4 +130,15 @@ lines(SMuncond2[[1]])
 #add the global monitor that takes the log prob of alllll the evidence
 #show how this changes for the conditional probability table for CEG A and CEG B
 
+evidence <- df[1:5,] #how much evidencd do you have at each time?? yo ne se.
+posterior <- rep(NA, length(prior))
+for (i in (1:length(prior))){posterior[i] <- list(unlist(prior[i])+unlist(struct[[i]]$n))}
+post.mean <- rep(NA, length(prior))
+for (i in (1:length(prior))){post.mean[i] <- list(unlist(posterior[i])/sum(unlist(posterior[i])))}
+
+
+newpi <- pass.message(df,stage.key=cegb.stage.key,struct = cegb.struct, stages= cegb.stages, evidence = df[1:2,],post.mean)
+newpi2 <- pass.message(df, stage.key,df[1:5,],post.mean)
+newpi3 <- pass.message(df, stage.key,df[1:10,],post.mean)
+newpi5 <- pass.message(df, stage.key,df[1:50,],post.mean)
 
