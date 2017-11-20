@@ -308,7 +308,7 @@ Again, the $\chi^2$ statistic must be discounted by a factor $\frac{\alpha_+ + 1
 \subsection{Stage monitors}
  
  Unconditional stage monitors calculate $-\log (p_m(u_k | \mathcal{E}^{m-1})$, the probability of stage $u_k$ given evidence in the $m-1$ cases. 
- Conditional stage monitors calculate $-\log (p_m(u_k | \mathcal{E}^m \setminus \mathcal{E}_m(u_k)))$, that is the conditional probability of stage $u_k$ given the evidence for $m$ cases excluding the evidence for $u_k$ in case $m$. These probabilities can be computed from the belief propagation algorithm given in \CEGBOOK. The pseudocode from Collazo is shown below:
+ Conditional stage monitors calculate $-\log (p_m(u_k | \mathcal{E}^m \setminus \mathcal{E}_m(u_k)))$, that is the conditional probability of stage $u_k$ given the evidence for $m$ cases excluding the evidence for $u_k$ in case $m$. These probabilities can be computed from the belief propagation algorithm given in ]cite{CEGBOOK}. The pseudocode from Collazo is shown below:
  
  The node monitors can be used to determine when the structure of the CEG is not well fitted to the data.
  

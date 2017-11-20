@@ -12,6 +12,7 @@
 #' @export
 #' @examples###############################################################
 #no conditional parent monitor here. 
+prior <- get.ref.prior(df, struct, cuts, stage.key, stages)
 posterior <- rep(NA, length(prior))
 for (i in (1:length(prior))){posterior[i] <- list(unlist(prior[i])+unlist(struct[[i]]$n))}
 pi <- rep(NA, length(prior))
