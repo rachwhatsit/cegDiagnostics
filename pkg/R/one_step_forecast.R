@@ -60,9 +60,16 @@ stg.trans.prob(stage.key, rho,which.cut, epsilon)
 # num.colors <- S #total number of colors 
 # p.trans
 
-post.trans <- rep(0,length(possible.stage)+1)
+post.trans <- rep(0,length(possible.stage)+1)#compute the non-zero probs for each possible staging
 for (i in 1:length(post.trans)){
   color <- possible.colorings[[idx[i]]]
+  for (j in 1:length(color)){#get each of the possible stagings
+    #determine what the new prior is for the new staging 
+    #determine the number of counts for the new staging 
+    
+    stg.clr <- as.character(j)
+    stage.key[[]]
+  }
   
 }
 

@@ -136,9 +136,12 @@ for (i in (1:length(prior))){posterior[i] <- list(unlist(prior[i])+unlist(struct
 post.mean <- rep(NA, length(prior))
 for (i in (1:length(prior))){post.mean[i] <- list(unlist(posterior[i])/sum(unlist(posterior[i])))}
 
+prior <- get.ref.prior(df, struct, cuts, stage.key, stages)
 
-newpi <- pass.message(df,stage.key=cegb.stage.key,struct = cegb.struct, stages= cegb.stages, evidence = df[1:2,],post.mean)
-newpi2 <- pass.message(df, stage.key,df[1:5,],post.mean)
-newpi3 <- pass.message(df, stage.key,df[1:10,],post.mean)
-newpi5 <- pass.message(df, stage.key,df[1:50,],post.mean)
+ref.distr <- c()
+for (i in 1:length(prior)){ref.distr[[i]] <- prior[[i]]/sum(prior[[i]]) }
+newpi <- pass.message(df,stage.key=cegb.stage.key,evidence = df[1:50,],ref.distr,prior)
+newpi2 <- pass.message(df, stage.key,df[4:5,],newpi, prior)
+newpi3 <- pass.message(df, stage.key,df[1:10,],post.mean,prior)
+newpi5 <- pass.message(df, stage.key,df[1:50,],post.mean,prior)
 

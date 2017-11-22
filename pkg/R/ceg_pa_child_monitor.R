@@ -82,5 +82,5 @@ ceg.child.parent.monitor <- function(df, target.stage, target.cut, condtnl.stage
   results <-data.frame(cbind(Sm, Zm, Em, Vm))
   colnames(results) <- c("Sm", "Zm", "Em", "Vm")
   return((results))
-  }
-  
+}
+

@@ -322,6 +322,10 @@ Again, the $\chi^2$ statistic must be discounted by a factor $\frac{\alpha_+ + 1
 The global monitor take the evidence for $u_k$ given all available evidence $\mathcal{E}$. This is coded in \texttt{ceg.global.stage.monitors}. 
 
 
+\subsection{Message passing algorithms}
+
+\cite{diagnostics} uses the message passing algorithm to calculate a node monitor conditional on the evidence for each node. The message passing algorith for CEGs  creates a new CEG with the ratios of probabilities. We use the one step ahead forecasts in the stage onitors for CEGs, but the message passing algorithm can be used as a diagnostic when we have multiple cohorts that we would like to compare. The pseudocode for the message passing algorithm can be found in \cite{Rodriguo}, and is implemented in R by the command \texttt{pass.message}. When we would like to express how well the CEG fits multiple cohorts, we can propgate the evidence and compute stage monitors that determin ehow well the evidence from each cohort confirms the given CEG fit. 
+
 \section{Simulations and Experiments}
 
 Diagnostics on available data can pick up deficiencies in the fit of a CEG fitted to the data. A number of fitted CEGs have been explored in \cite{CEGbook}. As BNs are a special class of CEGs, we can also use these monitors to evaluate the fit of these BNs to the data. 
