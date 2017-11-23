@@ -9,6 +9,8 @@ which.cut <- 3#what varaible are we concerned with
 stage.key <- cegb.stage.key
 #stg.trans.prob <- function( stage.key, which.cut, rho,epsilon){
 
+df.cut <- df[1:20,]
+
   
   S <- dim(stage.key[[which.cut]])[1]#how many level combos are there
   possible.colorings <- listParts(S)##removin the one where no one gets a color
@@ -59,6 +61,27 @@ stage.key <- cegb.stage.key
 stg.trans.prob(stage.key, rho,which.cut, epsilon)
 # num.colors <- S #total number of colors 
 # p.trans
+
+#initalize p(U_t-1 | x^t-1), called p2 vec here. 
+p2 <- rep(0, length(possible.stage))
+for (i in 1:length(p2)){ 
+  clr <- possible.colorings[[(possible.stage[i])]]#stage of interest
+  n <- prod(apply(df, 2, function(x){length(levels(as.factor(x)))})) #total number of pathways in the CEG 
+  
+  p.stage 
+  for (j in 1:length(clr)){# loop over number of colors in proposed staging
+    #find ref prior for the 
+    for (k in 1:length(clr[[j]])){#number of stages in the proposed coloring
+      another.n <- length(levels(as.factor(df[,which.cut])))
+      alpha.bar <- rep(n/(dim(stage.key[[which.cut]])[1]), another.n)*length(clr[[j]])/another.n
+      
+    }
+  }
+  
+  #for each stage in the new coloring
+  p2[i] <- lgamma(sum(alpha.bar))-lgamma(sum(alpha.star)) + sum(lgamma(alpha.star))-sum(lgamma(alpha.bar))
+  }
+
 
 post.trans <- rep(0,length(possible.stage)+1)#compute the non-zero probs for each possible staging
 for (i in 1:length(post.trans)){

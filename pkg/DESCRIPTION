@@ -14,5 +14,6 @@ Imports:
     tidyr,
     tidyverse,
     rlang,
-    DiagrammeR
+    DiagrammeR,
+    partitions
 RoxygenNote: 6.0.1
