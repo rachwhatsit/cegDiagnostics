@@ -3,6 +3,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \usepackage{amsfonts}
 \usepackage{mitpress}
+\usepackage{caption}
+\usepackage{subcaption}
 \usepackage{color}
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -307,7 +309,9 @@ Again, the $\chi^2$ statistic must be discounted by a factor $\frac{\alpha_+ + 1
 
 \subsection{Stage monitors}
  
- Unconditional stage monitors calculate $-\log (p_m(u_k | \mathcal{E}^{m-1})$, the probability of stage $u_k$ given evidence in the $m-1$ cases. 
+ Unconditional stage monitors calculate the one step ahead forecasts, $p(\bm{x}_t  | \bm{x}^{t-1}$. The form is given in \cite{Freeman} as 
+ 
+ this involves a $-\log (p_m(u_k | \mathcal{E}^{m-1})$, the probability of stage $u_k$ given evidence in the $m-1$ cases. 
  Conditional stage monitors calculate $-\log (p_m(u_k | \mathcal{E}^m \setminus \mathcal{E}_m(u_k)))$, that is the conditional probability of stage $u_k$ given the evidence for $m$ cases excluding the evidence for $u_k$ in case $m$. These probabilities can be computed from the belief propagation algorithm given in ]cite{CEGBOOK}. The pseudocode from Collazo is shown below:
  
  The node monitors can be used to determine when the structure of the CEG is not well fitted to the data.
@@ -346,15 +350,37 @@ The Christchurch dataset (CHDS) has been used in Barclay 2013, Cowell and Smith 
 \end{itemize}
 
 
-The candidate CEGs are shown in the figures below. Tables show the conditional probability tables and the reference prior for each stage.
+The candidate CEGs are shown in the figures below. 
+
+\begin{figure}
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{cegA.png}
+  \caption{CEG A}
+  \label{fig:CEGa}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{CEGb.png}
+  \caption{CEG B}
+  \label{fig:CEGb}
+\end{subfigure}
+\caption{Two CEGs for the CHDS dataset}
+\label{fig:test}
+\end{figure}
+
+Tables show the conditional probability tables and the reference prior for each stage.
+%%ADD TABLES HERE 
 
 The floret parameter monitor is shown for position $w_4$ in CEG A and $w_3$ in CEG B.
+%%FLORET PARAMETER MODELS
 
 Computing the batch cut monitor for pathways leading into cut $X_l$ is show below, alongside the tables of observed and expected counts.
 
-The stage monitor is show for each stage in the network for CEG B for both conditional and unconditional stages. From this we might conclude..
+The stage monitor is show for each stage in the network for CEG B for both conditional and unconditional stages. 
 
-Lastly, the global monitor for CEG A and CEG B is ...
+Lastly, the global monitor for CEG A and CEG B is 
  
 %
 %\tikzstyle{block} = [rectangle, draw, text centered, minimum height=2em, node distance=2cm]
@@ -402,10 +428,14 @@ Lastly, the global monitor for CEG A and CEG B is ...
 \section{Discussion}
  
 \paragraph{Monitors}
-The monitors can be used to detect misspecifications of structure or parameters. 
+The monitors can be used to detect misspecification of structure or parameters. 
 
 \paragraph{Missing data} The batch monitors are unable to detect 
-Comparing the expert prior to the reference prior should in theory be invariant to the order in which the data is processed. However, in reality, the inferences may depend on the order of the data. 
+Comparing the expert prior to the reference prior should in theory be invariant to the order in which the data is processed. However, in reality, the inferences may depend on the order of the data. Thus by the message passing algorithm 
+
+\section{References}  
+
+
 
 
 
