@@ -11,6 +11,7 @@
 \usepackage{graphicx}
 \usepackage{bm}
 \usepackage{csvsimple}
+\usepackage{multirow}
 \usepackage{tikz}
 \usetikzlibrary{shapes,arrows}
 \usetikzlibrary{positioning}
@@ -276,7 +277,7 @@ This is given by the function \texttt{log.penalty}, which returns the arguments 
 %
 \subsection{Floret parameter monitors} %parent child monitors
 
-Analogous to the parent-child monitor for the CEG returns the logarithmic penalties incurred after observing the values of a particular stage given the settings of the incoming stages:
+Analogous to the parent-child monitor for the BN, floret parameter monitor returns the logarithmic penalties incurred after observing the values of a particular stage given the settings of the incoming stages:
 
 \[
 -\log p_m( u | \pi_u, \text{pa}(u) = \rho)
@@ -309,16 +310,43 @@ Again, the $\chi^2$ statistic must be discounted by a factor $\frac{\alpha_+ + 1
 
 \subsection{Stage monitors}
  
- Unconditional stage monitors calculate the one step ahead forecasts, $p(\bm{x}_t  | \bm{x}^{t-1}$. The form is given in \cite{Freeman} as 
- 
- this involves a $-\log (p_m(u_k | \mathcal{E}^{m-1})$, the probability of stage $u_k$ given evidence in the $m-1$ cases. 
- Conditional stage monitors calculate $-\log (p_m(u_k | \mathcal{E}^m \setminus \mathcal{E}_m(u_k)))$, that is the conditional probability of stage $u_k$ given the evidence for $m$ cases excluding the evidence for $u_k$ in case $m$. These probabilities can be computed from the belief propagation algorithm given in ]cite{CEGBOOK}. The pseudocode from Collazo is shown below:
- 
- The node monitors can be used to determine when the structure of the CEG is not well fitted to the data.
+ Unconditional stage monitors calculate the one step ahead forecasts, $p(\bm{x}_t  | \bm{x}^{t-1})$. The form is given in \cite{Freeman} as 
  
  
- Stage monitors are coded in \texttt{ceg.condtnl.stage.monitors} and \texttt{ceg.uncondtnl.stage.monitors} using the implementation of the pseudocode above in \texttt{pass.message}.
 
+%\begin{multline}
+%p(\bm{x}_t | \bm{x}^{t-1}) \propto \left( \sum_{U_{t-1} \in \bm{U}} \pi(U_t | U_{t-1}) p(U_{t-1} | \bm{x}^{t-1} \right) \times 
+%\\ \qquad
+%\prod_{u \in U_t} \left[ \frac{\Gamma\left( \sum_{v' \in \mathbb{X}(v_u)} \bar{\alpha}_t (u,v') \right)}{\Gamma\left( \sum_{v' \in \mathbb{X}(v_u)} \bar{\alpha}_t^* (u,v') \right)} \prod_{v' \in \mathbb{X}(v_u)} \frac{\Gamma(\bar{\alpha}_t^* (u,v'))}{\Gamma(\bar{\alpha}_t (u,v'))}   \right]
+%
+%\end{multline}
+
+\begin{multline}
+  p(\bm{x}_t | \bm{x}^{t-1}) \propto \left( \sum_{U_{t-1} \in \bm{U}} \pi(U_t | U_{t-1}) p(U_{t-1} | \bm{x}^{t-1} \right) \times 
+\\ \prod_{u \in U_t} \left[ \frac{\Gamma\left( \sum_{v' \in \mathbb{X}(v_u)} \bar{\alpha}_t (u,v') \right)}{\Gamma\left( \sum_{v' \in \mathbb{X}(v_u)} \bar{\alpha}_t^* (u,v') \right)} \prod_{v' \in \mathbb{X}(v_u)} \frac{\Gamma(\bar{\alpha}_t^* (u,v'))}{\Gamma(\bar{\alpha}_t (u,v'))}   \right]
+\end{multline}
+
+This encompasses the sampling distribution, the stage distribution, and the parameter distribution. It incorporate sthe probability that the stage colorings may change. While the model is simpler if we propose that the coloring remains constant throughout the data, allowing for local and more drastic changes is a much better representation of the modelers beliefs. Thus, we incorporate the Markov transition properties $\pi (U | U')$ given by 
+
+\begin{equation}
+\pi(U | U')=
+\begin{cases} 
+      \rho & \text{if } U = U' \\
+      |B_\epsilon(U')|^{-1}(1-\rho) & \text{if }  0 < \ell(U,U') \leq \epsilon\\
+      0 & \text{otherwise}
+   \end{cases}
+\end{equation}
+
+$\rho$ is the set probability of a coloring transtition. As a sample of how we might do this, we can take $\ell (U, U')$ to be the difference of partitions on the Hasse diagram as shown in \cite{Freeman}. We only allow local changes, that is moves of $\ell(U,U')=1$, which corresponds to merging or separating stages in a coloring. 
+
+
+% this involves a $-\log (p_m(u_k | \mathcal{E}^{m-1})$, the probability of stage $u_k$ given evidence in the $m-1$ cases. 
+% Conditional stage monitors calculate $-\log (p_m(u_k | \mathcal{E}^m \setminus \mathcal{E}_m(u_k)))$, that is the conditional probability of stage $u_k$ given the evidence for $m$ cases excluding the evidence for $u_k$ in case $m$. These probabilities can be computed from the belief propagation algorithm given in ]cite{CEGBOOK}. The \texttt{pass.message} function relies on the pseudocode from \cite{Collazo}.
+% 
+% The node monitors can be used to determine when the structure of the CEG is not well fitted to the data.
+% 
+ 
+ Stage monitors are coded in \texttt{one.step.ahead.forecast}. 
  
  
 \subsection{Global CEG monitors}
@@ -349,8 +377,7 @@ The Christchurch dataset (CHDS) has been used in Barclay 2013, Cowell and Smith 
 	\item the likelihood of childhood hospitalization (a binary variable). 
 \end{itemize}
 
-
-The candidate CEGs are shown in the figures below. 
+Figure ~\ref{fig:cegs} shows the two candidate CEGs. 
 
 \begin{figure}
 \centering
@@ -367,20 +394,92 @@ The candidate CEGs are shown in the figures below.
   \label{fig:CEGb}
 \end{subfigure}
 \caption{Two CEGs for the CHDS dataset}
-\label{fig:test}
+\label{fig:cegs}
 \end{figure}
 
-Tables show the conditional probability tables and the reference prior for each stage.
-%%ADD TABLES HERE 
+%TABLE 6.3 
+\begin{center}
+\begin{tabular}{ |c|c|} 
+\hline
+Variable & Conditional Probability Vector  \\
+\hline
+\multirow{1}{4em}{$X_s$} & $P(X_s = (h, l) | u_0) = (0.57, 0.43) $ \\ 
+\hline
+\multirow{2}{4em}{$X_e$} & $P(X_e = (h, l) | u_1) = (0.47, 0.53)$ \\ 
+& $P(X_s = (h, l) | u_2) = (0.12, 0.88)$  \\ 
+\hline 
+\multirow{3}{4em}{$X_l$} & $P(X_l = (h,m,l) | u_3) = (0.14, 0.36, 0.50) $ \\ 
+& $P(X_l = (h,m,l) | u_4) = (00.24, 0.33, 0.43) $  \\ 
+& $P(X_l = (h,m,l) | u_5) = (0.47, 0.31, 0.22) $  \\ %%CHECK THIS OUTTTT
+\hline
+\multirow{3}{4em}{$X_h$} & $P(X_h = (y,n) | u_7) = (0.1, 0.09)$ \\ 
+& $P(X_h = (y,n) | u_8) = (0.82, 0.18)$  \\ 
+& $P(X_h = (y,n) | u_9) = (0.74, 0.26)$  \\ 
+\hline
+\end{tabular}
+\end{center}
 
-The floret parameter monitor is shown for position $w_4$ in CEG A and $w_3$ in CEG B.
+%TABLE 6.5
+\begin{center}
+\begin{tabular}{ |c|c|} 
+\hline
+Variable & Conditional Probability Vector  \\
+\hline
+\multirow{1}{4em}{$X_s$} & $P(X_s = (h, l) | u_0) = (0.57, 0.43) $ \\ 
+\hline
+\multirow{2}{4em}{$X_e$} & $P(X_e = (h, l) | u_1) = (0.47, 0.53)$ \\ 
+& $P(X_s = (h, l) | u_2) = (0.12, 0.88)$  \\ 
+\hline 
+\multirow{2}{4em}{$X_l$} & $P(X_l = (h,m,l) | u_3) = (0.20, 0.34, 0.46) $ \\ 
+& $P(X_l = (h,m,l) | u_4) = (0.47, 0.31, 0.22) $  \\ 
+\hline
+\multirow{3}{4em}{$X_h$} & $P(X_h = (y,n) | u_7) = (0.91, 0.09)$ \\ 
+& $P(X_h = (y,n) | u_8) = (0.82, 0.18)$  \\ 
+& $P(X_h = (y,n) | u_9) = (0.74, 0.26)$  \\ 
+\hline
+\end{tabular}
+\end{center}
+
 %%FLORET PARAMETER MODELS
+The floret parameter monitor is shown for stages $u_4$ in CEG A and $u_3$ in CEG B.
 
+
+%%BATCH MONITORS
 Computing the batch cut monitor for pathways leading into cut $X_l$ is show below, alongside the tables of observed and expected counts.
 
+%%STAGE MONITORS
 The stage monitor is show for each stage in the network for CEG B for both conditional and unconditional stages. 
 
-Lastly, the global monitor for CEG A and CEG B is 
+\begin{figure}[htbp] %  figure placement: here, top, bottom, or page
+   \centering
+   \includegraphics[width=2in]{stageCEGb.png} 
+   \caption{example caption}
+   \label{fig:stagecegb}
+\end{figure}
+
+
+\begin{figure}
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{stageCEGa.png}
+  \caption{CEG A}
+  \label{fig:CEGa}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{stageCEGb.png}
+  \caption{CEG B}
+  \label{fig:CEGb}
+\end{subfigure}
+\caption{Two CEGs for the CHDS dataset}
+\label{fig:cegs}
+\end{figure}
+Figure ~\ref {fig:stagecegb} shows the stage monitor for CEG B when$\rho = 0.25$, and there are no change points. We observe change points when $\rho = 0.17$.
+
+The stage monitor for variable $X_l$ also identifies change points in the structure. Change points occur when the term $\pi(U_{t-1} | \bm{x}^{t-1})$ has a new maximum. This is very sensitive to the selection of $\rho$, the propensity to change structure. Only local changes are allowed, i.e. the merging or separation of two stages in a particular coloring. This corresponds to partitions that are one link away on the Hasse diagram. 
+
+Lastly, the global monitor for CEG A and CEG B is given by the Bayes factor. 
  
 %
 %\tikzstyle{block} = [rectangle, draw, text centered, minimum height=2em, node distance=2cm]
@@ -428,10 +527,15 @@ Lastly, the global monitor for CEG A and CEG B is
 \section{Discussion}
  
 \paragraph{Monitors}
-The monitors can be used to detect misspecification of structure or parameters. 
+The monitors can be used to detect misspecification of structure or parameters. The form of the one step ahead forecast corresponds to the prequential likelihood approach. Monitors can be used as an objective check on structures and probabilities that may be elicited. 
+
+\paragraph{Change point detection} 
+The stage monitor for the CEG identifies points where the most likely coloring changes. This can be used to indicate points n the data where the data generating process alters. 
 
 \paragraph{Missing data} The batch monitors are unable to detect 
 Comparing the expert prior to the reference prior should in theory be invariant to the order in which the data is processed. However, in reality, the inferences may depend on the order of the data. Thus by the message passing algorithm 
+
+Additional work includes: adapting the R code to interface with the new \texttt{ceg} package. This report is a shortened version of a longer CRISM report that examines the use of these monitors on a a food insecurity application.  
 
 \section{References}  
 

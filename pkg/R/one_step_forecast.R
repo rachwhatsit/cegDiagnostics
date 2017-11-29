@@ -1,10 +1,10 @@
 library(partitions)
 rho.test <- 0.1 #baseline parameter between 0 and 1 
-rho <- 0.18
+rho <- .25
 #THIS IS CODED FOR local L 1 MOVES ONLY.
 epsilon.test <- 1.2 #represents what sort of changes in stage we're willing to admit
 which.cut.test <- 3#what varaible are we concerned with
-stage.key <- cegb.stage.key
+stage.key <- cega.stage.key
 n.monitor <- 50 #number of observations to include in the monitor
  #this will be looped over
 
@@ -12,11 +12,13 @@ n.monitor <- 50 #number of observations to include in the monitor
 possible.colorings <- listParts(dim(stage.key[[which.cut]])[1])##removin the one where no one gets a color
 num.partitions <- as.vector(unlist(lapply(possible.colorings, function(x){length(x)})))
 
-crrnt.stg <- 10 #should be initialized by the chain event graph
+crrnt.stg <- 15 #should be initialized by the chain event graph
 p.monitor <- rep(0, n.monitor-4)
 change.points <- c()
 for (t in 5:n.monitor){
   df.cut <- df[1:t,]
+  
+  #for (s in 1:length(possible.colorings)){ 
   idx.coarse <- which(num.partitions==length(possible.colorings[[crrnt.stg]])-1)#returs stagings with 2 colors 
   if (length(idx.coarse)==0){
     hasse.coarse <- c()
@@ -55,10 +57,11 @@ if (length(idx.fine)==0) {hasse.fine <- c()
   
   current.stage <- crrnt.stg#idx[crrnt.stg]
   possible.stage <- c(idx.coarse[hasse.coarse==TRUE],idx.fine[hasse.fine==TRUE])
-  crrnt.stg <- which(p.trans==max(p.trans))[1] 
-  print(p.trans)
+  crrnt.stg <- ifelse(p.trans[crrnt.stg]==p.trans[which(p.trans==max(p.trans))[1]], crrnt.stg, which(p.trans==max(p.trans))[1])
+  print(crrnt.stg)
   if(current.stage != crrnt.stg) {change.points <- c(change.points, t)}
-  p2 <- rep(0, length(possible.stage)+1)
+   p2 <- rep(0, length(possible.stage)+1)
+  #staging distributions
   for (i in 1:length(p2)){ 
     if(i==length(p2)) {
       clr <- possible.colorings[[current.stage]];
@@ -99,9 +102,13 @@ if (length(idx.fine)==0) {hasse.fine <- c()
     p2[i] <- sum(p.stgng)
   }
   p2.exp <- exp(p2) /sum(exp(p2))
+  
+  
+  
   clr <- possible.colorings[[current.stage]]
   n <- prod(apply(df, 2, function(x){length(levels(as.factor(x)))})) #total number of pathways in the CEG 
   p.stgng <- rep(0, length(clr))#total number of groups in the partition
+  #sampling and the parameter distribution 
   for (j in 1:length(clr)){# loop over number of colors in proposed staging
     #find ref prior for the 
     another.n <- length(levels(as.factor(df[,which.cut])))
@@ -134,7 +141,18 @@ if (length(idx.fine)==0) {hasse.fine <- c()
   a <- sum(p.trans[c(possible.stage,current.stage)] * p2.exp) #gives the probability of transitioning to another local stage
   b <- prod(exp(p.stgng))
   p.monitor[t] <- a*b
+#  }
 }
 
-plot(-log(p.monitor))
+x=1:length(p.monitor)
+pma <- -log(pma)
+pmb <- -log(pmb)
+pm <- as.data.frame(cbind(x,(pma),pmb))
+ggplot(pm[-(1:5),]) + geom_point(aes(x, y=pma,color='orange')) + 
+  geom_point(aes(x, y=pmb,color='blue')) +  
+  xlab("Relevant Sample Size") + ylab("Cumulative Logarithmic Plot") + 
+  ggtitle("Stage monitor for life events in CEG A") + #CHANGE THIS
+  theme_bw() +
+  theme(axis.text=element_text(size=22), axis.title=element_text(size=26),title=element_text(size=28))
+ggsave('stageCEGa.png', width=12.1, height=9, units = "in") #AND THIS
 
