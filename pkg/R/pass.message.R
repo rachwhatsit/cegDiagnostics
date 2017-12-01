@@ -56,11 +56,6 @@ pass.message <- function(df, stage.key, evidence,post.mean,prior){#what's the mo
 }
 
 
-newpi <- pass.message(df,stage.key,df[1:2,],post.mean)
-newpi2 <- pass.message(df, stage.key,df[1:4,],post.mean)
-newpi3 <- pass.message(df, stage.key,df[1:10,],post.mean)
-newpi5 <- pass.message(df, stage.key,df[1:50,],post.mean)
-
 #EVERYTHING IS GARBAGE BELOW HERE  
 #   stages %in% ev.stages
 #   

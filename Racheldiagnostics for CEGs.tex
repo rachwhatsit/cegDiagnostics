@@ -442,7 +442,12 @@ Variable & Conditional Probability Vector  \\
 
 %%FLORET PARAMETER MODELS
 The floret parameter monitor is shown for stages $u_4$ in CEG A and $u_3$ in CEG B.
-
+\begin{figure}[htbp] %  figure placement: here, top, bottom, or page
+   \centering
+   \includegraphics[width=4in]{pachCEG.png} 
+   \caption{example caption}
+   \label{fig:example}
+\end{figure}
 
 %%BATCH MONITORS
 Computing the batch cut monitor for pathways leading into cut $X_l$ is show below, alongside the tables of observed and expected counts.
@@ -452,29 +457,29 @@ The stage monitor is show for each stage in the network for CEG B for both condi
 
 \begin{figure}[htbp] %  figure placement: here, top, bottom, or page
    \centering
-   \includegraphics[width=2in]{stageCEGb.png} 
-   \caption{example caption}
-   \label{fig:stagecegb}
+   \includegraphics[width=4in]{stageCEG.png} 
+   \caption{Stage monitor shown for $\rho = 0.25$}
+   \label{fig:stageceg}
 \end{figure}
 
 
-\begin{figure}
-\centering
-\begin{subfigure}{.5\textwidth}
-  \centering
-  \includegraphics[width=\linewidth]{stageCEGa.png}
-  \caption{CEG A}
-  \label{fig:CEGa}
-\end{subfigure}%
-\begin{subfigure}{.5\textwidth}
-  \centering
-  \includegraphics[width=\linewidth]{stageCEGb.png}
-  \caption{CEG B}
-  \label{fig:CEGb}
-\end{subfigure}
-\caption{Two CEGs for the CHDS dataset}
-\label{fig:cegs}
-\end{figure}
+%\begin{figure}
+%\centering
+%\begin{subfigure}{.5\textwidth}
+%  \centering
+%  \includegraphics[width=\linewidth]{stageCEGa.png}
+%  \caption{CEG A}
+%  \label{fig:CEGa}
+%\end{subfigure}%
+%\begin{subfigure}{.5\textwidth}
+%  \centering
+%  \includegraphics[width=\linewidth]{stageCEGb.png}
+%  \caption{CEG B}
+%  \label{fig:CEGb}
+%\end{subfigure}
+%\caption{Two CEGs for the CHDS dataset}
+%\label{fig:cegs}
+%\end{figure}
 Figure ~\ref {fig:stagecegb} shows the stage monitor for CEG B when$\rho = 0.25$, and there are no change points. We observe change points when $\rho = 0.17$.
 
 The stage monitor for variable $X_l$ also identifies change points in the structure. Change points occur when the term $\pi(U_{t-1} | \bm{x}^{t-1})$ has a new maximum. This is very sensitive to the selection of $\rho$, the propensity to change structure. Only local changes are allowed, i.e. the merging or separation of two stages in a particular coloring. This corresponds to partitions that are one link away on the Hasse diagram. 

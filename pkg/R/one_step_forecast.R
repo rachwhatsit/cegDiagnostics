@@ -1,19 +1,10 @@
-library(partitions)
-rho.test <- 0.1 #baseline parameter between 0 and 1 
-rho <- .25
-#THIS IS CODED FOR local L 1 MOVES ONLY.
-epsilon.test <- 1.2 #represents what sort of changes in stage we're willing to admit
-which.cut.test <- 3#what varaible are we concerned with
-stage.key <- cega.stage.key
-n.monitor <- 50 #number of observations to include in the monitor
- #this will be looped over
 
-##GET THE MARKOV TRANSITION PROBABILITIES
-possible.colorings <- listParts(dim(stage.key[[which.cut]])[1])##removin the one where no one gets a color
+one.step.forecast <- function(rho, epsilon, which.cut,stage.key, n.monitor, crrnt.stg){
+
+  possible.colorings <- listParts(dim(stage.key[[which.cut]])[1])##removin the one where no one gets a color
 num.partitions <- as.vector(unlist(lapply(possible.colorings, function(x){length(x)})))
 
-crrnt.stg <- 15 #should be initialized by the chain event graph
-p.monitor <- rep(0, n.monitor-4)
+  p.monitor <- rep(0, n.monitor-4)
 change.points <- c()
 for (t in 5:n.monitor){
   df.cut <- df[1:t,]
@@ -143,16 +134,5 @@ if (length(idx.fine)==0) {hasse.fine <- c()
   p.monitor[t] <- a*b
 #  }
 }
-
-x=1:length(p.monitor)
-pma <- -log(pma)
-pmb <- -log(pmb)
-pm <- as.data.frame(cbind(x,(pma),pmb))
-ggplot(pm[-(1:5),]) + geom_point(aes(x, y=pma,color='orange')) + 
-  geom_point(aes(x, y=pmb,color='blue')) +  
-  xlab("Relevant Sample Size") + ylab("Cumulative Logarithmic Plot") + 
-  ggtitle("Stage monitor for life events in CEG A") + #CHANGE THIS
-  theme_bw() +
-  theme(axis.text=element_text(size=22), axis.title=element_text(size=26),title=element_text(size=28))
-ggsave('stageCEGa.png', width=12.1, height=9, units = "in") #AND THIS
-
+return(p.monitor)
+}
