@@ -1,5 +1,5 @@
 
-one.step.forecast <- function(rho, epsilon, which.cut,stage.key, n.monitor, crrnt.stg){
+one.step.forecast <- function(rho, epsilon, df_cut,which.cut,stage.key, n.monitor, crrnt.stg){
 
   possible.colorings <- listParts(dim(stage.key[[which.cut]])[1])##removin the one where no one gets a color
 num.partitions <- as.vector(unlist(lapply(possible.colorings, function(x){length(x)})))
@@ -7,7 +7,7 @@ num.partitions <- as.vector(unlist(lapply(possible.colorings, function(x){length
   p.monitor <- rep(0, n.monitor-4)
 change.points <- c()
 for (t in 5:n.monitor){
-  df.cut <- df[1:t,]
+  df.cut <- df_cut[1:t,]
   
   #for (s in 1:length(possible.colorings)){ 
   idx.coarse <- which(num.partitions==length(possible.colorings[[crrnt.stg]])-1)#returs stagings with 2 colors 
@@ -45,7 +45,7 @@ if (length(idx.fine)==0) {hasse.fine <- c()
   p.trans[idx.coarse[hasse.coarse==TRUE]] <- (1/B)*(1-rho)
   p.trans[idx.fine[hasse.fine==TRUE]] <- (1/B)*(1-rho)
   p.trans[crrnt.stg] <- rho
-  
+  print(p.trans)
   current.stage <- crrnt.stg#idx[crrnt.stg]
   possible.stage <- c(idx.coarse[hasse.coarse==TRUE],idx.fine[hasse.fine==TRUE])
   crrnt.stg <- ifelse(p.trans[crrnt.stg]==p.trans[which(p.trans==max(p.trans))[1]], crrnt.stg, which(p.trans==max(p.trans))[1])
@@ -60,11 +60,11 @@ if (length(idx.fine)==0) {hasse.fine <- c()
       clr <- possible.colorings[[(possible.stage[i])]];
     }#partition of interest
   
-    n <- prod(apply(df, 2, function(x){length(levels(as.factor(x)))})) #total number of pathways in the CEG 
+    n <- prod(apply(df_cut, 2, function(x){length(levels(as.factor(x)))})) #total number of pathways in the CEG 
     p.stgng <- rep(0, length(clr))#total number of groups in the partition
     for (j in 1:length(clr)){# loop over number of colors in proposed staging
       #find ref prior for the 
-        another.n <- length(levels(as.factor(df[,which.cut])))
+        another.n <- length(levels(as.factor(df_cut[,which.cut])))
         alpha.bar <- rep(n/(dim(stage.key[[which.cut]])[1]), another.n)*length(clr[[j]])/another.n
         
         in.paths<-stage.key[[which.cut]][(clr[[j]]),]#id the incoming pathways
@@ -75,7 +75,7 @@ if (length(idx.fine)==0) {hasse.fine <- c()
         for (l in 1:length(clr[[j]])){
           df_cuts[[l]] <- df.cut
           for(m in 1:(length(colnames(stage.key[[which.cut]]))-2)){
-            df_cuts[[l]] <- filter(df_cuts[[l]], UQ(sym(colnames(df_cut)[l]))==unlist(stage.key[[which.cut]][m,clr[[j]][l]]))#filter according to the matching indices 
+            df_cuts[[l]] <- filter(df_cuts[[l]], UQ(sym(colnames(df_cut)[m]))==unlist(stage.key[[which.cut]][clr[[j]][l],m]))#filter according to the matching indices 
           }
         }
         df_paths <- do.call(rbind, df_cuts)
@@ -97,7 +97,7 @@ if (length(idx.fine)==0) {hasse.fine <- c()
   
   
   clr <- possible.colorings[[current.stage]]
-  n <- prod(apply(df, 2, function(x){length(levels(as.factor(x)))})) #total number of pathways in the CEG 
+  n <- prod(apply(df_cut, 2, function(x){length(levels(as.factor(x)))})) #total number of pathways in the CEG 
   p.stgng <- rep(0, length(clr))#total number of groups in the partition
   #sampling and the parameter distribution 
   for (j in 1:length(clr)){# loop over number of colors in proposed staging
@@ -113,9 +113,9 @@ if (length(idx.fine)==0) {hasse.fine <- c()
     for (l in 1:length(clr[[j]])){
       df_cuts[[l]] <- df.cut
       for(m in 1:(length(colnames(stage.key[[which.cut]]))-2)){
-        df_cuts[[l]] <- filter(df_cuts[[l]], UQ(sym(colnames(df_cut)[l]))==unlist(stage.key[[which.cut]][m,clr[[j]][l]]))#filter according to the matching indices 
+        df_cuts[[l]] <- filter(df_cuts[[l]], UQ(sym(colnames(df_cut)[m]))==unlist(stage.key[[which.cut]][clr[[j]][l],m]))#filter according to the matching indices 
       }
-    }
+}
     df_paths <- do.call(rbind, df_cuts)
     # df_paths <- filter(df_paths,Economic==cndtnl.stage.val) 
     obsv.stage.count <- count(df_paths,UQ(sym(colnames(df_paths)[which.cut])))#how many counts we observe in each stage
