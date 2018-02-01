@@ -79,25 +79,53 @@ bn.parent.child.monitor <- function(df, parents, parent.values, child, n=50, lea
   Em <- rep(NA, n)
   Vm <- rep(NA, n)
   p <- rep(NA, n)
-  
-  for (i in 1:n){
-    
-    df_cut <- df[1:i,] 
-    #for each parent, filter it off 
-    for (j in 1: length(parents)){
-      df_cut <- filter(df_cut, UQ(sym(parents[j])) == parent.values[j])   
+  if(learn==FALSE){
+    for (i in 1:n){
+      
+      df_cut <- df[1:i,] 
+      #for each parent, filter it off 
+      for (j in 1: length(parents)){
+        df_cut <- filter(df_cut, UQ(sym(parents[j])) == parent.values[j])   
+      }
+      
+      df_cut %>% count(!!c.sym) -> counts.tbl
+      counts = counts.tbl$n 
+      counts <- rep(0,length(prior))
+      counts[as.numeric(rownames(counts.tbl))] <-counts.tbl$n
+      
+      p[i] = (lgamma(sum(prior)) + sum(lgamma(prior+counts)) - (sum(lgamma(prior)) + lgamma(sum(prior)+sum(counts))))#logprobability
+      #compute the z statistics
+      Sm[i]=-p[i]
+      Em[i]=sum((prior/sum(prior))*sum(counts))#expected value
+      Vm[i] = (sum(counts)*((sum(counts)+sum(prior))/(1+sum(prior))))*(prior/sum(prior))*(1-(prior/sum(prior)))
+      #Zm[i]=sum(na.omit(Sm)) - sum(na.omit(Em)) / sqrt(sum(na.omit(Vm)))
     }
-    
-    df_cut %>% count(!!c.sym) -> counts.tbl
-    counts = counts.tbl$n 
-    
-    p[i] = (lgamma(sum(prior)) + sum(lgamma(prior+counts)) - (sum(lgamma(prior)) + lgamma(sum(prior)+sum(counts))))#logprobability
-    #compute the z statistics
-    Sm[i]=-p[i]
-    Em[i]=sum((prior/sum(prior))*sum(counts))#expected value
-    Vm[i] = (sum(counts)*((sum(counts)+sum(prior))/(1+sum(prior))))*(prior/sum(prior))*(1-(prior/sum(prior)))
-    #Zm[i]=sum(na.omit(Sm)) - sum(na.omit(Em)) / sqrt(sum(na.omit(Vm)))
   }
+  
+  else{
+    for (i in 1:n){
+      
+      df_cut <- df[1:i,] 
+      #for each parent, filter it off 
+      for (j in 1: length(parents)){
+        df_cut <- filter(df_cut, UQ(sym(parents[j])) == parent.values[j])   
+      }
+      
+      df_cut %>% count(!!c.sym) -> counts.tbl
+      counts = counts.tbl$n 
+      counts <- rep(0,length(prior))
+      counts[as.numeric(rownames(counts.tbl))] <-counts.tbl$n
+      
+      p[i] = (lgamma(sum(prior)) + sum(lgamma(prior+counts)) - (sum(lgamma(prior)) + lgamma(sum(prior)+sum(counts))))#logprobability
+      #compute the z statistics
+      Sm[i]=-p[i]
+      Em[i]=sum((prior/sum(prior))*sum(counts))#expected value
+      Vm[i] = (sum(counts)*((sum(counts)+sum(prior))/(1+sum(prior))))*(prior/sum(prior))*(1-(prior/sum(prior)))
+      #Zm[i]=sum(na.omit(Sm)) - sum(na.omit(Em)) / sqrt(sum(na.omit(Vm)))
+      prior=prior+counts
+    }    
+  }
+  
   Zm = Sm-Em /sqrt(Vm)
   results <-data.frame(cbind(Sm, Zm, Em, Vm))
   colnames(results) <- c("Sm", "Zm", "Em", "Vm")

@@ -7,7 +7,7 @@ df <- read.csv("df.net.w.names.csv")
 
 colnames(df)
 
-df <- df[-which(is.na(df$Total.Meals)==T),c(9,11,18,19)]
+df <-df[-which(is.na(df$Total.Meals)==T),c(9,11,18,19)]
 df <- df[-which(is.na(df$Public.Transport)==T),]
 df$Total.Meals[which(df$Total.Meals=="Med")] <- "High"
 df$Total.Meals <- factor(df$Total.Meals)
@@ -18,12 +18,9 @@ fit <- network(df)
 bn.prior <- jointprior(fit,600)
 getnetwork(learn(fit,df,bn.prior))->bn.fit
 bn.hisc <- autosearch(bn.fit,df,bn.prior,trace=F,removecycles = T)
-plot(getnetwork(bn.hisc))
+bn <- getnetwork(bn.hisc)
+plot(bn)
 
-#change the
-bn.adj <- getnetwork(remover(bn.hisc,2,1,bn.hisc,bn.prior))
-bn.adj <- getnetwork(insert(bn.adj,1,2,bn.hisc,bn.prior))
-rats.nw3 <- getnetwork(insert(rats.nw2,1,2,rats,rats.prior))
 
 #find the CEG
 df <- CheckAndCleanData(df)
@@ -85,17 +82,62 @@ ceg.child.parent.monitor(df,"cega.w5",3,"cega.w2",cega.stages,cega.stage.key,ceg
 ceg.child.parent.monitor(df,"cega.w5",3,"cega.w2",cega.stages,cega.stage.key,cega.struct, n=500,learn=F) -> pach25;lines(pach25[,1])
 ceg.child.parent.monitor(df,"cega.w7",4,"cega.w3",cega.stages,cega.stage.key,cega.struct, n=500,learn=T) -> pach37;plot(pach25[,1])
 ceg.child.parent.monitor(df,"cega.w7",4,"cega.w3",cega.stages,cega.stage.key,cega.struct, n=500,learn=F) -> pach37;lines(pach25[,1])
-ceg.child.parent.monitor(df,"cega.w8",4,"cega.w4",cega.stages,cega.stage.key,cega.struct, n=500,learn=T) -> pach48
-plot(pach48[,1])
+ceg.child.parent.monitor(df,"cega.w8",4,"cega.w4",cega.stages,cega.stage.key,cega.struct, n=500,learn=T) -> pach48;plot(pach48[,1])
+ceg.child.parent.monitor(df,"cega.w8",4,"cega.w4",cega.stages,cega.stage.key,cega.struct, n=500,learn=F) -> pach48;lines(pach48[,1])
 
 #help for troubleshooting
 stages=cega.stages; struct=cega.struct; stage.key=cega.stage.key;target.stage="cega.w8";target.cut=4;condtnl.stage="cega.w4"
+#line for troubleshooting
+parents=c("SFSP.Kitchens","Media","Public.Transport");parent.values = c("No","Low","Yes");child = "Public.Transport"
 
-#
-bnTl <-bn.parent.child.monitor(df,parents=c("SFSP.Kitchens","Media","Public.Transport"),parent.values = c("No","Low","Yes"),child = "Public.Transport",n=500,learn=F)
+#copmarison of w8 | w4
+ceg.child.parent.monitor(df,"cega.w8",4,"cega.w4",cega.stages,cega.stage.key,cega.struct, n=500,learn=T) -> pach48l
+ceg.child.parent.monitor(df,"cega.w8",4,"cega.w4",cega.stages,cega.stage.key,cega.struct, n=500,learn=F) -> pach48;
+bnTl <-bn.parent.child.monitor(df,parents=c("SFSP.Kitchens","Media","Public.Transport"),parent.values = c("No","Low","Yes"),child = "Total.Meals",n=500,learn=F)
+bnT <-bn.parent.child.monitor(df,parents=c("SFSP.Kitchens","Media","Public.Transport"),parent.values = c("No","Low","Yes"),child = "Total.Meals",n=500,learn=T)
+#plottin
+plot(pach48[,1],col='red',pch=18)
+lines(pach48l[,1], col='red',pch=19)
+lines(bnTl[,1],col='blue',pch=18)
+plot(bnT[,1],col='blue',pch=19)
+
+
+#copmarison of w7 | w4
+ceg.child.parent.monitor(df,"cega.w7",4,"cega.w4",cega.stages,cega.stage.key,cega.struct, n=500,learn=T) -> pach47l
+ceg.child.parent.monitor(df,"cega.w7",4,"cega.w4",cega.stages,cega.stage.key,cega.struct, n=500,learn=F) -> pach47;
+bnTl <-bn.parent.child.monitor(df,parents=c("SFSP.Kitchens","Media","Public.Transport"),parent.values = c("No","Low","No"),child = "Total.Meals",n=500,learn=F)
+bnT <-bn.parent.child.monitor(df,parents=c("SFSP.Kitchens","Media","Public.Transport"),parent.values = c("No","Low","No"),child = "Total.Meals",n=500,learn=T)
+#plottin
+
+#with learning
+plot(bnTl[,1],col='blue',pch=18,type='b')
+lines(pach47l[,1], col='red',pch=19,type='b')
+legend("topleft", legend=c("CEG", "BN"),
+       col=c("red", "blue"), lty = 1:2, cex=0.8)
+#without learning
+plot(bnT[,1],col='blue',pch=19)
+lines(pach47[,1],col='red',pch=18, type='b')
+legend("topleft", legend=c("CEG", "BN"),
+       col=c("red", "blue"), lty = 1:2, cex=0.8)
+
+#comparison of w3| w1 
+ceg.child.parent.monitor(df,"cega.w3",3,"cega.w1",cega.stages,cega.stage.key,cega.struct, n=500,learn=T) -> pach13;plot(pach13[,1])
+ceg.child.parent.monitor(df,"cega.w3",3,"cega.w1",cega.stages,cega.stage.key,cega.struct, n=500,learn=F) -> pach13;lines(pach13[,1])
+bnTl <-bn.parent.child.monitor(df,parents=c("SFSP.Kitchens","Media"),parent.values = c("No","High"),child = "Public.Transport",n=500,learn=F)
 plot(bnTl[,1])
-bnT <-bn.parent.child.monitor(df,parents=c("SFSP.Kitchens","Media","Public.Transport"),parent.values = c("No","High","Yes"),child = "Public.Transport",n=500,learn=T)
+bnT <-bn.parent.child.monitor(df,parents=c("SFSP.Kitchens","Media"),parent.values = c("No","High"),child = "Public.Transport",n=500,learn=T)
 lines(bnT[,1])
+#line for troubleshooting
+parents=c("SFSP.Kitchens","Media");parent.values = c("No","Low");child = "Public.Transport"
+
+#comparison of w5|w2
+ceg.child.parent.monitor(df,"cega.w5",3,"cega.w2",cega.stages,cega.stage.key,cega.struct, n=500,learn=T) -> pach25l;plot(pach25l[,1])
+ceg.child.parent.monitor(df,"cega.w5",3,"cega.w2",cega.stages,cega.stage.key,cega.struct, n=500,learn=F) -> pach25;lines(pach25[,1])
+bnTl <-bn.parent.child.monitor(df,parents=c("SFSP.Kitchens","Media"),parent.values = c("Yes","High"),child = "Public.Transport",n=500,learn=F)
+plot(bnTl[,1])
+bnT <-bn.parent.child.monitor(df,parents=c("SFSP.Kitchens","Media"),parent.values = c("Yes","High"),child = "Public.Transport",n=500,learn=T)
+lines(bnT[,1])
+
 
 #run the one step ahead prediction forecasts 
 which.cut=4

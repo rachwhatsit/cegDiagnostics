@@ -31,7 +31,8 @@ get.ref.prior <- function(df, struct, cuts, stage.key,stages) { #returns the ref
       ref.prior.idx <- unlist(lapply(stages.of.interest, function(x){as.numeric(substr(x,nchar(x),nchar(x)))+1}))#gives the stage number, because of weird indexing, want 
       #^this is actually the stage index
       numtor <- sum(sapply(ref.prior[ref.prior.idx], FUN = `[[`, 1))#the 2 here is the index of the cut that we want it to pull out of the prior lists.
-      denom <- dim(struct[[counter]])[1]#number of outgoing edges
+      #denom <- dim(struct[[counter]])[1]#number of outgoing edges
+      denom <- length(levels(df[[colnames(struct[[9]][1])]]))
       ref.prior[[counter]] <- rep(numtor/denom, denom)
       #   print(ref.prior[[counter]])
     }
