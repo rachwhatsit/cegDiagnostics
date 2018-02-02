@@ -138,7 +138,6 @@ plot(bnTl[,1])
 bnT <-bn.parent.child.monitor(df,parents=c("SFSP.Kitchens","Media"),parent.values = c("Yes","High"),child = "Public.Transport",n=500,learn=T)
 lines(bnT[,1])
 
-
 #run the one step ahead prediction forecasts 
 which.cut=4
 possible.colorings <- listParts(dim(stage.key[[which.cut]])[1])##removin the one where no one gets a color#to get current stage,
@@ -146,3 +145,43 @@ xM <- one.step.forecast(rho = 0.8,epsilon = 1.2,df,which.cut = 2,stage.key = ceg
 xT <- one.step.forecast(rho = 0.8,epsilon = 1.2,df,which.cut = 3,stage.key = cega.stage.key,n.monitor = 50,crrnt.stg = 14);plot(xT)
 #to do: figure out what staging is the right one when we have lots of partitions to search 
 xmls <- one.step.forecast(rho = 0.8,epsilon = 1.2,df,which.cut = 4,stage.key = cega.stage.key,n.monitor = 50,crrnt.stg = 14);plot(xmls)
+
+##create a new CEG with the cuts combined
+
+#create a new variable called access
+df.b <-df
+df.b$Access <- rep("Low", length(df.b$SFSP.Kitchens))
+df.b$Access[which(df.b$SFSP.Kitchens=="No" & df.b$Media=="High")] <- "Medium"
+df.b$Access[which(df.b$SFSP.Kitchens=="Yes")] <- "High"
+df.b$Access=factor(df.b$Access)
+df.b <- df.b[,c(5,3,4)]
+summary(df.b)
+
+cegb.stage.key <- list()
+count(df.b) -> cegb.stage.key[[1]]
+df.b %>% count(Access) -> cegb.stage.key[[2]]
+df.b %>% count(Access, Public.Transport) -> cegb.stage.key[[3]]
+df.b %>% count(Access, Public.Transport,Total.Meals ) -> cegb.stage.key[[4]]
+#define a stage key for each cut in the data
+#Q: how does this change for asymmetries?
+cegb.stage.key[[1]]$stage <- c("cegb.w0")
+cegb.stage.key[[2]]$stage <- c("cegb.w1", "cegb.w2", "cegb.w3")
+cegb.stage.key[[3]]$stage <- c("cegb.w6", "cegb.w6", "cegb.w5", "cegb.w4", "cegb.w6", "cegb.w5")
+cegb.stage.key[[4]]$stage <- rep("cegb.winf", length(cegb.stage.key[[5]]$n))
+
+cegb.stages <- list("cegb.w0", "cegb.w1", "cegb.w2", "cegb.w3", "cegb.w4", "cegb.w5", "cegb.w6", "cegb.w7", "cegb.w8")
+
+cegb.w0 <- df.b %>% count(SFSP.Kitchens)
+cegb.w1 <- df.b %>% filter(SFSP.Kitchens=="No") %>% count(Media)
+cegb.w2 <- df.b %>% filter(SFSP.Kitchens=="Yes") %>% count(Media)
+cegb.w3 <- df.b %>% filter(SFSP.Kitchens=="No", Media=="Low") %>% count(Public.Transport)
+cegb.w4 <- df.b %>% filter(SFSP.Kitchens=="No", Media=="High") %>% count(Public.Transport)
+cegb.w5 <- df.b %>% filter((SFSP.Kitchens=="Yes"& Media=="High") | (SFSP.Kitchens=="Yes"& Media=="Low")) %>% count(Public.Transport)
+cegb.w6 <- df.b %>% filter((SFSP.Kitchens=="No"& Media=="High" & Public.Transport=="No") |
+                           (SFSP.Kitchens=="Yes"& Media=="High" & Public.Transport=="No") |
+                           (SFSP.Kitchens=="Yes"& Media=="Low" & Public.Transport=="No") |
+                           (SFSP.Kitchens=="Yes"& Media=="Low" & Public.Transport=="Yes") ) %>% count(Total.Meals)
+cegb.w7 <- df.b %>% filter((SFSP.Kitchens=="No" & Media=="High"  & Public.Transport=="Yes") |  
+                           (SFSP.Kitchens=="No" & Media=="Low"  & Public.Transport=="No")) %>% count(Total.Meals)
+cegb.w8 <- df.b %>% filter((SFSP.Kitchens=="No" & Media=="Low"  & Public.Transport=="Yes")) %>% count(Total.Meals)
+cegb.struct <- list(cegb.w0, cegb.w1, cegb.w2, cegb.w3, cegb.w4, cegb.w5, cegb.w6, cegb.w7, cegb.w8)#this is the observed values for each of the stages

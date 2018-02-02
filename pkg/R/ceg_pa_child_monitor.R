@@ -92,7 +92,7 @@ ceg.child.parent.monitor <- function(df, target.stage, target.cut, condtnl.stage
         df_cuts <- list()
         for (j in 1:length(in.path.idx)){
           df_cuts[[j]] <- df_paths.cnd
-          for(k in (length(colnames(stage.key[[target.cut-1]]))-1):(length(colnames(stage.key[[target.cut]]))-2)){
+          for(k in (length(colnames(stage.key[[target.cut-1]]))-1):(length(colnames(stage.key[[target.cut]]))-1)){
             df_cuts[[j]] <- filter(df_cuts[[j]], UQ(sym(colnames(df_cut)[k]))==as.character(unlist(stage.key[[target.cut]][in.path.idx[j],k]) ))#filter according to the matching indices 
           }
         }
