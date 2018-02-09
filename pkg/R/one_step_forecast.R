@@ -45,11 +45,11 @@ if (length(idx.fine)==0) {hasse.fine <- c()
   p.trans[idx.coarse[hasse.coarse==TRUE]] <- (1/B)*(1-rho)
   p.trans[idx.fine[hasse.fine==TRUE]] <- (1/B)*(1-rho)
   p.trans[crrnt.stg] <- rho
-  print(p.trans)
+  #print(p.trans)
   current.stage <- crrnt.stg#idx[crrnt.stg]
   possible.stage <- c(idx.coarse[hasse.coarse==TRUE],idx.fine[hasse.fine==TRUE])
   crrnt.stg <- ifelse(p.trans[crrnt.stg]==p.trans[which(p.trans==max(p.trans))[1]], crrnt.stg, which(p.trans==max(p.trans))[1])
-  print(crrnt.stg)
+  #print(crrnt.stg)
   if(current.stage != crrnt.stg) {change.points <- c(change.points, t)}
    p2 <- rep(0, length(possible.stage)+1)
   #staging distributions
@@ -125,12 +125,12 @@ if (length(idx.fine)==0) {hasse.fine <- c()
       counts <- obsv.stage.count$n
     }
     alpha.star <-alpha.bar + counts
-    p.stgng[j] <- lgamma(sum(alpha.bar))-lgamma(sum(alpha.star)) + sum(lgamma(alpha.star) - lgamma(alpha.bar))
+    p.stgng[j] <- lgamma(sum(alpha.bar))-lgamma(sum(alpha.star)) + sum(lgamma(alpha.star) - sum(lgamma(alpha.bar)))
     
   }
   exp(p.stgng)
   a <- sum(p.trans[c(possible.stage,current.stage)] * p2.exp) #gives the probability of transitioning to another local stage
-  b <- prod(exp(p.stgng))
+  b <- exp(sum(p.stgng))
   p.monitor[t] <- a*b
 #  }
 }

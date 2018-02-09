@@ -74,16 +74,42 @@ ceg.child.parent.monitor(df,"cega.w1",2,"cega.w0",cega.stages,cega.stage.key,ceg
 ceg.child.parent.monitor(df,"cega.w1",2,"cega.w0",cega.stages,cega.stage.key,cega.struct, n=500,learn=F) -> pach01;lines(pach01[,1])
 ceg.child.parent.monitor(df,"cega.w2",2,"cega.w0",cega.stages,cega.stage.key,cega.struct, n=500,learn=T) -> pach02;plot(pach02[,1])
 ceg.child.parent.monitor(df,"cega.w2",2,"cega.w0",cega.stages,cega.stage.key,cega.struct, n=500,learn=F) -> pach02;lines(pach02[,1])
-ceg.child.parent.monitor(df,"cega.w3",3,"cega.w1",cega.stages,cega.stage.key,cega.struct, n=500,learn=T) -> pach13;plot(pach13[,1])
+ceg.child.parent.monitor(df,"cega.w3",3,"cega.w1",cega.stages,cega.stage.key,cega.struct, n=500,learn=T) -> pach13l;plot(pach13l[,1])
 ceg.child.parent.monitor(df,"cega.w3",3,"cega.w1",cega.stages,cega.stage.key,cega.struct, n=500,learn=F) -> pach13;lines(pach13[,1])
 ceg.child.parent.monitor(df,"cega.w4",3,"cega.w1",cega.stages,cega.stage.key,cega.struct, n=500,learn=T) -> pach14;plot(pach14[,1])
 ceg.child.parent.monitor(df,"cega.w4",3,"cega.w1",cega.stages,cega.stage.key,cega.struct, n=500,learn=F) -> pach14;lines(pach14[,1])
 ceg.child.parent.monitor(df,"cega.w5",3,"cega.w2",cega.stages,cega.stage.key,cega.struct, n=500,learn=T) -> pach25;plot(pach25[,1])
 ceg.child.parent.monitor(df,"cega.w5",3,"cega.w2",cega.stages,cega.stage.key,cega.struct, n=500,learn=F) -> pach25;lines(pach25[,1])
-ceg.child.parent.monitor(df,"cega.w7",4,"cega.w3",cega.stages,cega.stage.key,cega.struct, n=500,learn=T) -> pach37;plot(pach25[,1])
-ceg.child.parent.monitor(df,"cega.w7",4,"cega.w3",cega.stages,cega.stage.key,cega.struct, n=500,learn=F) -> pach37;lines(pach25[,1])
+ceg.child.parent.monitor(df,"cega.w7",4,"cega.w3",cega.stages,cega.stage.key,cega.struct, n=500,learn=T) -> pach37;plot(pach37[,1])
+ceg.child.parent.monitor(df,"cega.w7",4,"cega.w3",cega.stages,cega.stage.key,cega.struct, n=500,learn=F) -> pach37;lines(pach37[,1])
 ceg.child.parent.monitor(df,"cega.w8",4,"cega.w4",cega.stages,cega.stage.key,cega.struct, n=500,learn=T) -> pach48;plot(pach48[,1])
 ceg.child.parent.monitor(df,"cega.w8",4,"cega.w4",cega.stages,cega.stage.key,cega.struct, n=500,learn=F) -> pach48;lines(pach48[,1])
+
+library(ggplot2)
+ggplot(pach13l, aes(x=1:500,y=Sm,color='With Learning')) + 
+  geom_line() + 
+  geom_line(data= pach13, aes(color= 'Without Learning')) +
+  ggtitle('Floret Monitor for stage w3 | w1') + 
+  xlab('') + ylab('Cumulative Log Penalty') +
+  theme(panel.background = element_blank())
+ggsave('C://Users/rachel/Documents/diagpaper/pachw31.jpeg')
+
+pach13l$Em <- exp(-pach13l$Sm)*pach13l$Sm
+pach13l$Vm <- exp(-pach13l$Sm)*(pach13l$Sm)^2 -(pach13l$Em)^2
+pach13l$Zm <- (pach13l$Sm - pach13l$Em )/sqrt(pach13l$Vm)
+
+pach13$Em <- exp(-pach13$Sm)*pach13$Sm
+pach13$Vm <- exp(-pach13$Sm)*(pach13$Sm)^2 - (pach13$Em)^2
+pach13$Zm <- (pach13$Sm - pach13$Em )/sqrt(pach13$Vm)
+
+ggplot(pach13l[1:150,], aes(x=1:150,y=Zm,color='With Learning')) + 
+  geom_line() + 
+  geom_line(data= pach13[1:150,], aes(color= 'Without Learning')) +
+  ggtitle('Floret Monitor for stage w3 | w1') + 
+  xlab('') + ylab('Standardized Test Statistic') +
+  theme(panel.background = element_blank())
+ggsave('C://Users/rachel/Documents/diagpaper/pachw31z.jpeg')
+
 
 #help for troubleshooting
 stages=cega.stages; struct=cega.struct; stage.key=cega.stage.key;target.stage="cega.w8";target.cut=4;condtnl.stage="cega.w4"
@@ -141,11 +167,39 @@ lines(bnT[,1])
 #run the one step ahead prediction forecasts 
 which.cut=4
 possible.colorings <- listParts(dim(stage.key[[which.cut]])[1])##removin the one where no one gets a color#to get current stage,
-xM <- one.step.forecast(rho = 0.8,epsilon = 1.2,df,which.cut = 2,stage.key = cega.stage.key,n.monitor = 50,crrnt.stg = 2);plot(xM)
-xT <- one.step.forecast(rho = 0.8,epsilon = 1.2,df,which.cut = 3,stage.key = cega.stage.key,n.monitor = 50,crrnt.stg = 14);plot(xT)
+#troubleshoot
+rho=0.8; epsilon=1.2;which.cut=3;stage.key=cega.stage.key;n.monitor=50;crrnt.stg=14;
+xM <- one.step.forecast(rho = 0.8,epsilon = 1.2,df,which.cut = 2,stage.key = cega.stage.key,n.monitor = 500,crrnt.stg = 1);plot(-log(xM))
+xT <- one.step.forecast(rho = 0.8,epsilon = 1.2,df,which.cut = 3,stage.key = cega.stage.key,n.monitor = 500,crrnt.stg = 14);plot(-log(xT))
 #to do: figure out what staging is the right one when we have lots of partitions to search 
-xmls <- one.step.forecast(rho = 0.8,epsilon = 1.2,df,which.cut = 4,stage.key = cega.stage.key,n.monitor = 50,crrnt.stg = 14);plot(xmls)
+xmls <- one.step.forecast(rho = 0.8,epsilon = 1.2,df,which.cut = 4,stage.key = cega.stage.key,n.monitor = 500,crrnt.stg = 14);plot(-log(xmls))
 
+ggplot(pach13l, aes(x=1:500,y=Sm,color='With Learning')) + 
+  geom_line() + 
+  geom_line(data= pach13, aes(color= 'Without Learning')) +
+  ggtitle('Floret Monitor for stage w3 | w1') + 
+  xlab('') + ylab('Cumulative Log Penalty') +
+  theme(panel.background = element_blank())
+ggsave('C://Users/rachel/Documents/diagpaper/pachw31.jpeg')
+
+
+#find the BF of the model
+stages=cega.stages; prior=ref.prior()
+N <- list(c(374, 79),
+          c(335,39),
+          c(66,13),
+          c(37,2),
+          c(314,21),
+          c(76,3),
+          c(71,45),
+          c(2,28),
+          c(0,21))
+bf <- c()
+for (i in 1:length(stages)){
+  prior.vec <-unlist(prior[i])
+  counts <- unlist(N[i])
+  bf[i] <-lgamma(sum(prior.vec) + sum(lgamma(prior.vec+counts)) - (lgamma(sum(prior.vec)+sum(counts)) + sum(lgamma(prior.vec))))
+}
 ##create a new CEG with the cuts combined
 
 #create a new variable called access
@@ -185,3 +239,13 @@ cegb.w7 <- df.b %>% filter((SFSP.Kitchens=="No" & Media=="High"  & Public.Transp
                            (SFSP.Kitchens=="No" & Media=="Low"  & Public.Transport=="No")) %>% count(Total.Meals)
 cegb.w8 <- df.b %>% filter((SFSP.Kitchens=="No" & Media=="Low"  & Public.Transport=="Yes")) %>% count(Total.Meals)
 cegb.struct <- list(cegb.w0, cegb.w1, cegb.w2, cegb.w3, cegb.w4, cegb.w5, cegb.w6, cegb.w7, cegb.w8)#this is the observed values for each of the stages
+
+bf <- function(prior, counts){
+  lgamma(sum(prior))+sum(lgamma(prior+counts))-(lgamma(sum(prior+counts)) + sum(lgamma(prior)))
+}
+prior <- c(3,3);counts <- c(5,5);prior.ui <- bf(prior,counts)
+prior <- c(2,2,2);counts <- c(2,4,6);prior.uj <- bf(prior,counts)
+prior <- c(1,1,1);counts <- c(2,4,6);prior.uk <- bf(prior,counts)
+prior.ui + prior.uj
+prior.uk
+prior.uj
