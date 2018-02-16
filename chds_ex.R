@@ -1,6 +1,7 @@
 #CHDS
-
-setwd("/Users/hoban/Documents/diagnostics/diagnostics")
+library(ggplot2)
+library(tidyverse)
+setwd("C:/Users/rachel/Documents/diagnostics/")
 df<-read.csv(file = "CHDS.latentexample1.csv")
 radical <- read.csv(file= "data1.csv")
 
@@ -44,6 +45,8 @@ cega.stage.key[[2]]$stage <- c("cega.w1", "cega.w2")
 cega.stage.key[[3]]$stage <- c("cega.w3", "cega.w4", "cega.w5", "cega.w6")
 cega.stage.key[[4]]$stage <- c("cega.w8", "cega.w7", "cega.w9", "cega.w8", "cega.w7", "cega.w9", "cega.w9", "cega.w8", "cega.w9", "cega.w9", "cega.w8", "cega.w9")#this contains the structure
 cega.stage.key[[5]]$stage <- rep("cega.winf", length(cega.stage.key[[5]]$n))
+
+#######################################CEG B  
 ##THIS IS FOR CEG-b
 cegb.w0 <- df %>% count(Social)
 cegb.w1 <- df %>% filter(Social=="High") %>% count(Economic)
@@ -88,3 +91,71 @@ cegb.stages <- list("cegb.w0", "cegb.w1", "cegb.w2", "cegb.w3", "cegb.w4", "cegb
 stages=cegb.stages; struct=cegb.struct; stage.key=cegb.stage.key
 stages=cega.stages; struct=cega.struct; stage.key=cega.stage.key
 
+##############
+
+ceg.pachL <- ceg.child.parent.monitor(df, target.stage="cega.w3",condtnl.stage = "cega.w1",
+                                                       target.cut=3,stages=cega.stages,
+                                                       stage.key=cega.stage.key,struct=cega.struct,n=500,learn = TRUE)
+ceg.pach <- ceg.child.parent.monitor(df, target.stage="cega.w3",condtnl.stage = "cega.w1",
+                                                       target.cut=3,stages=cega.stages,
+                                                       stage.key=cega.stage.key,struct=cega.struct,n=500,learn = FALSE)
+
+ggplot(ceg.pachL, aes(x=1:500,y=Sm,color='With Learning')) + 
+  geom_line() + 
+  geom_line(data= ceg.pach, aes( color= 'Without Learning')) +
+  ggtitle('Parent child monitor for stage w3 | w1') + 
+  xlab('Relevant Sample Size') + ylab('Cumulative Log Penalty') +
+  theme(panel.background = element_blank())
+ggsave('C://Users/rachel/Documents/diagpaper/chdscegpach.jpeg')
+
+ceg.pachL$Em <- exp(-ceg.pachL$Sm)*ceg.pachL$Sm
+ceg.pachL$Vm <- exp(-ceg.pachL$Sm)*(ceg.pachL$Sm)^2 -(ceg.pachL$Em)^2
+ceg.pachL$Zm <- (ceg.pachL$Sm - ceg.pachL$Em )/sqrt(ceg.pachL$Vm)
+
+ceg.pach$Em <- exp(-ceg.pach$Sm)*ceg.pach$Sm
+ceg.pach$Vm <- exp(-ceg.pach$Sm)*(ceg.pach$Sm)^2 - (ceg.pach$Em)^2
+ceg.pach$Zm <- (ceg.pach$Sm - ceg.pach$Em )/sqrt(ceg.pach$Vm)
+
+ggplot(ceg.pachL[1:10,], aes(x=1:10,y=Zm,color='With Learning')) + 
+  geom_line() + 
+  geom_line(data= ceg.pach[1:10,], aes(color= 'Without Learning')) +
+  ggtitle('Floret Monitor for stage w3 | w1') + 
+  xlab('Relevant Sample Size') + ylab('Standardized Test Statistic') +
+  theme(panel.background = element_blank())
+ggsave('C://Users/rachel/Documents/diagpaper/chdscegpachz.jpeg')
+
+which.cut=2
+possible.colorings <- listParts(dim(stage.key[[which.cut]])[1])##removin the one where no one gets a color
+chds.social <- one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=2,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 1)
+chds.social2 <- one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=2,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 2)
+df.s <- data.frame(cbind(x=1:200, -log(chds.social), -log(chds.social2))); head(df.s)
+ggplot(df.s[-c(1:6),], aes(x, y=V2, color='S(1)')) + 
+  geom_line() + 
+  geom_line(aes(x, y=V3, color='S(2)')) + 
+  ggtitle('CEG Parent Child Monitor') + 
+  xlab('Relevant Sample Size') + ylab('Cumulative Log Penalty') +
+  theme(panel.background = element_blank())
+ggsave('C://Users/rachel/Documents/diagpaper/chdsStageMonitorS.jpeg')
+
+
+possible.colorings <- listParts(dim(stage.key[[which.cut]])[2])##removin the one where no one gets a color
+chds.econ <- -log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 15))
+chds.econ2 <- -log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 14))
+chds.econ3 <- -log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 10))
+chds.econ4 <- -log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 7))
+chds.econ5 <- -log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 2))
+df.e <- data.frame(cbind(1:200,chds.econ,chds.econ2, chds.econ3, chds.econ4, chds.econ5))
+ggplot(df.e[-c(1:4),], aes(V1, y=chds.econ, color='S(15)')) + 
+  geom_line() + 
+  geom_line(aes(V1, y=chds.econ2, color='S(14)')) + 
+  geom_line(aes(V1, y=chds.econ3, color='S(10)')) + 
+  geom_line(aes(V1, y=chds.econ4, color='S(7)')) + 
+  geom_line(aes(V1, y=chds.econ5, color='S(2)')) + 
+  ggtitle('CEG Parent Child Monitor') + 
+  xlab('Relevant Sample Size') + ylab('Cumulative Log Penalty') +
+  theme(panel.background = element_blank())
+ggsave('C://Users/rachel/Documents/diagpaper/chdsStageMonitorE.jpeg')
+
+possible.colorings <- listParts(dim(stage.key[[which.cut]])[2])##removin the one where no one gets a color
+chds.life <- one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 15)
+chds.life2 <- one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 6)

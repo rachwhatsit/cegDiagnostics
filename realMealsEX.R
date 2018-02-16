@@ -80,37 +80,47 @@ ceg.child.parent.monitor(df,"cega.w4",3,"cega.w1",cega.stages,cega.stage.key,ceg
 ceg.child.parent.monitor(df,"cega.w4",3,"cega.w1",cega.stages,cega.stage.key,cega.struct, n=500,learn=F) -> pach14;lines(pach14[,1])
 ceg.child.parent.monitor(df,"cega.w5",3,"cega.w2",cega.stages,cega.stage.key,cega.struct, n=500,learn=T) -> pach25;plot(pach25[,1])
 ceg.child.parent.monitor(df,"cega.w5",3,"cega.w2",cega.stages,cega.stage.key,cega.struct, n=500,learn=F) -> pach25;lines(pach25[,1])
-ceg.child.parent.monitor(df,"cega.w7",4,"cega.w3",cega.stages,cega.stage.key,cega.struct, n=500,learn=T) -> pach37;plot(pach37[,1])
+ceg.child.parent.monitor(df,"cega.w7",4,"cega.w3",cega.stages,cega.stage.key,cega.struct, n=500,learn=T) -> pach37l;plot(pach37l[,1])
 ceg.child.parent.monitor(df,"cega.w7",4,"cega.w3",cega.stages,cega.stage.key,cega.struct, n=500,learn=F) -> pach37;lines(pach37[,1])
 ceg.child.parent.monitor(df,"cega.w8",4,"cega.w4",cega.stages,cega.stage.key,cega.struct, n=500,learn=T) -> pach48;plot(pach48[,1])
 ceg.child.parent.monitor(df,"cega.w8",4,"cega.w4",cega.stages,cega.stage.key,cega.struct, n=500,learn=F) -> pach48;lines(pach48[,1])
 
 library(ggplot2)
-ggplot(pach13l, aes(x=1:500,y=Sm,color='With Learning')) + 
+ggplot(pach37l, aes(x=1:500,y=Sm,color='With Learning')) + 
   geom_line() + 
-  geom_line(data= pach13, aes(color= 'Without Learning')) +
-  ggtitle('Floret Monitor for stage w3 | w1') + 
+  geom_line(data= pach37, aes(color= 'Without Learning')) +
+  ggtitle('Floret Monitor for stage w7 | w3') + 
   xlab('') + ylab('Cumulative Log Penalty') +
   theme(panel.background = element_blank())
-ggsave('C://Users/rachel/Documents/diagpaper/pachw31.jpeg')
+ggsave('C://Users/rachel/Documents/diagpaper/pachw73.jpeg')
 
-pach13l$Em <- exp(-pach13l$Sm)*pach13l$Sm
-pach13l$Vm <- exp(-pach13l$Sm)*(pach13l$Sm)^2 -(pach13l$Em)^2
-pach13l$Zm <- (pach13l$Sm - pach13l$Em )/sqrt(pach13l$Vm)
+pach37l$Em <- exp(-pach37l$Sm)*pach37l$Sm
+pach37l$Vm <- exp(-pach37l$Sm)*(pach37l$Sm)^2 -(pach37l$Em)^2
+pach37l$Zm <- (pach37l$Sm - pach37l$Em )/sqrt(pach37l$Vm)
 
-pach13$Em <- exp(-pach13$Sm)*pach13$Sm
-pach13$Vm <- exp(-pach13$Sm)*(pach13$Sm)^2 - (pach13$Em)^2
-pach13$Zm <- (pach13$Sm - pach13$Em )/sqrt(pach13$Vm)
+pach37$Em <- exp(-pach37$Sm)*pach37$Sm
+pach37$Vm <- exp(-pach37$Sm)*(pach37$Sm)^2 - (pach37$Em)^2
+pach37$Zm <- (pach37$Sm - pach37$Em )/sqrt(pach37$Vm)
 
-ggplot(pach13l[1:150,], aes(x=1:150,y=Zm,color='With Learning')) + 
+ggplot(pach37l[1:150,], aes(x=1:150,y=Zm,color='With Learning')) + 
   geom_line() + 
-  geom_line(data= pach13[1:150,], aes(color= 'Without Learning')) +
-  ggtitle('Floret Monitor for stage w3 | w1') + 
+  geom_line(data= pach37[1:150,], aes(color= 'Without Learning')) +
+  ggtitle('Floret Monitor for stage w7 | w3') + 
   xlab('') + ylab('Standardized Test Statistic') +
   theme(panel.background = element_blank())
-ggsave('C://Users/rachel/Documents/diagpaper/pachw31z.jpeg')
+ggsave('C://Users/rachel/Documents/diagpaper/pachw73z.jpeg')
 
 
+bnTl <-bn.parent.child.monitor(df,parents=c("Public.Transport"),parent.values = c("No"),child = "Total.Meals",n=500,learn=T)
+bnT <-bn.parent.child.monitor(df,parents=c("Public.Transport"),parent.values = c("No"),child = "Total.Meals",n=500,learn=F)
+
+ggplot(bnTl[1:150,],aes(1:150,y=Sm,color='With Learning'))+
+  geom_line()+ 
+  geom_line(data=bnT[1:150,], aes(color='Without Learning')) + 
+  ggtitle('BN Parent Child Monitor') + 
+  xlab('') + ylab('Cumulative Log Penalty') +
+  theme(panel.background = element_blank())
+ggsave('C://Users/rachel/Documents/diagpaper/BNT.jpeg')
 #help for troubleshooting
 stages=cega.stages; struct=cega.struct; stage.key=cega.stage.key;target.stage="cega.w8";target.cut=4;condtnl.stage="cega.w4"
 #line for troubleshooting
@@ -131,8 +141,8 @@ plot(bnT[,1],col='blue',pch=19)
 #copmarison of w7 | w4
 ceg.child.parent.monitor(df,"cega.w7",4,"cega.w4",cega.stages,cega.stage.key,cega.struct, n=500,learn=T) -> pach47l
 ceg.child.parent.monitor(df,"cega.w7",4,"cega.w4",cega.stages,cega.stage.key,cega.struct, n=500,learn=F) -> pach47;
-bnTl <-bn.parent.child.monitor(df,parents=c("SFSP.Kitchens","Media","Public.Transport"),parent.values = c("No","Low","No"),child = "Total.Meals",n=500,learn=F)
-bnT <-bn.parent.child.monitor(df,parents=c("SFSP.Kitchens","Media","Public.Transport"),parent.values = c("No","Low","No"),child = "Total.Meals",n=500,learn=T)
+bnTl <-bn.parent.child.monitor(df,parents=c("Public.Transport"),parent.values = c("Yes"),child = "Total.Meals",n=500,learn=T)
+bnT <-bn.parent.child.monitor(df,parents=c("Public.Transport"),parent.values = c("Yes"),child = "Total.Meals",n=500,learn=F)
 #plottin
 
 #with learning
@@ -165,14 +175,55 @@ bnT <-bn.parent.child.monitor(df,parents=c("SFSP.Kitchens","Media"),parent.value
 lines(bnT[,1])
 
 #run the one step ahead prediction forecasts 
-which.cut=4
+which.cut=3
 possible.colorings <- listParts(dim(stage.key[[which.cut]])[1])##removin the one where no one gets a color#to get current stage,
 #troubleshoot
 rho=0.8; epsilon=1.2;which.cut=3;stage.key=cega.stage.key;n.monitor=50;crrnt.stg=14;
 xM <- one.step.forecast(rho = 0.8,epsilon = 1.2,df,which.cut = 2,stage.key = cega.stage.key,n.monitor = 500,crrnt.stg = 1);plot(-log(xM))
+xM2 <- one.step.forecast(rho = 0.8,epsilon = 1.2,df,which.cut = 2,stage.key = cega.stage.key,n.monitor = 500,crrnt.stg = 2);plot(-log(xM2))
+
 xT <- one.step.forecast(rho = 0.8,epsilon = 1.2,df,which.cut = 3,stage.key = cega.stage.key,n.monitor = 500,crrnt.stg = 14);plot(-log(xT))
+xT2 <- one.step.forecast(rho = 0.8,epsilon = 1.2,df,which.cut = 3,stage.key = cega.stage.key,n.monitor = 500,crrnt.stg = 15);plot(-log(xT2))
+xT3 <- one.step.forecast(rho = 0.8,epsilon = 1.2,df,which.cut = 3,stage.key = cega.stage.key,n.monitor = 500,crrnt.stg = 5);plot(-log(xT3))
+xT4 <- one.step.forecast(rho = 0.8,epsilon = 1.2,df,which.cut = 3,stage.key = cega.stage.key,n.monitor = 500,crrnt.stg = 11);plot(-log(xT4))
+
 #to do: figure out what staging is the right one when we have lots of partitions to search 
 xmls <- one.step.forecast(rho = 0.8,epsilon = 1.2,df,which.cut = 4,stage.key = cega.stage.key,n.monitor = 500,crrnt.stg = 14);plot(-log(xmls))
+
+media.forecast <-data.frame(cbind(1:500,-log(xM),-log(xM2)))
+trans.forecast <- data.frame(cbind(1:500,-log(xT),-log(xT2),-log(xT3),-log(xT4))) 
+meals.forecasts <- as.data.frame(cbind(1:500,-log(xM),-log(xT),-log(xmls)))
+
+#load(theOneWithTheLongPartitionsRun.Rdata)
+ggplot(media.forecast[-(1:4),], aes(x=X1,y=X2,color='S(1)')) + 
+  geom_line()+
+  geom_line(data=media.forecast[-(1:4),], aes(y=X3,color='S(2)'))+
+  ggtitle("Forecast for Media") + ylab("Cumulative Log Penalty")+xlab('Relevant Sample Size')+
+  theme(panel.background = element_blank())
+ggsave('C://Users/rachel/Documents/diagpaper/oneStepFrcstMedia.jpeg')
+
+ggplot(trans.forecast[-(1:4),], aes(x=X1,y=X2,color='S(14)')) + 
+  geom_line()+
+  geom_line(data=trans.forecast[-(1:4),], aes(y=X3,color='S(15)')) +
+  geom_line(data=trans.forecast[-(1:4),], aes(y=X4,color='S(5)')) + 
+  geom_line(data=trans.forecast[-(1:4),], aes(y=X5,color='S(11)')) + 
+ggtitle("Forecast for Transport") + ylab("Cumulative Log Penalty")+xlab('Relevant Sample Size')+
+  theme(panel.background = element_blank())
+ggsave('C://Users/rachel/Documents/diagpaper/oneStepFrcstTrans.jpeg')
+
+
+ggplot(meals.forecasts[-(1:4),], aes(x=V1,y=V3)) + 
+  geom_line()+
+  ggtitle("Forecast for Transport") + ylab("Cumulative Log Penalty")+xlab('')+
+  theme(panel.background = element_blank())
+ggsave('C://Users/rachel/Documents/diagpaper/oneStepFrcstTransport.jpeg')
+
+ggplot(meals.forecasts[-(1:4),], aes(x=V1,y=V4)) + 
+  geom_line()+
+  ggtitle("Forecast for Meals") + ylab("Cumulative Log Penalty")+xlab('')+
+  theme(panel.background = element_blank())
+ggsave('C://Users/rachel/Documents/diagpaper/oneStepFrcstMeals.jpeg')
+
 
 ggplot(pach13l, aes(x=1:500,y=Sm,color='With Learning')) + 
   geom_line() + 
