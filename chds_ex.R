@@ -100,6 +100,28 @@ ceg.pach <- ceg.child.parent.monitor(df, target.stage="cega.w3",condtnl.stage = 
                                                        target.cut=3,stages=cega.stages,
                                                        stage.key=cega.stage.key,struct=cega.struct,n=500,learn = FALSE)
 
+ceg.pach$p <- exp(-log(ceg.pach$Sm))
+brier <- function(x){
+  x <- na.exclude(x)
+  x<- x[!is.infinite(x)]
+  y <- rep(0,length(x))
+  for (i in 1:length(x)){
+    p = x[i]
+    y[i]<-2*p-sum((x[1:i])^2) - 1
+  }
+  return(y)
+}
+
+spherical <- function(x,alpha=2) {
+  x <- na.exclude(x)
+  x <- x[!is.infinite(x)]
+  y <- rep(0,length(x))
+  for(i in 1:length(x)){
+    p = x[i]
+    y[i] = (p^(alpha-1))/((sum(x[1:i]))^((alpha-1)/alpha))
+  }
+}
+
 ggplot(ceg.pachL, aes(x=1:500,y=Sm,color='With Learning')) + 
   geom_line() + 
   geom_line(data= ceg.pach, aes( color= 'Without Learning')) +
@@ -139,7 +161,7 @@ ggsave('C://Users/rachel/Documents/diagpaper/chdsStageMonitorS.jpeg')
 
 
 possible.colorings <- listParts(dim(stage.key[[which.cut]])[2])##removin the one where no one gets a color
-chds.econ <- -log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 15))
+chds.econ <- one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 15)
 chds.econ2 <- -log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 14))
 chds.econ3 <- -log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 10))
 chds.econ4 <- -log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 7))
