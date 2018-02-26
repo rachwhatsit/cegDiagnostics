@@ -7,6 +7,12 @@ df <- read.csv("df.net.w.names.csv")
 
 colnames(df)
 
+zctapop <- read_csv("zctapop.csv")
+test <- merge(x = df,y=zctapop,all.x = T,by.x = "zcta",by.y="zcta")
+test -> df
+df.orig <- df[order(df$pop,decreasing = T),]
+df.orig->df
+
 df <-df[-which(is.na(df$Total.Meals)==T),c(9,11,18,19)]
 df <- df[-which(is.na(df$Public.Transport)==T),]
 df$Total.Meals[which(df$Total.Meals=="Med")] <- "High"
@@ -86,12 +92,13 @@ ceg.child.parent.monitor(df,"cega.w8",4,"cega.w4",cega.stages,cega.stage.key,ceg
 ceg.child.parent.monitor(df,"cega.w8",4,"cega.w4",cega.stages,cega.stage.key,cega.struct, n=500,learn=F) -> pach48;lines(pach48[,1])
 
 library(ggplot2)
-ggplot(pach37l, aes(x=1:500,y=Sm,color='With Learning')) + 
+ggplot(pach37l[1:300,], aes(x=1:300,y=Sm,color='With Learning')) + 
   geom_line() + 
-  geom_line(data= pach37, aes(color= 'Without Learning')) +
+  geom_line(data= pach37[1:300,], aes(color= 'Without Learning')) +
   ggtitle('Floret Monitor for stage w7 | w3') + 
   xlab('') + ylab('Cumulative Log Penalty') +
   theme(panel.background = element_blank())
+
 ggsave('C://Users/rachel/Documents/diagpaper/pachw73.jpeg')
 
 pach37l$Em <- exp(-pach37l$Sm)*pach37l$Sm
@@ -178,7 +185,7 @@ lines(bnT[,1])
 which.cut=3
 possible.colorings <- listParts(dim(stage.key[[which.cut]])[1])##removin the one where no one gets a color#to get current stage,
 #troubleshoot
-rho=0.8; epsilon=1.2;which.cut=3;stage.key=cega.stage.key;n.monitor=50;crrnt.stg=14;
+rho=0.8; epsilon=1.2;which.cut=3;stage.key=cega.stage.key;n.monitor=50;crrnt.stg=11;
 xM <- one.step.forecast(rho = 0.8,epsilon = 1.2,df,which.cut = 2,stage.key = cega.stage.key,n.monitor = 500,crrnt.stg = 1);plot(-log(xM))
 xM2 <- one.step.forecast(rho = 0.8,epsilon = 1.2,df,which.cut = 2,stage.key = cega.stage.key,n.monitor = 500,crrnt.stg = 2);plot(-log(xM2))
 
@@ -188,7 +195,7 @@ xT3 <- one.step.forecast(rho = 0.8,epsilon = 1.2,df,which.cut = 3,stage.key = ce
 xT4 <- one.step.forecast(rho = 0.8,epsilon = 1.2,df,which.cut = 3,stage.key = cega.stage.key,n.monitor = 500,crrnt.stg = 11);plot(-log(xT4))
 
 #to do: figure out what staging is the right one when we have lots of partitions to search 
-xmls <- one.step.forecast(rho = 0.8,epsilon = 1.2,df,which.cut = 4,stage.key = cega.stage.key,n.monitor = 500,crrnt.stg = 14);plot(-log(xmls))
+xmls <- one.step.forecast(rho = 0.8,epsilon = 1.2,df,which.cut = 4,stage.key = cega.stage.key,n.monitor = 15,crrnt.stg = 14);plot(-log(xmls))
 
 media.forecast <-data.frame(cbind(1:500,-log(xM),-log(xM2)))
 trans.forecast <- data.frame(cbind(1:500,-log(xT),-log(xT2),-log(xT3),-log(xT4))) 
@@ -300,3 +307,12 @@ prior <- c(1,1,1);counts <- c(2,4,6);prior.uk <- bf(prior,counts)
 prior.ui + prior.uj
 prior.uk
 prior.uj
+
+
+test <- rep(0,200)
+for(i in 1:200){
+  ev <- df[i,1:3]
+  probs <- pass.message(df,stage.key,evidence=ev,post.mean,prior)  
+  probs[[8]][1] -> test[i]
+}  
+hist(test)

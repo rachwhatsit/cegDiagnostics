@@ -160,12 +160,19 @@ ggplot(df.s[-c(1:6),], aes(x, y=V2, color='S(1)')) +
 ggsave('C://Users/rachel/Documents/diagpaper/chdsStageMonitorS.jpeg')
 
 
-possible.colorings <- listParts(dim(stage.key[[which.cut]])[2])##removin the one where no one gets a color
-chds.econ <- one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 15)
+possible.colorings <- listParts(dim(cega.stage.key[[which.cut]])[2])##removin the one where no one gets a color
+chds.econ <- -log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 15))
 chds.econ2 <- -log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 14))
-chds.econ3 <- -log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 10))
-chds.econ4 <- -log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 7))
-chds.econ5 <- -log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 2))
+chds.econ3 <- -log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 13))
+chds.econ4 <- -log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 12))
+chds.econ5 <- -log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 11))
+
+chdsB.econ <- -log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cegb.stage.key, n.monitor=200, crrnt.stg = 15))
+chdsB.econ2 <- -log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cegb.stage.key, n.monitor=200, crrnt.stg = 14))
+chdsB.econ3 <- -log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cegb.stage.key, n.monitor=200, crrnt.stg = 13))
+chdsB.econ4 <- -log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cegb.stage.key, n.monitor=200, crrnt.stg = 12))
+chdsB.econ5 <- -log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cegb.stage.key, n.monitor=200, crrnt.stg = 11))
+
 df.e <- data.frame(cbind(1:200,chds.econ,chds.econ2, chds.econ3, chds.econ4, chds.econ5))
 ggplot(df.e[-c(1:4),], aes(V1, y=chds.econ, color='S(15)')) + 
   geom_line() + 
@@ -173,6 +180,17 @@ ggplot(df.e[-c(1:4),], aes(V1, y=chds.econ, color='S(15)')) +
   geom_line(aes(V1, y=chds.econ3, color='S(10)')) + 
   geom_line(aes(V1, y=chds.econ4, color='S(7)')) + 
   geom_line(aes(V1, y=chds.econ5, color='S(2)')) + 
+  ggtitle('CEG Parent Child Monitor') + 
+  xlab('Relevant Sample Size') + ylab('Cumulative Log Penalty') +
+  theme(panel.background = element_blank())
+ggsave('C://Users/rachel/Documents/diagpaper/chdsStageMonitorE.jpeg')
+
+df2.e <- data.frame(cbind(1:200,chds.econ,chds.econ2, chdsB.econ, chdsB.econ2))
+ggplot(df.e[-c(1:4),], aes(V1, y=chds.econ, color='A S(15)')) + 
+  geom_line() + 
+  geom_line(aes(V1, y=chds.econ2, color='A S(14)')) + 
+  geom_line(aes(V1, y=chdsB.econ, color='B S(15)')) + 
+  geom_line(aes(V1, y=chdsB.econ2, color='B S(14)')) + 
   ggtitle('CEG Parent Child Monitor') + 
   xlab('Relevant Sample Size') + ylab('Cumulative Log Penalty') +
   theme(panel.background = element_blank())
