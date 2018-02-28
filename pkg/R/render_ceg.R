@@ -20,9 +20,6 @@ render.ceg <- function(cuts, stage.key, stages){
   
   from.ceg <- c(); to.ceg <- c()                          
   for(i in 3:length(cuts)){##FIX THIS: need all previous labels for the pathway search applying recursive formulas in R
-    test.x <- unlist(stage.key[[i]][cuts[i-2]])
-    test.y <- unlist(stage.key[[i]][cuts[i-1]])
-    test <- interaction(test.x, test.y)
     from.ceg.idx <- match(interaction(unlist(stage.key[[i]][cuts[i-2]]), unlist(stage.key[[i]][cuts[i-1]])),interaction(unlist(stage.key[[i-1]][cuts[i-2]]), unlist(stage.key[[i-1]][cuts[i-1]])))
     from.ceg <- c(from.ceg, stage.key[[i-1]]$stage[from.ceg.idx])#paste all of the possibilities here
     to.ceg <- c(to.ceg, stage.key[[i]]$stage)

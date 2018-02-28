@@ -39,3 +39,4 @@ get.ref.prior <- function(df, struct, cuts, stage.key,stages) { #returns the ref
   }
   return(ref.prior)
 }
+

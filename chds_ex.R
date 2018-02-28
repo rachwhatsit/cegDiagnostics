@@ -46,6 +46,45 @@ cega.stage.key[[3]]$stage <- c("cega.w3", "cega.w4", "cega.w5", "cega.w6")
 cega.stage.key[[4]]$stage <- c("cega.w8", "cega.w7", "cega.w9", "cega.w8", "cega.w7", "cega.w9", "cega.w9", "cega.w8", "cega.w9", "cega.w9", "cega.w8", "cega.w9")#this contains the structure
 cega.stage.key[[5]]$stage <- rep("cega.winf", length(cega.stage.key[[5]]$n))
 
+##THIS IS FOR CEG-c
+cegc.stages <- list("cegc.w0", "cegc.w1", "cegc.w2", "cegc.w3", "cegc.w4", "cegc.w5", "cegc.w6", "cegc.w7", "cegc.w8", "cegc.w9")
+
+cegc.w0 <- df %>% count(Economic)
+cegc.w1 <- df %>% filter(Economic=="High") %>% count(Social)
+cegc.w2 <- df %>% filter(Economic=="Low") %>% count(Social)
+cegc.w3 <- df %>% filter(Economic=="High", Social=="High") %>% count(Events)
+cegc.w4 <- df %>% filter(Economic=="High", Social=="Low") %>% count(Events)
+cegc.w5 <- df %>% filter(Economic=="Low", Social=="High") %>% count(Events)
+cegc.w6 <- df %>% filter(Economic=="Low", Social=="Low") %>% count(Events)
+cegc.w7 <- df %>% filter((Economic=="High" & Social=="High"  & Events=="Low") |  (Economic=="High" & Social=="Low"  & Events=="Low")) %>% count(Admission)
+cegc.w8 <- df %>% filter((Economic=="High" & Social=="High"  & Events=="Average") |
+                           (Economic=="High" & Social=="Low"  & Events=="Average") |
+                           (Economic=="Low" & Social=="High"  & Events=="Low") |
+                           (Economic=="Low" & Social=="Low"  & Events=="Low")) %>% count(Admission)
+cegc.w9 <- df %>% filter((Economic=="Low" & Social=="High"  & Events=="Average") |
+                           (Economic=="Low" & Social=="High"  & Events=="High") |
+                           (Economic=="High" & Social=="High"  & Events=="High") |
+                           (Economic=="High" & Social=="Low"  & Events=="High") |
+                           (Economic=="Low" & Social=="Low"  & Events=="High") |
+                           (Economic=="Low" & Social=="Low"  & Events=="Average")) %>% count(Admission)
+cegc.struct <- list(cegc.w0, cegc.w1, cegc.w2, cegc.w3, cegc.w4, cegc.w5, cegc.w6, cegc.w7, cegc.w8, cegc.w9)#this is the observed values for each of the stages
+
+#can initalize this, and prompt user to input the pathways for the particular tree
+cegc.stage.key <- list()
+count(df) -> cegc.stage.key[[1]]
+df %>% count(Economic) -> cegc.stage.key[[2]]
+df %>% count(Economic, Social) -> cegc.stage.key[[3]]
+df %>% count(Economic, Social, Events) -> cegc.stage.key[[4]]
+df %>% count(Economic, Social, Events, Admission) -> cegc.stage.key[[5]]
+#define a stage key for each cut in the data
+#Q: how does this change for asymmetries?
+cegc.stage.key[[1]]$stage <- c("cegc.w0")
+cegc.stage.key[[2]]$stage <- c("cegc.w1", "cegc.w2")
+cegc.stage.key[[3]]$stage <- c("cegc.w3", "cegc.w4", "cegc.w5", "cegc.w6")
+cegc.stage.key[[4]]$stage <- c("cegc.w8", "cegc.w7", "cegc.w9", "cegc.w8", "cegc.w7", "cegc.w9", "cegc.w9", "cegc.w8", "cegc.w9", "cegc.w9", "cegc.w8", "cegc.w9")#this contains the structure
+cegc.stage.key[[5]]$stage <- rep("cegc.winf", length(cegc.stage.key[[5]]$n))
+
+
 #######################################CEG B  
 ##THIS IS FOR CEG-b
 cegb.w0 <- df %>% count(Social)
@@ -99,6 +138,14 @@ ceg.pachL <- ceg.child.parent.monitor(df, target.stage="cega.w3",condtnl.stage =
 ceg.pach <- ceg.child.parent.monitor(df, target.stage="cega.w3",condtnl.stage = "cega.w1",
                                                        target.cut=3,stages=cega.stages,
                                                        stage.key=cega.stage.key,struct=cega.struct,n=500,learn = FALSE)
+cegC.pachL <- ceg.child.parent.monitor(df, target.stage="cega.w3",condtnl.stage = "cega.w1",
+                                                       target.cut=3,stages=cegc.stages,
+                                                       stage.key=cegc.stage.key,struct=cegc.struct,n=500,learn = TRUE)
+cegC.pach <- ceg.child.parent.monitor(df, target.stage="cega.w3",condtnl.stage = "cega.w1",
+                                                       target.cut=3,stages=cegc.stages,
+                                                       stage.key=cegc.stage.key,struct=cegc.struct,n=500,learn = FALSE)
+
+
 
 ceg.pach$p <- exp(-log(ceg.pach$Sm))
 brier <- function(x){
@@ -199,3 +246,14 @@ ggsave('C://Users/rachel/Documents/diagpaper/chdsStageMonitorE.jpeg')
 possible.colorings <- listParts(dim(stage.key[[which.cut]])[2])##removin the one where no one gets a color
 chds.life <- one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 15)
 chds.life2 <- one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 6)
+chds.lifeC <- one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df[,c(2,1,3,4)],which.cut=3,stage.key=cegc.stage.key, n.monitor=200, crrnt.stg = 15)
+chds.lifeB <- one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df[,c(1,2,3,4)],which.cut=3,stage.key=cegb.stage.key, n.monitor=200, crrnt.stg = 10)
+
+pass.message(df,cega.stage.key,evidence = df[55,c(1,3)],post.mean,cega.prior)
+prob.w7 <- c();prob.w8 <- c();prob.w9 <- c()
+for (i in 1:200){
+  updated.ev <- pass.message(df,cega.stage.key,evidence = df[i,c(1,2)],post.mean,cega.prior)
+  prob.w7[i] <- updated.ev[[8]][1]
+  prob.w8[i] <- updated.ev[[9]][1]#probability of no admissions
+  prob.w9[i] <- updated.ev[[10]][1]
+}

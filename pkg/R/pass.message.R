@@ -33,7 +33,7 @@ pass.message <- function(df, stage.key, evidence,post.mean,prior){#what's the mo
     
     
       sk.idx <- 1
-    for (i in 1:length(prior)){
+    for (i in 1:length(post.mean)){
       if (!stages[[i]] %in% stage.key[[sk.idx]]$stage){sk.idx <- sk.idx+1}
       tau[[i]] <- rep(-1, length(prior[[i]]))#initialize tau
       #check to see that the evidence matches this stage
