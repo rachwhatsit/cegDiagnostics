@@ -251,9 +251,29 @@ chds.lifeB <- one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df[,c(1,2,3,4)],whi
 
 pass.message(df,cega.stage.key,evidence = df[55,c(1,3)],post.mean,cega.prior)
 prob.w7 <- c();prob.w8 <- c();prob.w9 <- c()
-for (i in 1:200){
-  updated.ev <- pass.message(df,cega.stage.key,evidence = df[i,c(1,2)],post.mean,cega.prior)
-  prob.w7[i] <- updated.ev[[8]][1]
-  prob.w8[i] <- updated.ev[[9]][1]#probability of no admissions
-  prob.w9[i] <- updated.ev[[10]][1]
+prob.w1 <- c(); prob.w2 <- c();
+prob.w3 <- c(); prob.w4 <- c();prob.w5 <- c();
+
+brier<-c();
+for (i in 1:500){
+    if(df[i,1]!="High"){next}
+  if(df[i,2]!="High"){next}
+  updated.ev <- pass.message(df,cega.stage.key,evidence = df[i,c(1:2)],post.mean,cega.prior)
+  prob <- updated.ev.2[[5]]
+  actual <- rep(0,length(updated.ev[[5]]))#; df_sub <-filter(df[1:500,],Social=="High")
+  actual[as.numeric(as.character(df[i,]))[3]] <- 1
+  brier <- c(brier, sum((prob-actual)^2))
 }
+
+hist(prob.w3)
+
+df[1:500,] %>% 
+  filter(Social=="High")
+
+actualw1 <- rep(0,500)
+actualw1[which(df[1:500,1]==levels(df[,2])[1])]<- 1
+actualw2 <- rep(0,500)
+actualw2[which(df[1:500,1]==levels(df[,2])[1])]<- 1
+
+
+sum((prob.w1-actual)^2)
