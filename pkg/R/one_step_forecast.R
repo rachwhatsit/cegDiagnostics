@@ -86,8 +86,7 @@ p2 <- rep(0, length(possible.stage)+1)
         }
         print(counts)
         #alpha.star <-alpha.bar + counts
-        alpha.star <- alpha.bar + counts
-        #alpha.star <- (k^(t-1))*(alpha.bar-1) + (k^(t-tau))*counts + 1
+        alpha.star <- (k^(t-1))*(alpha.bar-1) + (k^(t-tau))*counts + 1
         p.stgng[j] <- lgamma(sum(alpha.bar))-lgamma(sum(alpha.star)) + sum(lgamma(alpha.star) - lgamma(alpha.bar))
       
     }
@@ -131,9 +130,9 @@ p2 <- rep(0, length(possible.stage)+1)
       counts <- obsv.stage.count$n
     }
     print(counts)
-    alpha.star <-alpha.bar + counts
+    #alpha.star <-alpha.bar + counts
     
-    #alpha.star <- (k^(t-1))*(alpha.bar-1) + (k^(t-tau))*counts + 1
+    alpha.star <- (k^(t-1))*(alpha.bar-1) + (k^(t-tau))*(counts + 1)
     p.stgng[j] <- lgamma(sum(alpha.bar))-lgamma(sum(alpha.star)) + sum(lgamma(alpha.star) - sum(lgamma(alpha.bar)))
     
   }

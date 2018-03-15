@@ -36,6 +36,7 @@ render.ceg <- function(cuts, stage.key, stages){
   to.vals.n[is.na(to.vals.n)]<-length(stages)+1
   test <- cbind(from.vals.n,to.vals.n)
   test.d <- unique(test)
+  nodes <- create_node_df(n=length(stages),type='a',label=unlist(short.stages))
   edges <- create_edge_df(test.d[,1],test.d[,2] )
   grf <-create_graph(
       nodes_df = nodes,
@@ -47,3 +48,42 @@ render.ceg <- function(cuts, stage.key, stages){
   # View the graph
   render_graph(grf,output = 'LR')
 }
+
+#for the extremist example, and probably a better general  model 
+render_ceg <- function(stage.key){
+  edges_df <- as.data.frame(cbind(stage.key[[1]]$fromstage, stage.key[[1]]$stage, stage.key[[1]][,1]))
+  colnames(edges_df) <- c('V1','V2','V3')
+  for (i in 2:length(stage.key)){
+    addme <-as.data.frame(cbind(stage.key[[i]]$fromstage, stage.key[[i]]$stage, stage.key[[i]][,i]))
+    colnames(addme) <- c('V1','V2','V3')
+    edges_df <- rbind(edges_df, addme)
+  }
+  edges_df$key <- paste0(edges_df[,1], edges_df[,2])
+  edges_df %>% distinct(V1,V2,V3) -> edges_df
+  nodes <- create_node_df(n=length(stages),label=stages)
+  edges<-create_edge_df(from=match(edges_df[,1], stages),to=match(edges_df[,2],stages), rel='related',label=as.character(edges_df[,3]))
+  grf <-create_graph(
+    nodes_df = nodes,
+    edges_df = edges)  
+  render_graph(grf,layout='LR')
+}
+
+
+# df <- data.frame(col1 = c("Cat", "Dog", "Bird"),
+#                  col2 = c("Feline", "Canis", "Avis"),
+#                  stringsAsFactors = FALSE)
+# uniquenodes <- unique(c(df$col1, df$col2))
+# 
+# uniquenodes
+# 
+# library(DiagrammeR)
+# 
+# nodes <- create_node_df(n=length(uniquenodes), 
+#                         type="number", 
+#                         label=uniquenodes)
+# edges <- create_edge_df(from=match(df$col1, uniquenodes), 
+#                         to=match(df$col2, uniquenodes), 
+#                         rel="related")
+# g <- create_graph(nodes_df=nodes, 
+#                   edges_df=edges)
+# render_graph(g)

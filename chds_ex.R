@@ -145,7 +145,14 @@ cegC.pach <- ceg.child.parent.monitor(df, target.stage="cega.w3",condtnl.stage =
                                                        target.cut=3,stages=cegc.stages,
                                                        stage.key=cegc.stage.key,struct=cegc.struct,n=500,learn = FALSE)
 
-
+bn.a.pach<-bn.parent.child.monitor(df,"Social","High","Economic",n=200)
+ceg.pachL <- ceg.child.parent.monitor(df, target.stage="cega.w0",condtnl.stage = "cega.w1",
+                                                       target.cut=2,stages=cega.stages,
+                                                       stage.key=cega.stage.key,struct=cega.struct,n=50,learn = TRUE)
+ceg.a.pach <- ceg.child.parent.monitor(df, target.stage="cega.w1",condtnl.stage = "cega.w0",#this doesn't work for the first stage, but this is equivalent to the BN monitor 
+                                           target.cut=2,stages=cega.stages,
+                                           stage.key=cega.stage.key,struct=cega.struct,n=200,learn = FALSE)
+#w0 -> w1 and w0 -> w2 are equivalent to the BN monitor here.
 
 ceg.pach$p <- exp(-log(ceg.pach$Sm))
 brier <- function(x){
@@ -208,36 +215,42 @@ ggsave('C://Users/rachel/Documents/diagpaper/chdsStageMonitorS.jpeg')
 
 
 possible.colorings <- listParts(dim(cega.stage.key[[which.cut]])[2])##removin the one where no one gets a color
-chds.econ <- -log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 15))
-chds.econ2 <- -log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 14))
-chds.econ3 <- -log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 13))
-chds.econ4 <- -log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 12))
-chds.econ5 <- -log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 11))
+chds.econ <- log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 15))
+chds.econ2 <- log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 14))
+chds.econ3 <- log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 13))
+chds.econ4 <- log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 12))
+chds.econ5 <- log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 11))
+chds.econ6 <- log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cega.stage.key, n.monitor=200, crrnt.stg = 10))
 
-chdsB.econ <- -log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cegb.stage.key, n.monitor=200, crrnt.stg = 15))
-chdsB.econ2 <- -log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cegb.stage.key, n.monitor=200, crrnt.stg = 14))
-chdsB.econ3 <- -log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cegb.stage.key, n.monitor=200, crrnt.stg = 13))
-chdsB.econ4 <- -log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cegb.stage.key, n.monitor=200, crrnt.stg = 12))
-chdsB.econ5 <- -log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cegb.stage.key, n.monitor=200, crrnt.stg = 11))
+chdsB.econ <- log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cegb.stage.key, n.monitor=200, crrnt.stg = 15))
+chdsB.econ2 <- log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cegb.stage.key, n.monitor=200, crrnt.stg = 14))
+chdsB.econ3 <- log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cegb.stage.key, n.monitor=200, crrnt.stg = 13))
+chdsB.econ4 <- log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cegb.stage.key, n.monitor=200, crrnt.stg = 12))
+chdsB.econ5 <- log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cegb.stage.key, n.monitor=200, crrnt.stg = 11))
+chdsB.econ6 <- log(one.step.forecast(rho=0.8, epsilon=1.2, df_cut=df,which.cut=3,stage.key=cegb.stage.key, n.monitor=200, crrnt.stg = 10))
 
-df.e <- data.frame(cbind(1:200,chds.econ,chds.econ2, chds.econ3, chds.econ4, chds.econ5))
+
+df.e <- data.frame(cbind(1:200,chds.econ,chds.econ2, chds.econ3, chds.econ4, chds.econ5,chds.econ6))
 ggplot(df.e[-c(1:4),], aes(V1, y=chds.econ, color='S(15)')) + 
-  geom_line() + 
-  geom_line(aes(V1, y=chds.econ2, color='S(14)')) + 
-  geom_line(aes(V1, y=chds.econ3, color='S(10)')) + 
-  geom_line(aes(V1, y=chds.econ4, color='S(7)')) + 
-  geom_line(aes(V1, y=chds.econ5, color='S(2)')) + 
+  geom_point() + 
+  geom_point(aes(V1, y=chds.econ2, color='S(14)')) + 
+  geom_point(aes(V1, y=chds.econ3, color='S(13)')) + 
+  geom_point(aes(V1, y=chds.econ4, color='S(12)')) + 
+  geom_point(aes(V1, y=chds.econ5, color='S(11)')) + 
+  geom_point(aes(V1, y=chds.econ6, color='S(10)')) + 
   ggtitle('CEG Parent Child Monitor') + 
-  xlab('Relevant Sample Size') + ylab('Cumulative Log Penalty') +
+  xlab('Relevant Sample Size') + ylab('Weighted Cumulative Log Penalty') +
   theme(panel.background = element_blank())
-ggsave('C://Users/rachel/Documents/diagpaper/chdsStageMonitorE.jpeg')
+ggsave('C://Users/rachel/Documents/diagpaper/chdsStageMonitorEweighted.jpeg')
 
-df2.e <- data.frame(cbind(1:200,chds.econ,chds.econ2, chdsB.econ, chdsB.econ2))
-ggplot(df.e[-c(1:4),], aes(V1, y=chds.econ, color='A S(15)')) + 
-  geom_line() + 
-  geom_line(aes(V1, y=chds.econ2, color='A S(14)')) + 
-  geom_line(aes(V1, y=chdsB.econ, color='B S(15)')) + 
-  geom_line(aes(V1, y=chdsB.econ2, color='B S(14)')) + 
+df2.e <- data.frame(cbind(1:200,chdsB.econ,chdsB.econ2, chdsB.econ3, chdsB.econ4,chdsB.econ5,chdsB.econ6))
+ggplot(df2.e[-c(1:4),], aes(V1, y=chdsB.econ, color='S(15)')) + 
+  geom_point() + 
+  geom_point(aes(V1, y=chdsB.econ2, color='S(14)')) + 
+  geom_point(aes(V1, y=chdsB.econ3, color='S(13)')) + 
+  geom_point(aes(V1, y=chdsB.econ4, color='S(12)')) + 
+  geom_point(aes(V1, y=chdsB.econ5, color='S(11)')) + 
+  geom_point(aes(V1, y=chdsB.econ6, color='S(10)')) + 
   ggtitle('CEG Parent Child Monitor') + 
   xlab('Relevant Sample Size') + ylab('Cumulative Log Penalty') +
   theme(panel.background = element_blank())
@@ -254,19 +267,32 @@ prob.w7 <- c();prob.w8 <- c();prob.w9 <- c()
 prob.w1 <- c(); prob.w2 <- c();
 prob.w3 <- c(); prob.w4 <- c();prob.w5 <- c();
 
+function(df=df,stage.key=cega.stage.key,ev,post.mean,ceg.prior=cega.prior,n=20,stg.idx=3){
+  brier <- c(); 
+  for (i in 1:n){
+    
+    #filter so that we're just looking at the added in paths 
+    updated.ev <- pass.message(df, ceg.stage.key,ev,post.mean,cega.prior)
+    prob=updated.ev[[stg.idx]]
+    actual <- rep(0,length(updated.ev[[stg.idx]]))
+    actual[as.numeric(as.character(df[i,]))[stg.idx]] <- 1
+    brier <- c(brier,sum(prob-actual)^2)
+  }
+  return(sum(brier))
+}
 brier<-c();
 for (i in 1:500){
     if(df[i,1]!="High"){next}
   if(df[i,2]!="High"){next}
   updated.ev <- pass.message(df,cega.stage.key,evidence = df[i,c(1:2)],post.mean,cega.prior)
-  prob <- updated.ev.2[[5]]
+  prob <- updated.ev.2[[4]]
   actual <- rep(0,length(updated.ev[[5]]))#; df_sub <-filter(df[1:500,],Social=="High")
   actual[as.numeric(as.character(df[i,]))[3]] <- 1
   brier <- c(brier, sum((prob-actual)^2))
 }
 
 hist(prob.w3)
-
+hist(brier)
 df[1:500,] %>% 
   filter(Social=="High")
 

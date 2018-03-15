@@ -37,21 +37,31 @@ ceg.child.parent.monitor <- function(df, target.stage, target.cut, condtnl.stage
       cnd.in.paths <-stage.key[[target.cut-1]][which(stage.key[[target.cut-1]]$stage==condtnl.stage),]
       cnd.in.path.idx <- which(stage.key[[target.cut-1]]$stage==condtnl.stage)
       
+      
+
       #filter out along conditional stage requirements
       df_cuts <- list()
-      for (j in 1:length(cnd.in.path.idx)){
-        df_cuts[[j]] <- df_cut
-        for(k in 1:(length(colnames(stage.key[[target.cut-1]]))-2)){
-          df_cuts[[j]] <- filter(df_cuts[[j]], UQ(sym(colnames(df_cut)[k]))==as.character(unlist(stage.key[[target.cut-1]][cnd.in.path.idx[j],k]) ))#filter according to the matching indices 
+      if(target.cut==2){#this is not doing what it should. regrettably.
+        for (j in 1:length(cnd.in.path.idx)){
+          df_cuts[[j]] <- df_cut
+            df_cuts[[j]] <- filter(df_cuts[[j]], UQ(sym(colnames(df_cut)[1]))==as.character(unlist(stage.key[[target.cut-1]][cnd.in.path.idx[j],1]) ))#filter according to the matching indices
+          }
+        }
+    else{
+        for (j in 1:length(cnd.in.path.idx)){
+          df_cuts[[j]] <- df_cut
+          for(k in 1:(length(colnames(stage.key[[target.cut-1]]))-2)){
+            df_cuts[[j]] <- filter(df_cuts[[j]], UQ(sym(colnames(df_cut)[k]))==as.character(unlist(stage.key[[target.cut-1]][cnd.in.path.idx[j],k]) ))#filter according to the matching indices
+          }
         }
       }
       df_paths.cnd <- do.call(rbind, df_cuts)
-      
+
       df_cuts <- list()
       for (j in 1:length(in.path.idx)){
         df_cuts[[j]] <- df_paths.cnd
         for(k in (length(colnames(stage.key[[target.cut-1]]))-1):(length(colnames(stage.key[[target.cut]]))-2)){
-          df_cuts[[j]] <- filter(df_cuts[[j]], UQ(sym(colnames(df_cut)[k]))==as.character(unlist(stage.key[[target.cut]][in.path.idx[j],k]) ))#filter according to the matching indices 
+          df_cuts[[j]] <- filter(df_cuts[[j]], UQ(sym(colnames(df_cut)[k]))==as.character(unlist(stage.key[[target.cut]][in.path.idx[j],k]) ))#filter according to the matching indices
         }
       }
       df_paths <- do.call(rbind, df_cuts)
