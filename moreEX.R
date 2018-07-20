@@ -83,6 +83,8 @@ cegb.condtnl.stage.monitor <- ceg.child.parent.monitor(df, target.stage="cegb.w3
                                                         target.cut=3,stages=cegb.stages,
                                                         stage.key=cegb.stage.key,struct=cegb.struct,n=100)
 
+component.monitor.ceg(df, target.stage = 'cega.w3',condtnl.stage = 'cega.w1',target.cut=3,stages = cega.stages, stage.key = cega.stage.key, struct=cega.struct)
+
 plot(cega.condtnl.stage.monitor[[1]])
 lines(cegb.condtnl.stage.monitor[[1]]) #Thelog penalty is lower for w3 in CEG A. This kind of makes sense.
 
@@ -140,7 +142,7 @@ prior <- get.ref.prior(df, struct, cuts, stage.key, stages)
 
 ref.distr <- c()
 for (i in 1:length(prior)){ref.distr[[i]] <- prior[[i]]/sum(prior[[i]]) }
-newpi <- pass.message(df,stage.key=cegb.stage.key,evidence = df[1:50,],ref.distr,prior)
+newpi <- pass.message(df,stage.key=cegb.stage.key,evidence = df[1:50,],ref.distr,prior,stages = cegb.stages)
 newpi2 <- pass.message(df, stage.key,df[4:5,],newpi, prior)
 newpi3 <- pass.message(df, stage.key,df[1:10,],post.mean,prior)
 newpi5 <- pass.message(df, stage.key,df[1:50,],post.mean,prior)

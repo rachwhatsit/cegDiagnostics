@@ -49,10 +49,10 @@ pass.message <-
     sk.idx <- 1
     #i <- 1
     for (i in 1:(length(stages))) {
-      print(i)
+      #print(i)
       if (!(stages[[i]] %in% stage.key[[sk.idx]]$stage)) {#i+1 to skip the root node
         sk.idx <- sk.idx + 1
-        print('next stage')
+        #print('next stage')
       }
       tau[[i]] <- rep(-1, length(prior[[i]]))#initialize tau
       #check to see that the evidence matches this stage
@@ -66,8 +66,8 @@ pass.message <-
         post.mean[[i]][idx] #if the edge is in the evidence, then add the probability for each existing edge
       tau[[i]][-idx] <- 0
     }
-    print('tau')
-    print(tau)
+    #print('tau')
+    #print(tau)
     phi <- c()
     for (i in 1:length(tau)) {
       phi[i] <- sum(unlist(tau[[i]]))
