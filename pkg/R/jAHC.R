@@ -34,7 +34,7 @@ jCEG.AHC<-function(indata,priorN=3){
     label<-c(label,rep(levels(indata[,k]),numb[k]))
     if (k<(no.vars-1)){
       for (i in (k+1):(no.vars-1)){
-        label<-c(label,rep(levels(indata[,k]),each=numb[i+1]/numb[k+1],numb[k+1]/no.cat[k]))
+        label<-c(label,rep(levels(indata[,k]),each=numb[i+1]/numb[k+1],numb[k+2]/no.cat[k]))
       }
     }
     labelling<-cbind(labelling,label)
@@ -101,7 +101,7 @@ jCEG.AHC<-function(indata,priorN=3){
   stages<-c(1)
   for (i in 2:no.vars) { stages<-c(stages,comparisonset[[i-1]]) }
   result<-mergedlist[stages]
-  newlist<-list(prior=prior,data=data,stages=stages,result=result,score=score, merged=merged1,comparisonset=comparisonset,mergedlist=mergedlist,lik=lik,pach=pach)
+  newlist<-list(no.cat=no.cat, no.vars=no.vars, prior=prior,data=data,stages=stages,result=result,score=score, merged=merged1,comparisonset=comparisonset,mergedlist=mergedlist,lik=lik,pach=pach)
   return(newlist)
 }# end of function
 
