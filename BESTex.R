@@ -26,7 +26,7 @@ df12.amcbt <- df12.wcode[-which(df12.wcode$randcode=="am"),ordering]
 
 
 #import Jane's code here
-df0.am.sst <- jCEG.AHC(df0.am)
+df0.am.sst <- jCEG.AHC(df0.am,priorN = 2)
 df0.amcbt.sst <- jCEG.AHC(df0.amcbt)
 df3.am.sst <- jCEG.AHC(df3.am)
 df3.amcbt.sst <- jCEG.AHC(df3.amcbt)
@@ -36,19 +36,29 @@ df12.am.sst <- jCEG.AHC(df12.am)
 df12.amcbt.sst <- jCEG.AHC(df12.amcbt)
 
 df0.am.sst$lik  
+df3.am.sst$lik  
+df6.am.sst$lik  
+df12.am.sst$lik  #change in BF here
+
 df0.amcbt.sst$lik
-#several orders of magnitude off. damn. 
-
-#try to draw df0.am.sst
-df0.am.sst$stages #the number of nodes we're drawing here.
-
+df3.amcbt.sst$lik
+df6.amcbt.sst$lik
+df12.amcbt.sst$lik #similarly, a change in BF here
 
 
-df12.amcbt.sst$pach
-df12.amcbt.sst$pach- df0.amcbt.sst$pach
-df12.am.sst$pach- df0.am.sst$pach
+df0.am.sst$stages
+df3.am.sst$stages
+df6.am.sst$stages
+df12.am.sst$stages#change in stage structure, stage 21 combined with 16
 
-df12.am.sst$lik
-df12.amcbt.sst$lik
+df0.amcbt.sst$stages
+df3.amcbt.sst$stages
+df6.amcbt.sst$stages #check the partitions stages for the last cut, particularly 22 and 28 
+df12.amcbt.sst$stages #changes to two different stages. 3 and 4 separated here, and 22 is consolidated, 28 separated
+
+#component scores for each time series
+am.bf <- as.data.frame(cbind(unlist(df0.am.sst$pach), unlist(df3.am.sst$pach), unlist(df6.am.sst$pach), unlist(df12.am.sst$pach)))
+amcbt.bf <- as.data.frame(cbind(unlist(df0.amcbt.sst$pach), unlist(df3.amcbt.sst$pach), unlist(df6.amcbt.sst$pach), unlist(df12.amcbt.sst$pach)))
+
 
 

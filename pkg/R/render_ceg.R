@@ -20,9 +20,14 @@ render.ceg.AHC <- function(sst, df){#takes as avariabe the output from jAHC.R
   #do the stages for the first variable, first cut, first stage
   from.root <- rep(u.stage[1],length(sst$comparisonset[[1]])*sst$no.cat[1])
   to.root <- rep(u.stage[sst$comparisonset[[1]]],sst$no.cat[1])
-  edge.label <- c('1','2')#FIXTHIS
+  #edge.label <- c('1','2')#FIXTHIS
+  edge.label <- sst$mergedlist[[2]][1,]
   
 #START HERE TOMORROW
+  for (i in 2:length(sst$comparisonset)){
+    rep(u.stage[sst$comparisonset[[i-1]]], length(sst$comparisonset[[i]])*sst$no.cat[i]))
+    from.root <- c(from.root, new.from.root)
+  }
   from.root.idx <- match(unlist(stage.key[[2]][cuts[1]]), unlist(stage.key[[1]][cuts[1]]))
   from.root <- stage.key[[1]]$stage[from.root.idx]
   to.root <- c(stage.key[[2]]$stage)

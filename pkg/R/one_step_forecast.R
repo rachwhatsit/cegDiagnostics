@@ -9,7 +9,7 @@ for (t in 5:n.monitor){
   df.cut <- df_cut[1:t,]#the counts to be considered 
   #determine the possible coarser partitions
   idx.coarse <- which(num.partitions==length(possible.colorings[[crrnt.stg]])-1)#returs stagings with 2 colors 
-  if (length(idx.coarse)==0){
+  if (length(idx.coarse)==1){
     hasse.coarse <- c()
   } else{
     first.set <- lapply(possible.colorings[idx.coarse], '[[', 1) 
