@@ -13,32 +13,61 @@
 
 render.ceg.AHC <- function(sst, df){#takes as avariabe the output from jAHC.R 
   #short.stages <- lapply(stages,function(x){as.character(substr(x,nchar(x)-1,nchar(x)))})#stages w labels removed
-  
+  w.stage <- unlist(sst$comparisonset)
   u.stage <- paste0(rep('u',length(sst$stages)), as.character(1:length(sst$stages))) #listed stages here
   #match(interaction(stage.key[[4]]$Social, stage.key[[4]]$Economic),interaction(stage.key[[3]]$Social, stage.key[[3]]$Economic))#how to functionalize?
   
-  #do the stages for the first variable, first cut, first stage
-  from.root <- rep(u.stage[1],length(sst$comparisonset[[1]])*sst$no.cat[1])
-  to.root <- rep(u.stage[sst$comparisonset[[1]]],sst$no.cat[1])
-  #edge.label <- c('1','2')#FIXTHIS
-  edge.label <- sst$mergedlist[[2]][1,]
+  from.edges <- c()
+  to.edges <- c()
+  edge.labels <- c()
+  strt.idx=2; 
+  for (i in 1:length(sst$comparisonset)){
+  to.stg.idx <- unlist(sst$comparisonset[i])
+  to.stg.name <- u.stage[strt.idx:(strt.idx+length(unlist(sst$comparisonset[i]))-1)]
+  key <- sst$result[strt.idx:(strt.idx+length(unlist(sst$comparisonset[i]))-1)]#in labels
+  strt.idx=strt.idx + length(unlist(sst$comparisonset[i])); 
   
-#START HERE TOMORROW
-  for (i in 2:length(sst$comparisonset)){
-    rep(u.stage[sst$comparisonset[[i-1]]], length(sst$comparisonset[[i]])*sst$no.cat[i]))
-    from.root <- c(from.root, new.from.root)
+    for (j in 1:length(key)){
+      u.cntrb <- as.data.frame(key[j],stringsAsFactors = F)#pathways of contribution
+      new.edge.labels <- u.cntrb[i,]#i indicates what row we're looking at
+      names(new.edge.labels) <- NULL; new.edge.labels <- unlist(new.edge.labels)#faffing about to fix the names
+      
+      new.to.edges <- rep(to.stg.name[j], length(new.edge.labels))
+      if(i==1)
+        {new.from.edges <- rep('u0',length(new.edge.labels))}
+      else{
+        new.from.edges <- rep(NA, length(new.edge.labels))
+        for (k in 1:length(sst$comparisonset[[i-1]])){
+          yin <- t(as.data.frame(u.cntrb[1:(i-1),],stringsAsFactors=F))
+          yang <- t(as.data.frame(sst$result[[sst$comparisonset[[i-1]][k]]],stringsAsFactors = F)[1:(i-1),])
+          if(dim(yin)[2]==1){
+            new.from.edges[which(as.vector(yin) == as.vector(yang))] <- u.stage[which(w.stage==sst$comparisonset[[i-1]][k])]
+            
+          }
+          else if (dim(yin)[1]==1 && dim(yin)[2]==2){
+            yin_key <- paste0(yin[,1],yin[,2])
+            yang$key <- apply( yang[ , (1:i-1) ] , 1 , paste , collapse = "" )
+            new.from.edges[which(yin_key == yang$key)] <- u.stage[which(w.stage==sst$comparisonset[[i-1]][k])]
+            
+          }
+          else{
+            yin$key <- apply( yin[ , (1:i-1) ] , 1 , paste , collapse = "" )
+            yang$key <- apply( yang[ , (1:i-1) ] , 1 , paste , collapse = "" )
+            new.from.edges[which(yin$key %in% yang$key)] <- u.stage[which(w.stage==sst$comparisonset[[i-1]][k])]
+            
+          }
+        }
+      }
+      from.edges <- c(from.edges, new.from.edges)
+      to.edges <- c(to.edges, new.to.edges)
+      edge.labels <-  c(edge.labels, new.edge.labels)
+    }
+     
+    
   }
-  from.root.idx <- match(unlist(stage.key[[2]][cuts[1]]), unlist(stage.key[[1]][cuts[1]]))
-  from.root <- stage.key[[1]]$stage[from.root.idx]
-  to.root <- c(stage.key[[2]]$stage)
   
-  from.ceg <- c(); to.ceg <- c()                          
-  for(i in 3:length(cuts)){##FIX THIS: need all previous labels for the pathway search applying recursive formulas in R
-    from.ceg.idx <- match(interaction(unlist(stage.key[[i]][cuts[i-2]]), unlist(stage.key[[i]][cuts[i-1]])),interaction(unlist(stage.key[[i-1]][cuts[i-2]]), unlist(stage.key[[i-1]][cuts[i-1]])))
-    from.ceg <- c(from.ceg, stage.key[[i-1]]$stage[from.ceg.idx])#paste all of the possibilities here
-    to.ceg <- c(to.ceg, stage.key[[i]]$stage)
-  }
   
+ 
   from.sink <-  rep(unique(stage.key[[length(cuts)-1]]$stage), length(levels(df[,length(cuts)]))) 
   to.sink <- rep("winf", length(from.sink) )
   
