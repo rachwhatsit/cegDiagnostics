@@ -12,9 +12,10 @@
 #' @export
 #' @examples###############################################################
 #no conditional parent monitor here. 
-ceg.child.parent.monitor <- function(df, target.stage, target.cut, condtnl.stage, stages, stage.key, struct, n=50, learn=FALSE) {#dataframes should also be added for the counts
+ceg.child.parent.monitor <- function(df, target.stage, target.cut, condtnl.stage, stage.key, struct, n=50, learn=FALSE) {#dataframes should also be added for the counts
   #add checks to make sure that prior has same number of items as counts in dataframe
   #target.cut is the cut that the target.stage is in 
+  colnames(df)->stages
   Zm <- rep(NA, n)
   Sm <- rep(NA, n)
   Em <- rep(NA, n)

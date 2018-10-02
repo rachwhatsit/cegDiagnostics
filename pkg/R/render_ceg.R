@@ -10,12 +10,48 @@
 #' render.ceg()
   #get the nodes
 
+#THE RIGHT ONE
+renderCEG <- function(stage.key, df){
+  from.ceg <- rep(stage.key[[1]]$stage, length(stage.key[[2]]$stage))
+  to.ceg <- c(stage.key[[2]]$stage)
+  lbls <- as.vector(unlist(stage.key[[2]][colnames(df)[1]]))
+  for (i in 3:length(stage.key)){
+    cols <- syms(colnames(df)[1:(i-2)])
+    unite(stage.key[[i]],k,!!!cols)->past; unite(stage.key[[i-1]],k,!!!cols)->current
+    from.ceg.idx <- match(past$k,current$k)
+    from.ceg <- c(from.ceg, stage.key[[i-1]]$stage[from.ceg.idx])#paste all of the possibilities here
+    to.ceg <- c(to.ceg, stage.key[[i]]$stage)
+    lbls <- c(lbls, as.vector(unlist(stage.key[[i]][colnames(df)[(i-1)]])))
+  }
+  from.sink <-  rep(unique(stage.key[[length(stage.key)]]$stage), length(levels(df[,length(cuts)]))) 
+  to.sink <- rep("winf", length(from.sink) )
+  from.vals <- c(from.ceg, from.sink)
+  to.vals <- c(to.ceg, to.sink)
+  lbls <- c(lbls, rep("Level",length(to.sink)))
+  
+  from.vals.n <- as.numeric(gsub("[^\\d]+", "", from.vals, perl=TRUE))+1
+  to.vals.n <- as.numeric(gsub("[^\\d]+", "", to.vals, perl=TRUE))+1
+  to.vals.n[is.na(to.vals.n)]<-max(na.omit(to.vals.n))+1
+  test <- cbind(from.vals.n,to.vals.n)
+  #test.d <- unique(test)
+  stages <- unique(c(from.vals,to.vals))
+  
+  nodes <- create_node_df(n=length(stages),type='a',label=stages)
+  edges <- create_edge_df(test[,1],test[,2],rel = lbls)
+  grf <-create_graph(
+    nodes_df = nodes,
+    edges_df = edges)
+  #graph_attrs = "layout = neato")#,
+  #  node_attrs = "fontname = Helvetica",
+  #  edge_attrs = "color = gray20")
+  
+  # View the graph
+  render_graph(grf)
+}
 
-render.ceg.AHC <- function(sst, df){#takes as avariabe the output from jAHC.R 
-  #short.stages <- lapply(stages,function(x){as.character(substr(x,nchar(x)-1,nchar(x)))})#stages w labels removed
-  w.stage <- unlist(sst$comparisonset)
-  u.stage <- paste0(rep('u',length(sst$stages)), as.character(1:length(sst$stages))) #listed stages here
-  #match(interaction(stage.key[[4]]$Social, stage.key[[4]]$Economic),interaction(stage.key[[3]]$Social, stage.key[[3]]$Economic))#how to functionalize?
+
+
+render.ceg.AHC <- function(stage.key){#takes as avariabe the output from jAHC.R 
   
   from.edges <- c()
   to.edges <- c()
@@ -57,7 +93,7 @@ render.ceg.AHC <- function(sst, df){#takes as avariabe the output from jAHC.R
             
           }
         }
-      }
+      }nm
       from.edges <- c(from.edges, new.from.edges)
       to.edges <- c(to.edges, new.to.edges)
       edge.labels <-  c(edge.labels, new.edge.labels)
@@ -151,22 +187,3 @@ render_ceg <- function(stage.key){
   render_graph(grf,layout='LR')
 }
 
-
-# df <- data.frame(col1 = c("Cat", "Dog", "Bird"),
-#                  col2 = c("Feline", "Canis", "Avis"),
-#                  stringsAsFactors = FALSE)
-# uniquenodes <- unique(c(df$col1, df$col2))
-# 
-# uniquenodes
-# 
-# library(DiagrammeR)
-# 
-# nodes <- create_node_df(n=length(uniquenodes), 
-#                         type="number", 
-#                         label=uniquenodes)
-# edges <- create_edge_df(from=match(df$col1, uniquenodes), 
-#                         to=match(df$col2, uniquenodes), 
-#                         rel="related")
-# g <- create_graph(nodes_df=nodes, 
-#                   edges_df=edges)
-# render_graph(g)
