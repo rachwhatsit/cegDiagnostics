@@ -12,6 +12,7 @@
 
 #THE RIGHT ONE
 renderCEG <- function(stage.key, df){
+  cuts<-colnames(df)
   from.ceg <- rep(stage.key[[1]]$stage, length(stage.key[[2]]$stage))
   to.ceg <- c(stage.key[[2]]$stage)
   lbls <- as.vector(unlist(stage.key[[2]][colnames(df)[1]]))
