@@ -19,20 +19,11 @@ radical.sst$lik #Bayes Factor of -40021.6 with reference prior that has sample s
 
 #now examine the component monitors. these have wildly different priors
 component.monitor.ceg(radical.df, target.stage='w3',condtnl.stage = 'w2',target.cut = 3,stages=radical.stages,stage.key=radical.sk,struct=radical.struct)
-component.monitor.ceg(radical.df, target.stage='w3',condtnl.stage = 'w1',target.cut = 3,stages=radical.stages,stage.key=radical.sk,struct=radical.struct)
-component.monitor.ceg(radical.df, target.stage='w4',condtnl.stage = 'w2',target.cut = 3,stages=radical.stages,stage.key=radical.sk,struct=radical.struct)
-component.monitor.ceg(radical.df, target.stage='w4',condtnl.stage = 'w1',target.cut = 3,stages=radical.stages,stage.key=radical.sk,struct=radical.struct)
-component.monitor.ceg(radical.df, target.stage='w5',condtnl.stage = 'w2',target.cut = 3,stages=radical.stages,stage.key=radical.sk,struct=radical.struct)
-component.monitor.ceg(radical.df, target.stage='w5',condtnl.stage = 'w1',target.cut = 3,stages=radical.stages,stage.key=radical.sk,struct=radical.struct)
-component.monitor.ceg(radical.df, target.stage='w6',condtnl.stage = 'w2',target.cut = 3,stages=radical.stages,stage.key=radical.sk,struct=radical.struct)
-component.monitor.ceg(radical.df, target.stage='w6',condtnl.stage = 'w1',target.cut = 3,stages=radical.stages,stage.key=radical.sk,struct=radical.struct)
 
-component.monitor.ceg(radical.df, target.stage='w10',condtnl.stage = 'w1',target.cut = 3,stages=radical.stages,stage.key=radical.sk,struct=radical.struct)
-
-#run a componen monitor for all of the stages.
 radical.stage.num <- do.call(rbind, lapply(radical.sst$comparisonset, length)) #gives the number of stages (except the root node)
 
-allComponents <- function(targetCut, condtnlCut) {
+
+allComponents <- function(targetCut, condtnlCut) {#a useful fn that runs component monitors for the entire model
   crossing(unique(radical.sk[[targetCut]]$stage), unique(radical.sk[[condtnlCut]]$stage))->whichstages
   whichstages$score <-rep(NA,length(whichstages[,1]))
   for (i in 1:dim(whichstages)[1]){
@@ -52,7 +43,7 @@ allComponents(5,4)
 #try to renderCEG but where the circle size shows the length of the Bayes Facot 
 
 
-get.ref.prior(df=radical.df,struct=radical.struct,cuts=radical.cuts,stage.key=radical.sk,stages=radical.stages)#check that we can get the prior
+radical.prior <-get.ref.prior(df=radical.df,struct=radical.struct,cuts=radical.cuts,stage.key=radical.sk,stages=radical.stages)#check that we can get the prior
 
 ceg.child.parent.monitor(df=radical.df,
                          target.stage = "w3",
