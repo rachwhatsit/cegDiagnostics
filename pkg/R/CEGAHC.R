@@ -1,7 +1,10 @@
 CEG.AHC <- function(exampledata = exampledata ,
                     equivsize = 3) {
   exampledata <- exampledata
-  equivsize <- equivsize
+  equivsize <- 
+    max(apply(exampledata, 2, function(x) {#reference prior as the highest number of levels of categories
+      length(levels(as.factor(x)))
+    })) #total number of pathways in the CEG
   numbvariables <- dim(exampledata)[2]
   numbcat <- c()
   for (k in 1:numbvariables) {
@@ -138,7 +141,7 @@ CEG.AHC <- function(exampledata = exampledata ,
       merged = merged1 ,
       comparisonset = comparisonset ,
       mergedlist = mergedlist ,
-      lik = lik
+      lik = lik,
     )
   return(newlist)
 }

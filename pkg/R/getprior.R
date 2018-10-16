@@ -15,7 +15,7 @@ get.ref.prior <-
     #returns the reference prior of a CEG
     #FIND THE REFERENCE PRIOR for each stage
     n <-
-      prod(apply(df, 2, function(x) {
+      max(apply(df, 2, function(x) {#reference prior as the highest number of levels of categories
         length(levels(as.factor(x)))
       })) #total number of pathways in the CEG
     cuts <-

@@ -8,8 +8,9 @@ global.monitor.ceg <- function(){
 
 
 #component monitor returns the bayes factor for a chunk of the graph
-component.monitor.ceg <- function(df, target.stage, target.cut, condtnl.stage, stages, stage.key, struct, n=50, learn=FALSE) {#dataframes should also be added for the counts
-  prior <- get.ref.prior(df, struct, cuts, stage.key, stages)
+component.monitor.ceg <- function(df, target.stage, target.cut, condtnl.stage, stages, stage.key, struct, prior, n=50, learn=FALSE) {#dataframes should also be added for the counts
+  stages=colnames(df)
+  #prior <- get.ref.prior(df, struct, cuts, stage.key, stages)
   target.stage.idx <- as.numeric(substr(target.stage,nchar(target.stage),nchar(target.stage)))+1
   condtnl.stage.idx <- as.numeric(substr(condtnl.stage,nchar(condtnl.stage),nchar(condtnl.stage)))+1
   target.prior <- unlist(prior[target.stage.idx])

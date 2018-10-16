@@ -23,11 +23,11 @@ component.monitor.ceg(radical.df, target.stage='w3',condtnl.stage = 'w2',target.
 radical.stage.num <- do.call(rbind, lapply(radical.sst$comparisonset, length)) #gives the number of stages (except the root node)
 
 
-allComponents <- function(targetCut, condtnlCut) {#a useful fn that runs component monitors for the entire model
-  crossing(unique(radical.sk[[targetCut]]$stage), unique(radical.sk[[condtnlCut]]$stage))->whichstages
+allComponents <- function(targetCut, condtnlCut,df, stage.key,stages,struct,prior) {#a useful fn that runs component monitors for the entire model
+  crossing(unique(stage.key[[targetCut]]$stage), unique(stage.key[[condtnlCut]]$stage))->whichstages
   whichstages$score <-rep(NA,length(whichstages[,1]))
   for (i in 1:dim(whichstages)[1]){
-  new <- component.monitor.ceg(radical.df, target.stage=as.character(whichstages[i,1]), condtnl.stage = as.character(whichstages[i,2]),target.cut=targetCut,stages=radical.stages,stage.key=radical.sk, struct=radical.struct)
+  new <- component.monitor.ceg(df, target.stage=as.character(whichstages[i,1]), condtnl.stage = as.character(whichstages[i,2]),target.cut=targetCut,stages=stages,stage.key=stage.key, struct=struct,prior)
   whichstages$score[i] <- new
   }
   names(whichstages)[1:2] <- c('targetStage','condtnlStage')
@@ -37,10 +37,29 @@ allComponents <- function(targetCut, condtnlCut) {#a useful fn that runs compone
 allComponents(3,2)
 allComponents(4,3)
 allComponents(5,4)
-#should purrr the heck out of this to get the component score of this CEG 
+
+##checking that the score function works
+score <- function(alpha, N){
+sum(lgamma(alpha + N) - lgamma(alpha)) + sum(lgamma(sum(alpha)) - lgamma(sum(alpha + N)))->p
+  return(p)
+}
+
+radical.sst$data[!is.na(radical.sst$data)]
+
+idx <-
+  which(!is.na(unlist(lapply(
+    radical.sst$data, '[[', 1
+  ))) == TRUE)
+radical.sst$data[idx] -> radicalN
+
+components <- c()
+for (i in 1:37){
+  components[i]  <- score(unlist(radical.prior[i]), unlist(radicalN[i]))
+}
+
 
 #after finding out which components are troublesome...might like to visualize this. 
-#try to renderCEG but where the circle size shows the length of the Bayes Facot 
+#try to renderCEG but where the circle size shows the length of the Bayes Factor
 
 
 radical.prior <-get.ref.prior(df=radical.df,struct=radical.struct,cuts=radical.cuts,stage.key=radical.sk,stages=radical.stages)#check that we can get the prior
@@ -60,10 +79,52 @@ ceg.child.parent.monitor(df=radical.df,
 #CHDS example
 chds.df <-read_csv(file = "CHDS.latentexample1.csv")
 chds.df <-read.csv(file = "CHDS.latentexample1.csv")#,stringsAsFactors = F) #note: sst requires factors
-chds.sst <- jCEG.AHC(chds.df)
+chds.sst <- CEG.AHC(chds.df)
 chds.sst$result
+#translate to run the diagnostic code 
+tostagekey(chds.df, chds.sst)-> chds.stage.key
+pull(map_df(chds.stage.key, ~distinct(.x,stage)),stage )-> chds.stages#the stages
+chds.struct <- to.struct(chds.df,chds.stage.key,chds.sst) #the struct. a weird name for the data results of the AHC alg
+chds.cuts <- colnames(chds.df)
 
+renderCEG(chds.stage.key,chds.df)
+
+##for comparison with rodriguo's code 
 library(ceg)
 R.sst <-Stratified.staged.tree(chds.df)
 Stratified.ceg.model(R.sst)->chds.ceg
 plot(chds.ceg)
+
+#get the likelihood
+chds.sst$lik
+
+#test against another ordering
+chds.sst2 <- CEG.AHC(chds.df[,c(2,1,3,4)]) #varorder E S L H 
+chds.sst2$lik; 
+chds.sst2.sk <- tostagekey(chds.df[,c(2,1,3,4)],sst = chds.sst2)
+renderCEG(chds.sst2.sk, chds.df[,c(2,1,3,4)])
+chds.sst3 <- CEG.AHC(chds.df[,c(1,3,2,4)])
+chds.sst3$lik
+chds.sst3.sk <- tostagekey(chds.df[,c(1,3,2,4)],sst = chds.sst3)
+renderCEG(chds.sst3.sk, chds.df[,c(1,3,2,4)])
+chds.sst4 <- CEG.AHC(chds.df[,c(3,1,2,4)])
+chds.sst4$lik
+chds.sst4.sk <- tostagekey(chds.df[,c(3,1,2,4)],sst = chds.sst4)
+renderCEG(chds.sst4.sk, chds.df[,c(3,1,2,4)])
+chds.sst4$result
+
+map(chds.stage.key[-1], ~select(.x,-key))->chds.sk#a little bit of finagling to make it not blow up immediately.
+chds.sk <- c(chds.stage.key[1],chds.sk)
+chds.prior <-get.ref.prior(df=chds.df,struct=chds.struct,cuts=chds.cuts,stage.key=chds.sk,stages=chds.stages)#check that we can get the prior
+
+#what to do about the first stage
+allComponents(targetCut = 2,condtnlCut = 1,df = chds.df,stage.key = chds.sk,stages = chds.stages,struct = chds.struct,chds.prior)
+allComponents(targetCut = 3,condtnlCut = 2,df = chds.df,stage.key = chds.sk,stages = chds.stages,struct = chds.struct,chds.prior)
+#much of the BF score comes from stage w3 to w1
+allComponents(targetCut = 4,condtnlCut = 3,df = chds.df,stage.key = chds.sk,stages = chds.stages,struct = chds.struct,chds.prior)
+
+chds.stage.key[[3]] #High Social, High Economic, High Social and Low Economic are triggering a pretty high error.
+#is it strangethat these get lumped in the same stage??
+renderCEG(chds.stage.key, chds.df)
+
+#Is there another staging of the situations in cut 3 that would be more appropriate? 

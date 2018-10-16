@@ -1,3 +1,4 @@
+library(partitions)
 #tau is the rate of forgetting
 #k is some param between 0 and 1
 one.step.forecast <- function(rho, epsilon, df_cut,which.cut,stage.key, n.monitor, crrnt.stg,k=0.8,tau=5){
