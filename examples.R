@@ -128,3 +128,26 @@ chds.stage.key[[3]] #High Social, High Economic, High Social and Low Economic ar
 renderCEG(chds.stage.key, chds.df)
 
 #Is there another staging of the situations in cut 3 that would be more appropriate? 
+chds.part.monitor <- part.monitor(rho = .7,epsilon = 1.2,df_cut = chds.df,which.cut = 3,stage.key = chds.sk,n.monitor = 860)
+#rho = .7;epsilon = 1.2;df_cut = chds.df;which.cut = 3;stage.key = chds.sk;n.monitor = 200#for trblshtng
+chds.part.monitor %>%
+  flatten_dfr()
+
+chds.crrnt.stg.probs <- do.call("rbind", lapply(chds.part.monitor[[3]], "[[", 4))
+chds.alt1.stg.probs <- do.call("rbind", lapply(chds.part.monitor[[3]], "[[", 1))
+chds.alt2.stg.probs <- do.call("rbind", lapply(chds.part.monitor[[3]], "[[", 2))
+chds.alt3.stg.probs <- do.call("rbind", lapply(chds.part.monitor[[3]], "[[", 3))
+
+chds.part.df <- as.data.frame(cbind(5:860,chds.crrnt.stg.probs, chds.alt1.stg.probs, chds.alt2.stg.probs, chds.alt3.stg.probs))
+colnames(chds.part.df) <- c("t", "currentStage", "AltStage1", "AltStage2", "AltStage3")
+chds.part.df %>% 
+  gather(key, value, -t) %>%
+  ggplot(aes(x=t, y=value, colour=key)) + geom_line()
+
+plot(chds.alt3.stg.probs)
+#k is 0.9 in freeman paper
+#tau is length of lag
+
+#not really?? 
+
+
