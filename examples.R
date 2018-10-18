@@ -75,7 +75,7 @@ ceg.child.parent.monitor(df=radical.df,
                          learn = F)
 
 
-
+###########################################################chds
 #CHDS example
 chds.df <-read_csv(file = "CHDS.latentexample1.csv")
 chds.df <-read.csv(file = "CHDS.latentexample1.csv")#,stringsAsFactors = F) #note: sst requires factors
@@ -93,23 +93,27 @@ renderCEG(chds.stage.key,chds.df)
 library(ceg)
 R.sst <-Stratified.staged.tree(chds.df)
 Stratified.ceg.model(R.sst)->chds.ceg
-plot(chds.ceg)
-
+plot(chds.ceg)#we get the same thing, so this is solid
+R.sst@model.score
 #get the likelihood
-chds.sst$lik
+chds.sst$lik#right score fo=rom the book
+
+#slight difference between RC and LB code here 
+#-2485.54 for RC and -2478.49 for LB 
+
 
 #test against another ordering
 chds.sst2 <- CEG.AHC(chds.df[,c(2,1,3,4)]) #varorder E S L H 
-chds.sst2$lik; 
+chds.sst2$lik; #equivalent to chds.sst so same likelihoods 
 chds.sst2.sk <- tostagekey(chds.df[,c(2,1,3,4)],sst = chds.sst2)
 renderCEG(chds.sst2.sk, chds.df[,c(2,1,3,4)])
 chds.sst3 <- CEG.AHC(chds.df[,c(1,3,2,4)])
-chds.sst3$lik
-chds.sst3.sk <- tostagekey(chds.df[,c(1,3,2,4)],sst = chds.sst3)
+chds.sst3$lik #same likelihoods because statistically equivalent
+chds.sst3.sk <- tostagekey(chds.df[,c(1,3,2,4)],sst = chds.sst3) # var order S L E H 
 renderCEG(chds.sst3.sk, chds.df[,c(1,3,2,4)])
 chds.sst4 <- CEG.AHC(chds.df[,c(3,1,2,4)])
-chds.sst4$lik
-chds.sst4.sk <- tostagekey(chds.df[,c(3,1,2,4)],sst = chds.sst4)
+chds.sst4$lik #same likelihood because statistically equivalent
+chds.sst4.sk <- tostagekey(chds.df[,c(3,1,2,4)],sst = chds.sst4) # var order L S E H 
 renderCEG(chds.sst4.sk, chds.df[,c(3,1,2,4)])
 chds.sst4$result
 
@@ -129,14 +133,20 @@ renderCEG(chds.stage.key, chds.df)
 
 #Is there another staging of the situations in cut 3 that would be more appropriate? 
 chds.part.monitor <- part.monitor(rho = .7,epsilon = 1.2,df_cut = chds.df,which.cut = 3,stage.key = chds.sk,n.monitor = 860)
+#k is 0.9 in freeman paper
+#tau is length of lag
+
 #rho = .7;epsilon = 1.2;df_cut = chds.df;which.cut = 3;stage.key = chds.sk;n.monitor = 200#for trblshtng
-chds.part.monitor %>%
+chds.part.monitor[[3]] %>%
   flatten_dfr()
 
-chds.crrnt.stg.probs <- do.call("rbind", lapply(chds.part.monitor[[3]], "[[", 4))
-chds.alt1.stg.probs <- do.call("rbind", lapply(chds.part.monitor[[3]], "[[", 1))
-chds.alt2.stg.probs <- do.call("rbind", lapply(chds.part.monitor[[3]], "[[", 2))
-chds.alt3.stg.probs <- do.call("rbind", lapply(chds.part.monitor[[3]], "[[", 3))
+chds.crrnt.stg.probs <- do.call("rbind", lapply(chds.part.monitor[[3]], "[[", 4)) #possible.coloring 3
+chds.alt1.stg.probs <- do.call("rbind", lapply(chds.part.monitor[[3]], "[[", 1))#possible.coloring 10
+chds.alt2.stg.probs <- do.call("rbind", lapply(chds.part.monitor[[3]], "[[", 2))#possible.coloring 11
+chds.alt3.stg.probs <- do.call("rbind", lapply(chds.part.monitor[[3]], "[[", 3))#possible.coloring 13
+
+possible.colorings[[3]] #(HH, HL, LH) (LL)
+possible.colorings[[13]]#(HH) (HL, LH) (LL)
 
 chds.part.df <- as.data.frame(cbind(5:860,chds.crrnt.stg.probs, chds.alt1.stg.probs, chds.alt2.stg.probs, chds.alt3.stg.probs))
 colnames(chds.part.df) <- c("t", "currentStage", "AltStage1", "AltStage2", "AltStage3")
@@ -144,10 +154,26 @@ chds.part.df %>%
   gather(key, value, -t) %>%
   ggplot(aes(x=t, y=value, colour=key)) + geom_line()
 
-plot(chds.alt3.stg.probs)
-#k is 0.9 in freeman paper
-#tau is length of lag
+chds.w3.pach <- ceg.child.parent.monitor(df=chds.df,
+                         target.stage = "w3",
+                         target.cut = 3, 
+                         condtnl.stage = "w1",
+                         struct = chds.struct,
+                         stage.key = chds.sk, 
+                         stages=chds.stages,
+                         n = 860,
+                         learn = F)
+plot(chds.w3.pach[,1])
 
-#not really?? 
+chds.w3w2.pach <- ceg.child.parent.monitor(df=chds.df,
+                                         target.stage = "w3",
+                                         target.cut = 3, 
+                                         condtnl.stage = "w2",
+                                         struct = chds.struct,
+                                         stage.key = chds.sk, 
+                                         stages=chds.stages,
+                                         n = 860,
+                                         learn = F)
+lines(chds.w3w2.pach[,1])
 
 

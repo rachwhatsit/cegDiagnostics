@@ -50,7 +50,7 @@ renderCEG <- function(stage.key, df){
   render_graph(grf)
 }
 
-
+#uses a d3 visualization to sort through the edges
 forceCEG <- function(stage.key, df){
   cuts<-colnames(df)
   from.ceg <- rep(stage.key[[1]]$stage, length(stage.key[[2]]$stage))

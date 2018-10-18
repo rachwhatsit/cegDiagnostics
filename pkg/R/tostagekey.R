@@ -12,8 +12,6 @@ sst$merged
 #df is the data frame of interest
 
 tostagekey <- function(df, sst) {
-  skey <- list()#list of size 4
-  
   sst$comparisonset
   num.cuts <-
     length(sst$comparisonset)#gives the number of cuts in the stratified staged tree excluding root
@@ -53,7 +51,31 @@ tostagekey <- function(df, sst) {
             key,
             !!!in.path.cols,
             sep = "",
-            remove = F) -> in.paths #will need to check this for other data frame
+            remove = F) -> in.paths 
+      ####FIX THE COMPLETE AND UTTER LACK OF POSITION INFORMATION IN THE TREE DAMMIT.
+      # #check that the same paths also appear in the subsequen stage
+      
+      test2 <- sst$mergedlist[unlist(sst$comparisonset[[i]])]
+      pos <- 1 #original position
+      pstns <- c()
+      test.for.pos <- list()
+      for(k in 1:dim(test[[j]])[2]){
+        tgt.pos <- test[[j]][,k][(test[[j]][,k]!="NA")] #labels to test, ex: 'High High'
+        nxt.cut <- lapply(test2, data.frame)
+        
+        test.for.pos[[k]] <- find.idx(tgt.pos,nxt.cut)
+
+      }
+      
+      find.idx <- function(tgt.pos, nxt.cut){
+        tgt.pos.idx <- c()####ONLY WORKS FOR TWO DEEP DAMMIT
+        for (l in 1:length(nxt.cut)){
+          tgt.pos.idx[l] <- ifelse(any(test2[[l]][1,]==tgt.pos[1] & test2[[l]][2,]==tgt.pos[2]),l, 0)
+        }
+        return(tgt.pos.idx)#the indices of where the tgt.pos are
+      }
+      # ##END THE NEW GARBAAAGE######################################
+      
       skey1$stage[which(skey1$key %in% in.paths$key)] <-
         paste0('w', as.character(w)) #need to change i to the mapping for the stage numberings
     }
