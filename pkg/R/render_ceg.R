@@ -28,7 +28,7 @@ renderCEG <- function(stage.key, df){
   to.sink <- rep("winf", length(from.sink) )
   from.vals <- c(from.ceg, from.sink)
   to.vals <- c(to.ceg, to.sink)
-  lbls <- c(lbls, rep("Level",length(to.sink)))
+  lbls <- c(lbls, rep(as.vector(unlist(unique(df[,length(stage.key)]))),length(to.sink)/length(as.vector(unlist(unique(df[,length(stage.key)]))))))
   
   from.vals.n <- as.numeric(gsub("[^\\d]+", "", from.vals, perl=TRUE))+1
   to.vals.n <- as.numeric(gsub("[^\\d]+", "", to.vals, perl=TRUE))+1
@@ -36,8 +36,10 @@ renderCEG <- function(stage.key, df){
   test <- cbind(from.vals.n,to.vals.n)
   #test.d <- unique(test)
   stages <- unique(c(from.vals,to.vals))
-  
-  nodes <- create_node_df(n=length(stages),type='a',label=stages)
+  coloursfordf <- distinctColorPalette(k = length(stages), altCol = FALSE, runTsne = FALSE)
+  pull(map_df(chds.stage.key, ~distinct(.x,stage,color)),color )->clr.idx
+  clrs <- c(coloursfordf[clr.idx+1],coloursfordf[length(stages)])
+  nodes <- create_node_df(n=length(stages),type='a',label=stages,fillcolor=clrs)
   edges <- create_edge_df(test[,1],test[,2],label = lbls)
   grf <-create_graph(
     nodes_df = nodes,
