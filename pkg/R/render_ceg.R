@@ -37,7 +37,7 @@ renderCEG <- function(stage.key, df){
   #test.d <- unique(test)
   stages <- unique(c(from.vals,to.vals))
   coloursfordf <- distinctColorPalette(k = length(stages), altCol = FALSE, runTsne = FALSE)
-  pull(map_df(chds.stage.key, ~distinct(.x,stage,color)),color )->clr.idx
+  pull(map_df(stage.key, ~distinct(.x,stage,color)),color )->clr.idx
   clrs <- c(coloursfordf[clr.idx+1],coloursfordf[length(stages)])
   nodes <- create_node_df(n=length(stages),type='a',label=stages,fillcolor=clrs)
   edges <- create_edge_df(test[,1],test[,2],label = lbls)

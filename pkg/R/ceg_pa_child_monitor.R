@@ -20,6 +20,7 @@ ceg.child.parent.monitor <-
            stage.key,
            struct,
            stages,
+           prior,
            n = 50,
            learn = FALSE) {
     #dataframes should also be added for the counts
@@ -32,7 +33,6 @@ ceg.child.parent.monitor <-
     Vm <- rep(NA, n)
     p <- rep(NA, n)
     
-    prior <- get.ref.prior(df, struct, cuts, stage.key, stages)
     target.stage.idx <-
       as.numeric(substr(target.stage, nchar(target.stage), nchar(target.stage))) +
       1

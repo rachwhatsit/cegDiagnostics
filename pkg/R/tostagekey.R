@@ -1,15 +1,18 @@
 library(tidyverse); library(rlang)
 
-radical.df<- read.csv(file = "data1.csv")
-sst <- jCEG.AHC(chds.df)
-radical.sst <- jCEG.AHC(radical.df) 
-sst$result
-sst$merged
-
 #sst is the result of CEGAHC.R 
 #the result skey is the list of length same number of variables
 #can match all of the possibilities to what size it is in. 
 #df is the data frame of interest
+
+find.cut <- function(x){
+  if (is.null(dim(test[[x]])) == T) {
+    no.nas <- length(which(test[[x]] != "NA"))
+  }
+  else{
+    no.nas <- length(which(test[[x]][,1]!="NA"))}
+  return(no.nas)}#used in tostagekey
+
 
 tostagekey <- function(df, sst) {
   sst$comparisonset
@@ -33,33 +36,28 @@ tostagekey <- function(df, sst) {
   #now we need to add the stage to each of the skey lists
   skey[[1]]$stage <-
     "w0" #specify the root situation in the stratified tree
+  skey[[1]]$color <- 0
   w <- 0
+  color <- 0
   for (i in 2:length(skey)) {
     #add a stage column
     skey[[i]]$stage <- rep(NA, dim(skey[[i]])[1]) #initialized
-    test <- sst$result 
-    find.cut <- function(x){
-      if (is.null(dim(test[[x]])) == T) {
-        no.nas <- length(which(test[[x]] != "NA"))
-      }
-      else{
-        no.nas <- length(which(test[[x]][,1]!="NA"))}
-      return(no.nas)}
+    skey[[i]]$color <- rep(NA, dim(skey[[i]])[1]) #initialized
+    test <<- sst$result
     unlist(map(1:length(test), find.cut))->test.cut
     test.cut[1]<-0
+    
     #pull out the tests that have the right idx
-    
-    
-    #map over all lists and report the number of NAs in each set 
-    test <- sst$result[unlist]
+    test.cut.idx <- which(test.cut==(i-1))
+    test.sbst <- test[test.cut.idx] #results in same cut
+  
     #find the corresponding merged list
     skey1 <- skey[[i]]
-    #in.paths$key <- apply( in.paths[ , 1:dim.x ] , 1 , paste , collapse = "" )
     cols <- syms(colnames(df)[1:(i - 1)])
     unite(skey1, key,!!!(cols), sep = "", remove = F) -> skey1
-    for (j in 1:length(test)) {
-      w <- w + 1#select rows in same position with same color
-      in.paths <- as_tibble(t(data.frame(test[j])))
+    for (j in 1:length(test.sbst)) {
+      
+      in.paths <- as_tibble(t(data.frame(test.sbst[j])))
       in.path.cols <- syms(colnames(in.paths)[1:(i - 1)])
       unite(in.paths,
             key,
@@ -67,55 +65,48 @@ tostagekey <- function(df, sst) {
             sep = "",
             remove = F) -> in.paths
       same.color <- which(skey1$key %in% in.paths$key)####returns the indices of the rows that are in the same color
-      
-      ####FIX THE COMPLETE AND UTTER LACK OF POSITION INFORMATION IN THE TREE DAMMIT.
-      # #check that the same paths also appear in the subsequen stage
-      # 
-      if (dim(test[[j]])[1]==NULL){
-        right.idx <- same.color
-      }
-      else{
+     ###check out the position 
+      if (length(same.color)==1){#what happens if there is only one position of the same color
+        w <- w+1 
+        color <- color+1
+        skey1$stage[same.color] <- paste0('w',w)
+        skey1$color[same.color] <- color
+      } else if(i==(num.cuts)+1){
+        w <- w+1
+        color <- color+1
+        skey1$stage[same.color] <- paste0('w',w)
+        skey1$color[same.color] <- color
+        } else {
         #do all the other stuff below
-      }
-      test2 <- sst$mergedlist[unlist(sst$comparisonset[[i]])]
-      rows <- dim(test[[j]])[1] ;cols <- length(levels(as.factor(df[[colnames(df)[i]]])))
-      same.pos.mat <- matrix(rep(NA, rows*cols),nrow = rows,ncol=cols)#initalize the matrix of same positioning
-      for(m in 1:rows){
-        for (n in 1:cols){
-          test[[j]][,m] -> tgt.lst
-          tgt.lst[i] <- levels(as.factor(df[[colnames(df)[i]]]))[n]
-          tgt.lst %in% test2#find index of tgt.list in test2
-          same.pos.mat[i,j] <- 
+        test2 <- sst$result[test.cut==i]  
+        rows <- dim(test.sbst[[j]])[2] ;cols <- length(levels(as.factor(df[[colnames(df)[i]]])))
+        same.pos.mat <- matrix(rep(NA, rows*cols),nrow = rows,ncol=cols)#initalize the matrix of same positioning
+        for(m in 1:rows){
+          for (n in 1:cols){
+            test.sbst[[j]][,m] -> tgt.lst
+            tgt.lst[i] <- levels(as.factor(df[[colnames(df)[i]]]))[n]
+            lapply(test2, `==`, tgt.lst) ->checkme
+            lapply(1:length(checkme), function(x) apply(checkme[[x]],2,all))->all.checkme
+            which(lapply(1:length(checkme),function(x) any(all.checkme[[x]]))==TRUE)->checkme.pos
+            same.pos.mat[m,n] <- checkme.pos
+          }
         }
+        pos.color <- rep(NA, dim(test.sbst[[j]])[2])
+        for(p in 1:dim(unique(same.pos.mat))[1]){
+          w <- w+1
+          color <- color+1
+          pos.color.idx <-which(apply(same.pos.mat, 1, function(x) identical(x[1:dim(same.pos.mat)[2]], unique(same.pos.mat)[p,])))
+          pos.color[pos.color.idx] <- paste0('w',w)
+        }                       
+        skey1$stage[same.color] <- pos.color #same color may not be the right idx???  
+        skey1$color[same.color] <- color
       }
-  
-                             
-      
-      for(k in 1:dim(test[[j]])[2]){#loops over all labeles feeding into same color
-        tgt.pos <- test[[j]][,k][(test[[j]][,k]!="NA")] #labels to test, ex: 'High High'
-        nxt.cut <- lapply(test2, data.frame)
-        test.for.pos[[k]] <- find.idx(tgt.pos,nxt.cut)
-      }
-
-
-                              
-                              
-        for (l in 1:length(nxt.cut)){
-          tgt.pos.idx[l] <- ifelse(any(test2[[l]][1,]==tgt.pos[1] & test2[[l]][2,]==tgt.pos[2]),l, 0)
-        }
-        return(tgt.pos.idx)#the indices of where the tgt.pos are
-      }
-      # ##END THE NEW GARBAAAGE######################################
-      same.pos <- ???????
-      
-      skey1$stage[same.color.idx)] <-
-        paste0('w', as.character(w)) #need to change i to the mapping for the stage numberings
     }
     #for each row test to see which one it is in
     #match(skey1[,1]l, test[,1])
     skey[[i]] <- skey1
   }
-  return(list(skey, stage.num))
+  return(skey)
 }
 
 

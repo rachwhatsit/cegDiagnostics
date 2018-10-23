@@ -141,7 +141,7 @@ CEG.AHC <- function(exampledata = exampledata ,
       merged = merged1 ,
       comparisonset = comparisonset ,
       mergedlist = mergedlist ,
-      lik = lik,
+      lik = lik
     )
   return(newlist)
 }

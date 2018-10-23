@@ -39,24 +39,24 @@ allComponents(4,3)
 allComponents(5,4)
 
 ##checking that the score function works
-score <- function(alpha, N){
-sum(lgamma(alpha + N) - lgamma(alpha)) + sum(lgamma(sum(alpha)) - lgamma(sum(alpha + N)))->p
-  return(p)
-}
+# score <- function(alpha, N){
+# sum(lgamma(alpha + N) - lgamma(alpha)) + sum(lgamma(sum(alpha)) - lgamma(sum(alpha + N)))->p
+#   return(p)
+# }
 
-radical.sst$data[!is.na(radical.sst$data)]
-
-idx <-
-  which(!is.na(unlist(lapply(
-    radical.sst$data, '[[', 1
-  ))) == TRUE)
-radical.sst$data[idx] -> radicalN
-
-components <- c()
-for (i in 1:37){
-  components[i]  <- score(unlist(radical.prior[i]), unlist(radicalN[i]))
-}
-
+# radical.sst$data[!is.na(radical.sst$data)]
+# 
+# idx <-
+#   which(!is.na(unlist(lapply(
+#     radical.sst$data, '[[', 1
+#   ))) == TRUE)
+# radical.sst$data[idx] -> radicalN
+# 
+# components <- c()
+# for (i in 1:37){
+#   components[i]  <- score(unlist(radical.prior[i]), unlist(radicalN[i]))
+# }
+# 
 
 #after finding out which components are troublesome...might like to visualize this. 
 #try to renderCEG but where the circle size shows the length of the Bayes Factor
@@ -77,7 +77,7 @@ ceg.child.parent.monitor(df=radical.df,
 
 ###########################################################chds
 #CHDS example
-chds.df <-read_csv(file = "CHDS.latentexample1.csv")
+#chds.df <-read_csv(file = "CHDS.latentexample1.csv")#don't use this for AHC
 chds.df <-read.csv(file = "CHDS.latentexample1.csv")#,stringsAsFactors = F) #note: sst requires factors
 chds.sst <- CEG.AHC(chds.df)
 chds.sst$result
@@ -107,6 +107,7 @@ chds.sst2 <- CEG.AHC(chds.df[,c(2,1,3,4)]) #varorder E S L H
 chds.sst2$lik; #equivalent to chds.sst so same likelihoods 
 chds.sst2.sk <- tostagekey(chds.df[,c(2,1,3,4)],sst = chds.sst2)
 renderCEG(chds.sst2.sk, chds.df[,c(2,1,3,4)])
+
 chds.sst3 <- CEG.AHC(chds.df[,c(1,3,2,4)])
 chds.sst3$lik #same likelihoods because statistically equivalent
 chds.sst3.sk <- tostagekey(chds.df[,c(1,3,2,4)],sst = chds.sst3) # var order S L E H 
@@ -117,28 +118,88 @@ chds.sst4.sk <- tostagekey(chds.df[,c(3,1,2,4)],sst = chds.sst4) # var order L S
 renderCEG(chds.sst4.sk, chds.df[,c(3,1,2,4)])
 chds.sst4$result
 
-map(chds.stage.key[-1], ~select(.x,-key))->chds.sk#a little bit of finagling to make it not blow up immediately.
+map(chds.stage.key[-1], ~select(.x,-key))->chds.sk#a little bit of finagling 
 chds.sk <- c(chds.stage.key[1],chds.sk)
-chds.prior <-get.ref.prior(df=chds.df,struct=chds.struct,cuts=chds.cuts,stage.key=chds.sk,stages=chds.stages)#check that we can get the prior
+map(chds.sk, ~select(.x,-color))->chds.sk.nocol
+chds.prior <-get.ref.prior(df=chds.df,struct=chds.struct,cuts=chds.cuts,stage.key=chds.sk.nocol,stages=chds.stages)#check that we can get the prior
+#df=chds.df;struct=chds.struct;cuts=chds.cuts;stage.key=chds.sk.nocol;stages=chds.stages#fortroubleshooting
 
 #what to do about the first stage
-allComponents(targetCut = 2,condtnlCut = 1,df = chds.df,stage.key = chds.sk,stages = chds.stages,struct = chds.struct,chds.prior)
-allComponents(targetCut = 3,condtnlCut = 2,df = chds.df,stage.key = chds.sk,stages = chds.stages,struct = chds.struct,chds.prior)
+allComponents(targetCut = 2,condtnlCut = 1,df = chds.df,stage.key = chds.sk.nocol,stages = chds.stages,struct = chds.struct,chds.prior)
+allComponents(targetCut = 3,condtnlCut = 2,df = chds.df,stage.key = chds.sk.nocol,stages = chds.stages,struct = chds.struct,chds.prior)
 #much of the BF score comes from stage w3 to w1
-allComponents(targetCut = 4,condtnlCut = 3,df = chds.df,stage.key = chds.sk,stages = chds.stages,struct = chds.struct,chds.prior)
+allComponents(targetCut = 4,condtnlCut = 3,df = chds.df,stage.key = chds.sk.nocol,stages = chds.stages,struct = chds.struct,chds.prior)
+
+new <- component.monitor.ceg(chds.df, target.stage='w3', condtnl.stage = 'w1',target.cut=3,stages=chds.stages,stage.key=chds.sk.nocol struct=chds.struct,chds.prior)
+chds.df; target.stage='w3'; condtnl.stage = 'w1';target.cut=3;stages=chds.stages;stage.key=chds.sk.nocol;struct=chds.struct;prior=chds.prior
+
+###########NEW FN TO FIND THE DATA FOR THE POSITIONS
+getdata <- function(df, stage.key) {
+  cuts <- colnames(df)
+  cols <- syms(colnames(df)[1:(length(colnames(df)))])#add the last stage key on
+  add.on <- length(stage.key)+1
+  stage.key[[add.on]] <- count(df, !!!cols)
+  stage.key[[add.on]]$stage <- rep('winf', length(stage.key[[add.on]]$n))
+  counter <- 1
+  data.lst <- list()
+  for (i in 3:(length(cuts)+1)){
+    colnames(stage.key[[(i-1)]])[i] <- "from.stage"
+    colnames(stage.key[[i]])[(i+1)] <- "to.stage"
+      cols <- colnames(df)[1:(i - 2)]
+      trgcut <- sym(colnames(df)[(i-1)])
+    full_join(stage.key[[i]],stage.key[[(i-1)]], by=cols) %>%  
+      group_by(!!trgcut, from.stage) %>% distinct(!!trgcut, from.stage, .keep_all=TRUE) %>% summarise(cnts = sum(n.x)) -> data.df
+    
+      stgs <- unique(data.df$from.stage)
+      num.stages <- length(stgs)
+  
+    for (j in 1:num.stages){
+      counter <- counter+1
+      data.lst[[counter]] <- data.df$cnts[which(data.df$from.stage==stgs[j])]
+    }
+    colnames(stage.key[[(i-1)]])[i] <- "stage"
+    colnames(stage.key[[i]])[(i+1)] <- "stage"
+    
+  }
+  return(data.lst)
+}
+
+cut=4
+colnames(stage.key[[3]])[4] <- "from.stage"
+colnames(stage.key[[4]])[5] <- "to.stage"
+full_join(stage.key[[4]],stage.key[[3]], by=c("Social", "Economic")) %>%  
+  group_by(Events, from.stage) %>% distinct(Events, from.stage, .keep_all=TRUE) %>% summarise(cnts = sum(n.x)) -> data.df
+
+data.df$cnts[which(data.df$from.stage=='w3')]
+
+full_join(stage.key[[3]],stage.key[[4]],by = c(Social, Economic)) %>% group_by(from.stage)
+
+full_join(stage.key[[3]],stage.key[[4]])
+stage.key[[4]] %>% select(Events, stage,n) %>% distinct(Events,stage)
+# components <- function(sst, prior) {
+#   idx <-
+#     which(!is.na(unlist(lapply(
+#       sst$data, '[[', 1
+#     ))) == TRUE)
+#   sst$data[idx] -> NN
+#   
+#   components <- c()
+#   for (i in 1:length(prior)){
+#     components[i]  <- score(unlist(prior[i]), unlist(NN[i]))
+#   }
+# }
+
 
 chds.stage.key[[3]] #High Social, High Economic, High Social and Low Economic are triggering a pretty high error.
 #is it strangethat these get lumped in the same stage??
 renderCEG(chds.stage.key, chds.df)
 
 #Is there another staging of the situations in cut 3 that would be more appropriate? 
-chds.part.monitor <- part.monitor(rho = .7,epsilon = 1.2,df_cut = chds.df,which.cut = 3,stage.key = chds.sk,n.monitor = 860)
+chds.part.monitor <- part.monitor(rho = .7,epsilon = 1.2,df_cut = chds.df,which.cut = 3,stage.key = chds.sk.nocol,n.monitor = 860)
 #k is 0.9 in freeman paper
 #tau is length of lag
 
 #rho = .7;epsilon = 1.2;df_cut = chds.df;which.cut = 3;stage.key = chds.sk;n.monitor = 200#for trblshtng
-chds.part.monitor[[3]] %>%
-  flatten_dfr()
 
 chds.crrnt.stg.probs <- do.call("rbind", lapply(chds.part.monitor[[3]], "[[", 4)) #possible.coloring 3
 chds.alt1.stg.probs <- do.call("rbind", lapply(chds.part.monitor[[3]], "[[", 1))#possible.coloring 10
@@ -149,7 +210,7 @@ possible.colorings[[3]] #(HH, HL, LH) (LL)
 possible.colorings[[13]]#(HH) (HL, LH) (LL)
 
 chds.part.df <- as.data.frame(cbind(5:860,chds.crrnt.stg.probs, chds.alt1.stg.probs, chds.alt2.stg.probs, chds.alt3.stg.probs))
-colnames(chds.part.df) <- c("t", "currentStage", "AltStage1", "AltStage2", "AltStage3")
+colnames(chds.part.df) <- c("t", "Staging1", "Staging2", "Staging3", "Staging4")
 chds.part.df %>% 
   gather(key, value, -t) %>%
   ggplot(aes(x=t, y=value, colour=key)) + geom_line()
@@ -159,8 +220,9 @@ chds.w3.pach <- ceg.child.parent.monitor(df=chds.df,
                          target.cut = 3, 
                          condtnl.stage = "w1",
                          struct = chds.struct,
-                         stage.key = chds.sk, 
+                         stage.key = chds.sk.nocol, 
                          stages=chds.stages,
+                         prior=chds.prior,
                          n = 860,
                          learn = F)
 plot(chds.w3.pach[,1])
@@ -170,10 +232,15 @@ chds.w3w2.pach <- ceg.child.parent.monitor(df=chds.df,
                                          target.cut = 3, 
                                          condtnl.stage = "w2",
                                          struct = chds.struct,
-                                         stage.key = chds.sk, 
+                                         stage.key = chds.sk.nocol, 
                                          stages=chds.stages,
+                                         prior=chds.prior,
                                          n = 860,
                                          learn = F)
 lines(chds.w3w2.pach[,1])
+chds.pach <- as.data.frame(cbind(1:860,chds.w3.pach[,1],chds.w3w2.pach[,1]))
+colnames(chds.pach) <- c('t','w3w1','w3w2')
 
-
+chds.pach %>%
+  gather(key,value, -t) %>% 
+  ggplot(aes(x=t,y=value,colour=key))+geom_line()
