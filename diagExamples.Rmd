@@ -6,19 +6,20 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-load(file = "examples.Rdata")
+knitr::opts_chunk$set(echo = TRUE,warning=FALSE)
+load(file = "exampleCHDS.Rdata")
+library(rlang);library(tidyverse);library(ggplot2);library(partitions);library(DiagrammeR);library(randomcoloR)
 ```
 
 ## CHDS example
 
 The CHDS data here is supplied by Rodriguo Collazo. The CEG.AHC is found in Lorna Barclay's thesis.
 ```{r, eval=FALSE}
-chds.df <-read.csv(file = "CHDS.latentexample1.csv")#,stringsAsFactors = F) #note: sst requires factors
+chds.df <-read.csv(file = "CHDS.latentexample1.csv")# #note: sst requires factors
 chds.sst <- CEG.AHC(chds.df)
 ```
 
-The staging is found in the results. Results shows the incoming edges contributing to each of the stages
+The staging is found in the results. Results shows the incoming edges contributing to each of the stages.
 ```{r}
 chds.sst$result
 ```
@@ -31,9 +32,10 @@ tostagekey(chds.df, chds.sst)-> chds.stage.key
 pull(map_df(chds.stage.key, ~distinct(.x,stage)),stage )-> chds.stages#the stages
 chds.struct <- to.struct(chds.df,chds.stage.key,chds.sst) #the struct. a weird name for the data results of the AHC alg
 chds.cuts <- colnames(chds.df)
+
 ```
 
-The code below renders the CEG. w3 and w4 are in the same stage, but not the same position.
+The code below renders the CEG. $w_3$ and $w_4$ are in the same stage, but not the same position.
 ```{r}
 renderCEG(chds.stage.key,chds.df)
 ```
@@ -41,6 +43,8 @@ renderCEG(chds.stage.key,chds.df)
 
 This reproduces CEG B as seen in Collazo, Gorgen, Smith book.  
 with a Bayes factor score of -2478.49.
+
+####Global monitors 
 
 The global monitor from Lauritzen is simply the Bayes factor. 
 
@@ -50,107 +54,126 @@ chds.sst2 <- CEG.AHC(chds.df[,c(2,1,3,4)]) #varorder E S L H
 chds.sst2$lik; #equivalent to chds.sst so same likelihoods 
 chds.sst2.sk <- tostagekey(chds.df[,c(2,1,3,4)],sst = chds.sst2)
 renderCEG(chds.sst2.sk, chds.df[,c(2,1,3,4)])
+
 ```
 
 ```{r}
-```
-
-```{r}
-```
-
-```{r}
-```
-
-```{r}
-```
-
-```{r}
-```
-
-```{r}
-```
-
-```{r}
-```
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-
-
-
-
-
-
-#test against another ordering
 chds.sst3 <- CEG.AHC(chds.df[,c(1,3,2,4)])
 chds.sst3$lik #same likelihoods because statistically equivalent
 chds.sst3.sk <- tostagekey(chds.df[,c(1,3,2,4)],sst = chds.sst3) # var order S L E H 
 renderCEG(chds.sst3.sk, chds.df[,c(1,3,2,4)])
+```
+
+```{r}
 chds.sst4 <- CEG.AHC(chds.df[,c(3,1,2,4)])
 chds.sst4$lik #same likelihood because statistically equivalent
 chds.sst4.sk <- tostagekey(chds.df[,c(3,1,2,4)],sst = chds.sst4) # var order L S E H 
 renderCEG(chds.sst4.sk, chds.df[,c(3,1,2,4)])
-chds.sst4$result
+```
 
-map(chds.stage.key[-1], ~select(.x,-key))->chds.sk#a little bit of finagling to make it not blow up immediately.
+These examples reproduce the results from the CEG book. 
+
+This next set of function shapes the data and finds the reference prior. Here we take the effective sample size as 3, the highest number of levels we have for $X_l$.
+
+```{r}
+map(chds.stage.key[-1], ~select(.x,-key))->chds.sk#a little bit of finagling 
 chds.sk <- c(chds.stage.key[1],chds.sk)
-chds.prior <-get.ref.prior(df=chds.df,struct=chds.struct,cuts=chds.cuts,stage.key=chds.sk,stages=chds.stages)#check that we can get the prior
+map(chds.sk, ~select(.x,-color))->chds.sk.nocol
+chds.prior <-get.ref.prior(df=chds.df,struct=chds.struct,cuts=chds.cuts,stage.key=chds.sk.nocol,stages=chds.stages)#check that we can get the prior
+```
 
-#what to do about the first stage
-allComponents(targetCut = 2,condtnlCut = 1,df = chds.df,stage.key = chds.sk,stages = chds.stages,struct = chds.struct,chds.prior)
-allComponents(targetCut = 3,condtnlCut = 2,df = chds.df,stage.key = chds.sk,stages = chds.stages,struct = chds.struct,chds.prior)
-#much of the BF score comes from stage w3 to w1
-allComponents(targetCut = 4,condtnlCut = 3,df = chds.df,stage.key = chds.sk,stages = chds.stages,struct = chds.struct,chds.prior)
+#### Component monitor
 
-chds.stage.key[[3]] #High Social, High Economic, High Social and Low Economic are triggering a pretty high error.
-#is it strangethat these get lumped in the same stage??
-renderCEG(chds.stage.key, chds.df)
+The component monitor is the contribution from each of the positions to the final Bayes Factor. Nodes with a particularly high contribution may indicate an ill fitting model. For instance, here we examine the contribution of the positions in cut 2, $X_e$ on the subsequent cut $X_l$. 
+```{r}
+as.data.frame(cbind(stages,components))
+```
 
-#Is there another staging of the situations in cut 3 that would be more appropriate? 
-chds.part.monitor <- part.monitor(rho = .7,epsilon = 1.2,df_cut = chds.df,which.cut = 3,stage.key = chds.sk,n.monitor = 860)
-#k is 0.9 in freeman paper
-#tau is length of lag
 
-#rho = .7;epsilon = 1.2;df_cut = chds.df;which.cut = 3;stage.key = chds.sk;n.monitor = 200#for trblshtng
-chds.part.monitor[[3]] %>%
-  flatten_dfr()
+We see here that, aside from the root node, the edges outgoing from $w_1$ and $w_3$ represent a large contribution to the Bayes factor score. This makes sense, as that set of edges is the only one which contains two incoming pathways: patients who have $X_s$ = High and $X_e$ = (High, Low). 
 
+####Partition monitor
+
+The partition monitor is of the form found in Freeman paper. The plot computes $p(U_t | x^{t-1})$ throughout the data set. 
+
+```{r,eval=FALSE}
+chds.part.monitor <- part.monitor(rho = .7,epsilon = 1.2,df_cut = chds.df,which.cut = 3,stage.key = chds.sk.nocol,n.monitor = 860)
+```
+
+```{r}
 chds.crrnt.stg.probs <- do.call("rbind", lapply(chds.part.monitor[[3]], "[[", 4)) #possible.coloring 3
 chds.alt1.stg.probs <- do.call("rbind", lapply(chds.part.monitor[[3]], "[[", 1))#possible.coloring 10
 chds.alt2.stg.probs <- do.call("rbind", lapply(chds.part.monitor[[3]], "[[", 2))#possible.coloring 11
 chds.alt3.stg.probs <- do.call("rbind", lapply(chds.part.monitor[[3]], "[[", 3))#possible.coloring 13
 
-possible.colorings[[3]] #(HH, HL, LH) (LL)
-possible.colorings[[13]]#(HH) (HL, LH) (LL)
+#possible.colorings[[3]] #(HH, HL, LH) (LL)
+#possible.colorings[[13]]#(HH) (HL, LH) (LL)
 
 chds.part.df <- as.data.frame(cbind(5:860,chds.crrnt.stg.probs, chds.alt1.stg.probs, chds.alt2.stg.probs, chds.alt3.stg.probs))
-colnames(chds.part.df) <- c("t", "currentStage", "AltStage1", "AltStage2", "AltStage3")
+colnames(chds.part.df) <- c("t", "Staging1", "Staging2", "Staging3", "Staging4")
 chds.part.df %>% 
   gather(key, value, -t) %>%
   ggplot(aes(x=t, y=value, colour=key)) + geom_line()
 
-chds.w3.pach <- ceg.child.parent.monitor(df=chds.df,
-                         target.stage = "w3",
-                         target.cut = 3, 
-                         condtnl.stage = "w1",
+```
+
+The stages are all the partitions in the Hasse diagram that are one move away from the current staging: 
+
+* Staging 1: (HH HL LH) (LL) 
+* Staging 2: (HL HH) (LH) (LL) 
+* Staging 3: (HH LH) (HL) (LL)
+* Staging 4: (HL LH) (HH) (LL)
+
+The staging given by (HH LH) (HL) (LL) is the preferred one, and the second most likely staging is (HH HL LH) (LL). 
+
+
+#### Parent child monitors 
+
+This checks individual contributions from one position on another. It is analgous to the prequential parent child monitor for the BN found in Cowell, Dawid, Lauritzen book 
+
+Here we examine the impact of two parent stages, $w_3$ and $w_5$ on child $w_7$. The y axis shows the cumulative log penalty. 
+
+```{r,eval=FALSE}
+chds.w7w3.pach <- ceg.child.parent.monitor(df=chds.df,
+                         target.stage = "w7",
+                         target.cut = 4, 
+                         condtnl.stage = "w3",
                          struct = chds.struct,
-                         stage.key = chds.sk, 
+                         stage.key = chds.sk.nocol, 
                          stages=chds.stages,
+                         prior=chds.prior,
                          n = 860,
                          learn = F)
-plot(chds.w3.pach[,1])
+plot(chds.w7w3.pach[,1])
 
-chds.w3w2.pach <- ceg.child.parent.monitor(df=chds.df,
-                                         target.stage = "w3",
-                                         target.cut = 3, 
-                                         condtnl.stage = "w2",
+chds.w7w5.pach <- ceg.child.parent.monitor(df=chds.df,
+                                         target.stage = "w7",
+                                         target.cut = 4, 
+                                         condtnl.stage = "w5",
                                          struct = chds.struct,
-                                         stage.key = chds.sk, 
+                                         stage.key = chds.sk.nocol, 
                                          stages=chds.stages,
+                                         prior=chds.prior,
                                          n = 860,
                                          learn = F)
-lines(chds.w3w2.pach[,1])
+```
 
+```{r}
+chds.pach <- as.data.frame(cbind(1:860,chds.w7w3.pach[,1],chds.w7w5.pach[,1]))
+colnames(chds.pach) <- c('t','w7w3','w7w5')
 
+chds.pach %>%
+  gather(key,value, -t) %>% 
+  ggplot(aes(x=t,y=value,colour=key))+geom_line()
+
+```
+
+This can be used to detect anomalies in the data: for instance, in places where the cumulative log penalty plateaus and then jumps up suddenly. 
+
+### Points to consider
+
+* The diangostics can be used to pinpoint the elements of the structure that most differ from a BN. In larger CEGs, this can be used to visualize an element of the network. 
+
+* Monitoring the stage structure offers a quick visual check on the stability of the staging
+
+* The parent child monitors can be used to identify which incoming contributions to the stage have the highest penalty. These may indicate places in which the graph needs additional refinement. 

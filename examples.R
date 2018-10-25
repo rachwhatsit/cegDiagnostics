@@ -15,6 +15,12 @@ radical.cuts <- colnames(radical.df)
 
 renderCEG(radical.stage.key,radical.df)#plot the new stratified CEG
 
+renderpart <- function(colvec, df){
+  cut.df <- df[,colvec]
+  sst <- CEG.AHC(cut.df)
+  sk <- tostagekey(cut.df, sst)
+  renderCEG(sk,cut.df)
+}
 radical.sst$lik #Bayes Factor of -40021.6 with reference prior that has sample size, alpha=3
 
 #now examine the component monitors. these have wildly different priors
@@ -134,34 +140,21 @@ new <- component.monitor.ceg(chds.df, target.stage='w3', condtnl.stage = 'w1',ta
 chds.df; target.stage='w3'; condtnl.stage = 'w1';target.cut=3;stages=chds.stages;stage.key=chds.sk.nocol;struct=chds.struct;prior=chds.prior
 
 ###########NEW FN TO FIND THE DATA FOR THE POSITIONS
-getdata <- function(df, stage.key) {
-  cuts <- colnames(df)
-  cols <- syms(colnames(df)[1:(length(colnames(df)))])#add the last stage key on
-  add.on <- length(stage.key)+1
-  stage.key[[add.on]] <- count(df, !!!cols)
-  stage.key[[add.on]]$stage <- rep('winf', length(stage.key[[add.on]]$n))
-  counter <- 1
-  data.lst <- list()
-  for (i in 3:(length(cuts)+1)){
-    colnames(stage.key[[(i-1)]])[i] <- "from.stage"
-    colnames(stage.key[[i]])[(i+1)] <- "to.stage"
-      cols <- colnames(df)[1:(i - 2)]
-      trgcut <- sym(colnames(df)[(i-1)])
-    full_join(stage.key[[i]],stage.key[[(i-1)]], by=cols) %>%  
-      group_by(!!trgcut, from.stage) %>% distinct(!!trgcut, from.stage, .keep_all=TRUE) %>% summarise(cnts = sum(n.x)) -> data.df
-    
-      stgs <- unique(data.df$from.stage)
-      num.stages <- length(stgs)
-  
-    for (j in 1:num.stages){
-      counter <- counter+1
-      data.lst[[counter]] <- data.df$cnts[which(data.df$from.stage==stgs[j])]
-    }
-    colnames(stage.key[[(i-1)]])[i] <- "stage"
-    colnames(stage.key[[i]])[(i+1)] <- "stage"
-    
-  }
-  return(data.lst)
+
+getdata(chds.df, chds.sk.nocol) -> chds.data
+chds.data[[1]]<- chds.sk.nocol[[2]]$n
+
+chds.prior
+
+score <- function(alpha, N){
+sum(lgamma(alpha + N) - lgamma(alpha)) + sum(lgamma(sum(alpha)) - lgamma(sum(alpha + N)))->p
+  return(p)
+}
+
+
+components <- c()
+for (i in 1:length(chds.prior)){
+  components[i]  <- score(unlist(chds.prior[i]), unlist(chds.data[i]))
 }
 
 cut=4
@@ -215,31 +208,31 @@ chds.part.df %>%
   gather(key, value, -t) %>%
   ggplot(aes(x=t, y=value, colour=key)) + geom_line()
 
-chds.w3.pach <- ceg.child.parent.monitor(df=chds.df,
-                         target.stage = "w3",
-                         target.cut = 3, 
-                         condtnl.stage = "w1",
+chds.w7w3.pach <- ceg.child.parent.monitor(df=chds.df,
+                         target.stage = "w7",
+                         target.cut = 4, 
+                         condtnl.stage = "w3",
                          struct = chds.struct,
                          stage.key = chds.sk.nocol, 
                          stages=chds.stages,
                          prior=chds.prior,
                          n = 860,
                          learn = F)
-plot(chds.w3.pach[,1])
+plot(chds.w7w3.pach[,1])
 
-chds.w3w2.pach <- ceg.child.parent.monitor(df=chds.df,
-                                         target.stage = "w3",
-                                         target.cut = 3, 
-                                         condtnl.stage = "w2",
+chds.w7w5.pach <- ceg.child.parent.monitor(df=chds.df,
+                                         target.stage = "w7",
+                                         target.cut = 4, 
+                                         condtnl.stage = "w5",
                                          struct = chds.struct,
                                          stage.key = chds.sk.nocol, 
                                          stages=chds.stages,
                                          prior=chds.prior,
                                          n = 860,
                                          learn = F)
-lines(chds.w3w2.pach[,1])
-chds.pach <- as.data.frame(cbind(1:860,chds.w3.pach[,1],chds.w3w2.pach[,1]))
-colnames(chds.pach) <- c('t','w3w1','w3w2')
+lines(chds.w7w5.pach[,1])
+chds.pach <- as.data.frame(cbind(1:860,chds.w7w3.pach[,1],chds.w7w5.pach[,1]))
+colnames(chds.pach) <- c('t','w7w3','w7w5')
 
 chds.pach %>%
   gather(key,value, -t) %>% 

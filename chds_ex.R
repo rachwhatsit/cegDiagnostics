@@ -6,6 +6,7 @@ df<-read.csv(file = "CHDS.latentexample1.csv")
 radical <- read.csv(file= "data1.csv")
 
 ##CHDS EXAMPLE
+#this example looks at inputting the structure by hand.
 
 #HOW TO FUNCTIONIZE?
 ##THIS IS FOR CEG-a
