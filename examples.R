@@ -15,58 +15,39 @@ radical.cuts <- colnames(radical.df)
 
 renderCEG(radical.stage.key,radical.df)#plot the new stratified CEG
 
-renderpart <- function(colvec, df){
+#visualize the first few cuts of the CEG, could try with the data.tree
+renderpart <- function(colvec, df){#running AHC on a subset of the data returns entirely different results 
   cut.df <- df[,colvec]
   sst <- CEG.AHC(cut.df)
   sk <- tostagekey(cut.df, sst)
   renderCEG(sk,cut.df)
 }
-radical.sst$lik #Bayes Factor of -40021.6 with reference prior that has sample size, alpha=3
+renderpart(1:4,radical.df)
+
+
+radical.sst$lik #Bayes Factor of -40021.6 with reference prior that has effective sample size 
+
+map(radical.stage.key[-1], ~select(.x,-key))->radical.sk#a little bit of finagling 
+radical.sk <- c(radical.stage.key[1],radical.sk)
+map(radical.sk, ~select(.x,-color))->radical.sk.nocol
+
+#the real component monitor 
+getdata(radical.df, radical.sk.nocol) -> radical.data
+radical.data[[1]]<- radical.sk.nocol[[2]]$n
+
+#get the prior
+radical.prior <-get.ref.prior(df=radical.df,struct=radical.struct,cuts=radical.cuts,stage.key=radical.sk.nocol,stages=radical.stages)#check that we can get the prior
+#get the componens 
+radical.components <- component.monitor(radical.data,radical.prior)
+
+
+####
+
 
 #now examine the component monitors. these have wildly different priors
 component.monitor.ceg(radical.df, target.stage='w3',condtnl.stage = 'w2',target.cut = 3,stages=radical.stages,stage.key=radical.sk,struct=radical.struct)
 
 radical.stage.num <- do.call(rbind, lapply(radical.sst$comparisonset, length)) #gives the number of stages (except the root node)
-
-
-allComponents <- function(targetCut, condtnlCut,df, stage.key,stages,struct,prior) {#a useful fn that runs component monitors for the entire model
-  crossing(unique(stage.key[[targetCut]]$stage), unique(stage.key[[condtnlCut]]$stage))->whichstages
-  whichstages$score <-rep(NA,length(whichstages[,1]))
-  for (i in 1:dim(whichstages)[1]){
-  new <- component.monitor.ceg(df, target.stage=as.character(whichstages[i,1]), condtnl.stage = as.character(whichstages[i,2]),target.cut=targetCut,stages=stages,stage.key=stage.key, struct=struct,prior)
-  whichstages$score[i] <- new
-  }
-  names(whichstages)[1:2] <- c('targetStage','condtnlStage')
-  return(whichstages)
-}
-
-allComponents(3,2)
-allComponents(4,3)
-allComponents(5,4)
-
-##checking that the score function works
-# score <- function(alpha, N){
-# sum(lgamma(alpha + N) - lgamma(alpha)) + sum(lgamma(sum(alpha)) - lgamma(sum(alpha + N)))->p
-#   return(p)
-# }
-
-# radical.sst$data[!is.na(radical.sst$data)]
-# 
-# idx <-
-#   which(!is.na(unlist(lapply(
-#     radical.sst$data, '[[', 1
-#   ))) == TRUE)
-# radical.sst$data[idx] -> radicalN
-# 
-# components <- c()
-# for (i in 1:37){
-#   components[i]  <- score(unlist(radical.prior[i]), unlist(radicalN[i]))
-# }
-# 
-
-#after finding out which components are troublesome...might like to visualize this. 
-#try to renderCEG but where the circle size shows the length of the Bayes Factor
-
 
 radical.prior <-get.ref.prior(df=radical.df,struct=radical.struct,cuts=radical.cuts,stage.key=radical.sk,stages=radical.stages)#check that we can get the prior
 
@@ -140,6 +121,7 @@ new <- component.monitor.ceg(chds.df, target.stage='w3', condtnl.stage = 'w1',ta
 chds.df; target.stage='w3'; condtnl.stage = 'w1';target.cut=3;stages=chds.stages;stage.key=chds.sk.nocol;struct=chds.struct;prior=chds.prior
 
 ###########NEW FN TO FIND THE DATA FOR THE POSITIONS
+
 
 getdata(chds.df, chds.sk.nocol) -> chds.data
 chds.data[[1]]<- chds.sk.nocol[[2]]$n

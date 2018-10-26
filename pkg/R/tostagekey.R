@@ -78,6 +78,7 @@ tostagekey <- function(df, sst) {
         skey1$color[same.color] <- color
         } else {
         #do all the other stuff below
+        color <- color+1
         test2 <- sst$result[test.cut==i]  
         rows <- dim(test.sbst[[j]])[2] ;cols <- length(levels(as.factor(df[[colnames(df)[i]]])))
         same.pos.mat <- matrix(rep(NA, rows*cols),nrow = rows,ncol=cols)#initalize the matrix of same positioning
@@ -94,7 +95,6 @@ tostagekey <- function(df, sst) {
         pos.color <- rep(NA, dim(test.sbst[[j]])[2])
         for(p in 1:dim(unique(same.pos.mat))[1]){
           w <- w+1
-          color <- color+1
           pos.color.idx <-which(apply(same.pos.mat, 1, function(x) identical(x[1:dim(same.pos.mat)[2]], unique(same.pos.mat)[p,])))
           pos.color[pos.color.idx] <- paste0('w',w)
         }                       

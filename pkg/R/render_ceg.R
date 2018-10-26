@@ -43,13 +43,15 @@ renderCEG <- function(stage.key, df){
   edges <- create_edge_df(test[,1],test[,2],label = lbls)
   grf <-create_graph(
     nodes_df = nodes,
-    edges_df = edges)
+    edges_df = edges
+    )
   #graph_attrs = "layout = neato")#,
   #  node_attrs = "fontname = Helvetica",
   #  edge_attrs = "color = gray20")
   
   # View the graph
-  render_graph(grf)
+  grf %>% add_global_graph_attrs('layout', 'dot', 'graph') %>% add_global_graph_attrs("rankdir", "LR","graph") %>% render_graph()
+  #render_graph(grf)
 }
 
 #uses a d3 visualization to sort through the edges

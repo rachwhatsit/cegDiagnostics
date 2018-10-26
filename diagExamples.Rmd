@@ -36,7 +36,7 @@ chds.cuts <- colnames(chds.df)
 ```
 
 The code below renders the CEG. $w_3$ and $w_4$ are in the same stage, but not the same position.
-```{r}
+```{r,cache=TRUE}
 renderCEG(chds.stage.key,chds.df)
 ```
 
@@ -49,7 +49,7 @@ with a Bayes factor score of -2478.49.
 The global monitor from Lauritzen is simply the Bayes factor. 
 
 We can see the usefulness of the global monitor by examining the BF of models with different ordering.
-```{r}
+```{r,cache=TRUE}
 chds.sst2 <- CEG.AHC(chds.df[,c(2,1,3,4)]) #varorder E S L H 
 chds.sst2$lik; #equivalent to chds.sst so same likelihoods 
 chds.sst2.sk <- tostagekey(chds.df[,c(2,1,3,4)],sst = chds.sst2)
@@ -57,14 +57,14 @@ renderCEG(chds.sst2.sk, chds.df[,c(2,1,3,4)])
 
 ```
 
-```{r}
+```{r,cache=TRUE}
 chds.sst3 <- CEG.AHC(chds.df[,c(1,3,2,4)])
 chds.sst3$lik #same likelihoods because statistically equivalent
 chds.sst3.sk <- tostagekey(chds.df[,c(1,3,2,4)],sst = chds.sst3) # var order S L E H 
 renderCEG(chds.sst3.sk, chds.df[,c(1,3,2,4)])
 ```
 
-```{r}
+```{r, cache=TRUE}
 chds.sst4 <- CEG.AHC(chds.df[,c(3,1,2,4)])
 chds.sst4$lik #same likelihood because statistically equivalent
 chds.sst4.sk <- tostagekey(chds.df[,c(3,1,2,4)],sst = chds.sst4) # var order L S E H 

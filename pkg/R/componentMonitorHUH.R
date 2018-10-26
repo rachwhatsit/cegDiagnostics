@@ -1,6 +1,45 @@
 #create a function that takes the components of the bayes factor for the whole thing. 
 
-  
+component.monitor <- function(data, prior){
+  components <- c()
+  for (i in 1:length(prior)){
+    alpha <- unlist(prior[i])
+    N <- unlist(data[i])
+    components[i]  <- sum(lgamma(alpha + N) - lgamma(alpha)) + sum(lgamma(sum(alpha)) - lgamma(sum(alpha + N)))
+  }
+  return(components)
+}
+
+getdata <- function(df, stage.key) {
+  cuts <- colnames(df)
+  cols <- syms(colnames(df)[1:(length(colnames(df)))])#add the last stage key on
+  add.on <- length(stage.key)+1
+  stage.key[[add.on]] <- count(df, !!!cols)
+  stage.key[[add.on]]$stage <- rep('winf', length(stage.key[[add.on]]$n))
+  counter <- 1
+  data.lst <- list()
+  for (i in 3:(length(cuts)+1)){
+    colnames(stage.key[[(i-1)]])[i] <- "from.stage"
+    colnames(stage.key[[i]])[(i+1)] <- "to.stage"
+    cols <- colnames(df)[1:(i - 2)]
+    trgcut <- sym(colnames(df)[(i-1)])
+    full_join(stage.key[[i]],stage.key[[(i-1)]], by=cols) %>%  
+      group_by(!!trgcut, from.stage) %>% summarise(cnts=sum(n.x))->data.df
+      
+    stgs <- unique(data.df$from.stage)
+    num.stages <- length(stgs)
+    
+    for (j in 1:num.stages){
+      counter <- counter+1
+      data.lst[[counter]] <- data.df$cnts[which(data.df$from.stage==stgs[j])]
+    }
+    colnames(stage.key[[(i-1)]])[i] <- "stage"
+    colnames(stage.key[[i]])[(i+1)] <- "stage"
+    
+  }
+  return(data.lst)
+}
+
 # components <- function(sst, prior) {
 #   idx <-
 #     which(!is.na(unlist(lapply(
