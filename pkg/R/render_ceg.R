@@ -44,16 +44,14 @@ renderCEG <- function(stage.key, df){
   grf <-create_graph(
     nodes_df = nodes,
     edges_df = edges
-    )
+  )
   #graph_attrs = "layout = neato")#,
   #  node_attrs = "fontname = Helvetica",
   #  edge_attrs = "color = gray20")
   
   # View the graph
-  grf %>% add_global_graph_attrs('layout', 'dot', 'graph') %>% add_global_graph_attrs("rankdir", "LR","graph") %>% render_graph()
-  #render_graph(grf)
+  grf %>% add_global_graph_attrs('layout', 'dot', 'graph') %>% add_global_graph_attrs("rankdir", "LR","graph") %>% render_graph() 
 }
-
 #uses a d3 visualization to sort through the edges
 forceCEG <- function(stage.key, df){
   cuts<-colnames(df)

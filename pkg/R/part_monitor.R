@@ -29,6 +29,8 @@ part.monitor <- function(rho, epsilon, df_cut,which.cut,stage.key, n.monitor,k=0
     idx.coarse <- which(num.partitions==length(possible.colorings[[crrnt.stg]])-1)#returs stagings with 2 colors 
     if (length(idx.coarse)==1){
       hasse.coarse <- c()
+    } else if(num.partitions[crrnt.stg]==max(num.partitions)){#for the finest partition
+      hasse.coarse<-rep(TRUE,length(idx.coarse))
     } else{
       first.set <- lapply(possible.colorings[idx.coarse], '[[', 1) 
       hasse.coarse <- c()
