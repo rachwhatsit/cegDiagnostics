@@ -34,15 +34,15 @@ tostagekey <- function(df, sst) {
   #it does NOT give us all possible combos of variable levels.
   
   #now we need to add the stage to each of the skey lists
-  skey[[1]]$stage <-
+  skey[[1]]$pos <-
     "w0" #specify the root situation in the stratified tree
-  skey[[1]]$color <- 0
+  skey[[1]]$stage <- "u0"
   w <- 0
   color <- 0
   for (i in 2:length(skey)) {
     #add a stage column
+    skey[[i]]$pos <- rep(NA, dim(skey[[i]])[1]) #initialized
     skey[[i]]$stage <- rep(NA, dim(skey[[i]])[1]) #initialized
-    skey[[i]]$color <- rep(NA, dim(skey[[i]])[1]) #initialized
     test <<- sst$result
     unlist(map(1:length(test), find.cut))->test.cut
     test.cut[1]<-0
@@ -69,13 +69,13 @@ tostagekey <- function(df, sst) {
       if (length(same.color)==1){#what happens if there is only one position of the same color
         w <- w+1 
         color <- color+1
-        skey1$stage[same.color] <- paste0('w',w)
-        skey1$color[same.color] <- color
+        skey1$pos[same.color] <- paste0('w',w)
+        skey1$stage[same.color] <- paste0('u',color)
       } else if(i==(num.cuts)+1){
         w <- w+1
         color <- color+1
-        skey1$stage[same.color] <- paste0('w',w)
-        skey1$color[same.color] <- color
+        skey1$pos[same.color] <- paste0('w',w)
+        skey1$stage[same.color] <- paste0('u',color)
         } else {
         #do all the other stuff below
         color <- color+1
@@ -98,8 +98,9 @@ tostagekey <- function(df, sst) {
           pos.color.idx <-which(apply(same.pos.mat, 1, function(x) identical(x[1:dim(same.pos.mat)[2]], unique(same.pos.mat)[p,])))
           pos.color[pos.color.idx] <- paste0('w',w)
         }                       
-        skey1$stage[same.color] <- pos.color #same color may not be the right idx???  
-        skey1$color[same.color] <- color
+        skey1$pos[same.color] <- pos.color #same color may not be the right idx???  
+        skey1$stage[same.color] <- paste0('u',color)
+        
       }
     }
     #for each row test to see which one it is in
@@ -109,7 +110,7 @@ tostagekey <- function(df, sst) {
   return(skey)
 }
 
-
+########THIS IS ONLY WORKING FOR STAGES, NOT FOR POSITIONS.
 to.struct <- function(df, stage.key, sst) {
   idx <-
     which(!is.na(unlist(lapply(
@@ -139,4 +140,12 @@ to.struct <- function(df, stage.key, sst) {
     names(struct[[i]]) <- c(colnames(df)[whichcut+1], "n")
   }
   return(struct)
-}
+} 
+
+get.the.struct <- function(df, stage.key,stages){ 
+  cuts <- colnames(df)
+  struct <- list() 
+  for (i in 1:length(stages)){
+    
+  }
+  }

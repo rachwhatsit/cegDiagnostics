@@ -40,6 +40,9 @@ radical.prior <-get.ref.prior(df=radical.df,struct=radical.struct,cuts=radical.c
 #get the componens 
 radical.components <- component.monitor(radical.data,radical.prior)
 
+cbind(radical.stages, radical.components)
+
+radical.part.monitor <- part.monitor(rho = .7,epsilon = 1.2,df_cut = radical.df,which.cut = ,stage.key = radical.sk.nocol,n.monitor = 200)
 
 ####
 
@@ -70,20 +73,22 @@ chds.sst <- CEG.AHC(chds.df)
 chds.sst$result
 #translate to run the diagnostic code 
 tostagekey(chds.df, chds.sst)-> chds.stage.key
+
 pull(map_df(chds.stage.key, ~distinct(.x,stage)),stage )-> chds.stages#the stages
+
 chds.struct <- to.struct(chds.df,chds.stage.key,chds.sst) #the struct. a weird name for the data results of the AHC alg
 chds.cuts <- colnames(chds.df)
 
 renderCEG(chds.stage.key,chds.df)
 
 ##for comparison with rodriguo's code 
-library(ceg)
-R.sst <-Stratified.staged.tree(chds.df)
-Stratified.ceg.model(R.sst)->chds.ceg
-plot(chds.ceg)#we get the same thing, so this is solid
-R.sst@model.score
-#get the likelihood
-chds.sst$lik#right score fo=rom the book
+# library(ceg)
+# R.sst <-Stratified.staged.tree(chds.df)
+# Stratified.ceg.model(R.sst)->chds.ceg
+# plot(chds.ceg)#we get the same thing, so this is solid
+# R.sst@model.score
+# #get the likelihood
+# chds.sst$lik#right score fo=rom the book
 
 #slight difference between RC and LB code here 
 #-2485.54 for RC and -2478.49 for LB 
@@ -148,6 +153,15 @@ chds.sst1.components <- component.monitor(chds.sst1.data, chds.sst1.prior)
 
 cbind(chds.sst1.stages, chds.sst1.components)
 
+x <- as.data.frame(x)
+x[,1] <- as.character(x[,1])
+x[,2] <- as.numeric(as.character(x[,2]))
+dat <- x[,2]
+align(dat) <- xalign(dat)
+digits(dat) <- xdigits(dat)
+display(x[,2]) <- xdisplay(x[,2])
+
+chds.components.df
 ####PARTITION MONITORRRRR
 
 #THIS TAKES OVER 12 HOURS. DO NOT RUN HERE. chds.part.monitor <- part.monitor(rho = .7,epsilon = 1.2,df_cut = chds.df,which.cut = 4,stage.key = chds.sk.nocol,n.monitor = 860)
@@ -306,3 +320,7 @@ chds.pach[1:45,] %>%
   gather(key,value, -t) %>% 
   ggplot(aes(x=t,y=value,colour=key))+geom_line() + ylab('Cumulative logarithmic penalty')
 
+
+########CHDS STAGE MONITORS  
+pass.message(df = chds.df, stage.key = chds.sk.nocol, evidence = chds.df[1:10,],prior = chds.prior,struct = chds.struct,stages = chds.stages )
+df = chds.df; stage.key = chds.sk.nocol; evidence = chds.df[1:10,];prior = chds.prior;struct = chds.struct;stages = chds.stages 

@@ -32,7 +32,16 @@ for (i in (1:length(prior))) {
 
 
 pass.message <-
-  function(df, stage.key, evidence, post.mean, prior,stages) {
+  function(df, stage.key, evidence, prior,stages,struct) {
+    post.mean <- list()
+    posterior <- list()
+    for (i in (1:length(prior))) {
+      posterior[[i]] <- list(unlist(prior[[i]]) + as.numeric(unlist(struct[[i]]$n)))
+    }
+    for (i in (1:length(prior))) {
+      post.mean[[i]] <-
+        list(unlist(posterior[i]) / sum(as.numeric(unlist(posterior[i]))))
+    }
     #what's the most natural way to put the evidence into the system?
     #prior <- get.ref.prior(df, struct, cuts, stage.key, stages)
     tau <- c()

@@ -8,7 +8,30 @@ radical <- read.csv(file= "data1.csv")
 ##CHDS EXAMPLE
 #this example looks at inputting the structure by hand.
 
-#HOW TO FUNCTIONIZE?
+
+##THIS IS FOR CEGbn
+ceg.bn.w0 <- chds.df %>% count(Social)
+ceg.bn.w1 <- chds.df %>% filter(Social=="High") %>% count(Economic)
+ceg.bn.w2 <- chds.df %>% filter(Social=="Low") %>% count(Economic)
+ceg.bn.w3 <- chds.df %>% filter(Social=="High", Economic=="High") %>% count(Events)
+ceg.bn.w4 <- chds.df %>% filter(Social == "High", Economic=="Low") %>% count(Events)
+ceg.bn.w5 <- chds.df %>% filter(Social=="Low", Economic=="High") %>% count(Events)
+ceg.bn.w6 <- chds.df %>% filter(Social == "Low", Economic=="Low") %>% count(Events)
+ceg.bn.w7 <- chds.df %>% filter((Social=="High" & Economic=="Low" & Events=="Average") |
+                           (Social=="High" & Economic=="High" & Events=="Average")) %>% count(Admission)
+ceg.bn.w8 <- chds.df %>% filter((Social=="High" & Economic=="Low" & Events=="High") |
+                           (Social=="High" & Economic=="High" & Events=="High")) %>% count(Admission)
+ceg.bn.w9 <- chds.df %>% filter((Social=="High" & Economic=="Low" & Events=="Low") |
+                           (Social=="High" & Economic=="High" & Events=="Low")) %>% count(Admission)
+ceg.bn.w10 <- chds.df %>% filter((Social=="Low" & Economic=="Low" & Events=="Average") |
+                                  (Social=="Low" & Economic=="High" & Events=="Average")) %>% count(Admission)
+ceg.bn.w11 <- chds.df %>% filter((Social=="Low" & Economic=="Low" & Events=="High") |
+                                  (Social=="Low" & Economic=="High" & Events=="High")) %>% count(Admission)
+ceg.bn.w12 <- chds.df %>% filter((Social=="Low" & Economic=="Low" & Events=="Low") |
+                                  (Social=="Low" & Economic=="High" & Events=="Low")) %>% count(Admission)
+
+chds.bn.struct <- list(ceg.bn.w0, ceg.bn.w1, ceg.bn.w2, ceg.bn.w3, ceg.bn.w4, ceg.bn.w5, ceg.bn.w6, ceg.bn.w7, ceg.bn.w8, ceg.bn.w9, ceg.bn.w10, ceg.bn.w11, ceg.bn.w12)
+rm('ceg.bn.w0', 'ceg.bn.w1', 'ceg.bn.w2', 'ceg.bn.w3', 'ceg.bn.w4', 'ceg.bn.w5', 'ceg.bn.w6', 'ceg.bn.w7', 'ceg.bn.w8', 'ceg.bn.w9', 'ceg.bn.w10', 'ceg.bn.w11', 'ceg.bn.w12')
 ##THIS IS FOR CEG-a
 cega.stages <- list("cega.w0", "cega.w1", "cega.w2", "cega.w3", "cega.w4", "cega.w5", "cega.w6", "cega.w7", "cega.w8", "cega.w9")
 
