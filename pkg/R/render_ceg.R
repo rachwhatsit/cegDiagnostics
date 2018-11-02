@@ -43,15 +43,11 @@ renderCEG <- function(stage.key, df){
   clrs <- c(coloursfordf[clr.idx+1],coloursfordf[length(stages)])#plus one for the infinity node
   nodes <- create_node_df(n=length(positions),type='a',label=positions,fillcolor=clrs)
   edges <- create_edge_df(test[,1],test[,2],label = lbls)
+  
   grf <-create_graph(
     nodes_df = nodes,
     edges_df = edges
   )
-  #graph_attrs = "layout = neato")#,
-  #  node_attrs = "fontname = Helvetica",
-  #  edge_attrs = "color = gray20")
-  
-  # View the graph
   grf %>% add_global_graph_attrs('layout', 'dot', 'graph') %>% add_global_graph_attrs("rankdir", "LR","graph") %>% render_graph() 
 }
 
@@ -80,14 +76,19 @@ getTreeRenderable <- function(stage.key, df){
   to.vals.n[is.na(to.vals.n)]<-max(na.omit(to.vals.n))+1
   test <- cbind(from.vals.n,to.vals.n)
   #test.d <- unique(test)
-  pos <- unique(c(from.vals,to.vals))
-  coloursfordf <- distinctColorPalette(k = length(pos), altCol = FALSE, runTsne = FALSE)
-  pull(map_df(stage.key, ~distinct(.x,stage,color)),color )->clr.idx
-  clrs <- c(coloursfordf[clr.idx+1],coloursfordf[length(pos)])
-  nodes <- create_node_df(n=length(pos),type='a',label=pos,fillcolor=clrs)
-  edges <- create_edge_df(test[,1],test[,2],label = lbls)
-  test.df <- rbind(c(NA, 1),as.data.frame(test)) #add one for the root node
+  positions <- unique(c(from.vals,to.vals))
   
+  pull(map_df(stage.key, ~distinct(.x,stage,pos)),stage )->stages
+  coloursfordf <- distinctColorPalette(k = length(unique(stages))+1, altCol = FALSE, runTsne = FALSE)
+  clr.idx <- as.numeric(str_sub(stages, 2, str_length(stages)))
+  clrs <- c(coloursfordf[clr.idx+1],coloursfordf[length(stages)])#plus one for the infinity node
+  nodes <- create_node_df(n=length(positions),type='a',label=positions,fillcolor=clrs)
+  edges <- create_edge_df(test[,1],test[,2],label = lbls)
+  
+
+  test.df <- as.data.frame(test)
   test.df$color <- nodes$fillcolor[test.df$to.vals.n]
+  test.df$label <- c('root',lbls)
+  test.df <- rbind(c(NA, 1, clrs[1]),test.df)
   return(test.df)
 }

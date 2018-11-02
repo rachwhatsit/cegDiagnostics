@@ -1,7 +1,21 @@
 #create a function that takes the components of the bayes factor for the whole thing. 
 
-component.monitor <- function(data, prior){
+component.monitor <- function(data, prior){###THIS IS
   components <- c()
+  for (i in 1:length(prior)){
+    alpha <- unlist(prior[i])
+    N <- unlist(data[i])
+    components[i]  <- sum(lgamma(alpha + N) - lgamma(alpha)) + sum(lgamma(sum(alpha)) - lgamma(sum(alpha + N)))
+  }
+  return(components)
+}
+
+component.monitor.sst <- function(sst){
+  components <-c() 
+  prior.idx <-  which(!is.na(unlist(lapply(sst$prior, '[[', 1))) == TRUE)
+  data.idx <-  which(!is.na(unlist(lapply(sst$data, '[[', 1))) == TRUE)
+  prior <- sst$prior[prior.idx]
+  data <- sst$data[data.idx]
   for (i in 1:length(prior)){
     alpha <- unlist(prior[i])
     N <- unlist(data[i])

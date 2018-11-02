@@ -1,5 +1,9 @@
+#preprocessing generate a stage key that only keeps the positions
 
+map(chds.sk, ~select(.x,-stage))->chds.sk.pos
 
+chds.sk.pos[[4]]%>%
+  
 #convert a CEG to a path structure
 
 
@@ -8,8 +12,8 @@ get.edge.path.key <- function(stage.key) {
   stage.key[[length(stage.key)]] -> paths
   mutate(paths, stage1 = rep(as.character(stages[1]), length(paths$n))) -> paths #initialized with first and last stages
   for (i in 2:(length(stage.key) - 1)) {
-    left_join(paths, select(stage.key[[i]], UQ(cuts[1:(i - 1)]), starts_with("stage")), by =
-                UQ(cuts[1:(i - 1)])) -> paths
+    left_join(paths, select(stage.key[[i]], cuts[1:(i - 1)], starts_with("stage")), by =
+                cuts[1:(i - 1)]) -> paths
   } #this returns the paths in a wonky order, but they're there
   dplyr::select(paths, c(1:(length(cuts)), starts_with("stage"))) -> edge.path.key
   return(edge.path.key)
@@ -22,7 +26,7 @@ get.edge.path.key <- function(stage.key) {
 #evidence <- df[1:5,] #how much evidencd do you have at each time?? yo ne se.
 posterior <- rep(NA, length(prior))
 for (i in (1:length(prior))) {
-  posterior[i] <- list(unlist(prior[i]) + unlist(struct[[i]]$n))
+  posterior[i] <- list(unlist(prior[i]) + unlist(as.numeric(struct[[i]]$n)))
 }
 post.mean <- rep(NA, length(prior))
 for (i in (1:length(prior))) {
@@ -33,10 +37,11 @@ for (i in (1:length(prior))) {
 
 pass.message <-
   function(df, stage.key, evidence, prior,stages,struct) {
+    cuts <- colnames(df)
     post.mean <- list()
     posterior <- list()
     for (i in (1:length(prior))) {
-      posterior[[i]] <- list(unlist(prior[[i]]) + as.numeric(unlist(struct[[i]]$n)))
+      posterior[i] <- list(unlist(prior[i]) + unlist(as.numeric(struct[[i]]$n)))
     }
     for (i in (1:length(prior))) {
       post.mean[[i]] <-
@@ -46,7 +51,6 @@ pass.message <-
     #prior <- get.ref.prior(df, struct, cuts, stage.key, stages)
     tau <- c()
     for (i in 2:length(stage.key)) {
-      cuts <- colnames(df)
       stage.key[[i]] <- mutate(stage.key[[i]], pi = n / dim(df)[1])
     }#adds edge probabilties to each stage
     edge.path.key <-
