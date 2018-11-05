@@ -232,8 +232,9 @@ part.monitor <- function(rho, epsilon, df_cut,which.cut,stage.key, n.monitor,k=0
     
     newp2 <- mpfr(p2,80)
     p2.exp <- exp(newp2) /sum(exp(newp2))
+    p2.new <- p2.exp*p.trans
     
-    p.monitor[[t]] <- as.numeric(mpfr(p2.exp,16))
+    p.monitor[[t]] <- as.numeric(mpfr(p2.new,16))
   }
   return(list(STAGE, change.points, p.monitor))
 }

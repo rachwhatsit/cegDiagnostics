@@ -94,10 +94,10 @@ renderCEG(chds.stage.key,chds.df)
 #-2485.54 for RC and -2478.49 for LB 
 
 chds.stage.key -> chds.bn.stage.key
-chds.bn.stage.key[[3]]$stage <- c('w3','w4','w5','w6')
-chds.bn.stage.key[[3]]$color <- c(3,4,5,6)
-chds.bn.stage.key[[4]]$stage <- c('w7','w8', 'w9','w7','w8','w9','w10','w11','w12','w10','w11','w12')
-chds.bn.stage.key[[4]]$color <- c(7,8,9,7,8,9,10,11,12,10,11,12)
+chds.bn.stage.key[[3]]$pos <- c('w3','w4','w5','w6')
+chds.bn.stage.key[[3]]$stage <- c('u3','u4','u5','u6')
+chds.bn.stage.key[[4]]$pos <- c('w7','w8', 'w9','w7','w8','w9','w10','w11','w12','w10','w11','w12')
+chds.bn.stage.key[[4]]$stage <- c('u7','u8','u9','u7','u8','u9','u10','u11','u12','u10','u11','u12')
 renderCEG(chds.bn.stage.key,chds.df)
 
 renderCEG(chds.stage.key,chds.df)
@@ -109,19 +109,31 @@ renderCEG(chds.sst1.sk, chds.df[,c(1,2,4,3)])
 ##COMPONENT MONITOR FOR AHC CEG 
 map(chds.stage.key[-1], ~select(.x,-key))->chds.sk#a little bit of finagling 
 chds.sk <- c(chds.stage.key[1],chds.sk)
-map(chds.sk, ~select(.x,-color))->chds.sk.nocol
-chds.prior <-get.ref.prior(df=chds.df,struct=chds.struct,cuts=chds.cuts,stage.key=chds.sk.nocol,stages=chds.stages)#check that we can get the prior
-#df=chds.df;struct=chds.struct;cuts=chds.cuts;stage.key=chds.sk.nocol;stages=chds.stages#fortroubleshooting
+map(chds.sk, ~select(.x,-pos))->chds.sk.nocol
 
-chds.prior <-get.ref.prior(df=chds.df,struct=chds.struct,cuts=chds.cuts,stage.key=chds.sk.nocol,stages=chds.stages)#check that we can get the prior
-chds.data <- getdata(chds.df, chds.sk.nocol)
-chds.data[[1]] <- chds.sk.nocol[[1]]$n
-chds.components <- component.monitor(chds.data,chds.prior)
+#df=chds.df;struct=chds.struct;cuts=chds.cuts;stage.key=chds.sk.nocol;stages=chds.stages#fortroubleshooting
+chds.prior <- chds.sst$prior[which(!is.na(unlist(lapply(chds.sst$prior, '[[', 1))) == TRUE)]
+chds.bn.prior <- chds.bn.sst$prior[which(!is.na(unlist(lapply(chds.bn.sst$prior, '[[', 1))) == TRUE)]#need to fix prior for this one
+chds.sst1.prior <- chds.sst1$prior[which(!is.na(unlist(lapply(chds.sst1$prior, '[[', 1))) == TRUE)]
+
+#component monitors for all three
+chds.components <- format(round(component.monitor.sst(chds.sst),3),nsmall=3)
+chds.bn.components <- format(round(component.monitor(chds.bn.data, chds.bn.prior),3),nsmall=3)
+chds.sst1.components <- format(round(component.monitor.sst(chds.sst1),3),nsmall=3)
+
+chds.components.df <- cbind(chds.stages,chds.components)
+chds.bn.components.df <- cbind(chds.bn.stages,chds.bn.components)
+chds.sst1.components.df <- cbind(chds.sst1.stages,chds.sst1.components)
+
+library(stargazer)
+stargazer(chds.components.df)
+stargazer(chds.bn.components.df)
+stargazer(chds.sst1.components.df)
 
 ##COMPONENT MONITOR FOR BN CEG 
 map(chds.bn.stage.key[-1], ~select(.x,-key))->chds.bn.sk#a little bit of finagling 
 chds.bn.sk <- c(chds.bn.stage.key [1],chds.bn.sk)
-map(chds.bn.sk, ~select(.x,-color))->chds.bn.sk.nocol
+map(chds.bn.sk, ~select(.x,-pos))->chds.bn.sk.nocol
 pull(map_df(chds.bn.stage.key, ~distinct(.x,stage)),stage )-> chds.bn.stages#the stages
 chds.bn.prior <-get.ref.prior(df=chds.df,struct=chds.bn.struct,cuts=chds.cuts,stage.key=chds.bn.sk.nocol,stages=chds.bn.stages)#check that we can get the prior
 chds.bn.data <- getdata(chds.df, chds.bn.sk.nocol)
@@ -135,33 +147,19 @@ chds.data <- getdata(chds.df, chds.sk.nocol)
 chds.data[[1]] <- chds.sk.nocol[[1]]$n
 chds.components <- component.monitor(chds.data,chds.prior)
 
-chds.components.df <- cbind(chds.stages,chds.components)
-chds.bn.components.df <- cbind(chds.bn.stages,chds.bn.components)
-chds.sst1.components.df <- cbind(chds.sst1.stages,chds.sst1.components)
-
 ####COMPONENT MONITOR FOR CEG C 
-chds.sst1.stage.key
+chds.sst1.stage.key <- tostagekey(chds.df[,c(1,2,4,3)],chds.sst1)
 map(chds.sst1.stage.key[-1], ~select(.x,-key))->chds.sst1.sk#a little bit of finagling 
 chds.sst1.sk <- c(chds.sst1.stage.key [1],chds.sst1.sk)
-map(chds.sst1.sk, ~select(.x,-color))->chds.sst1.sk.nocol
+map(chds.sst1.sk, ~select(.x,-pos))->chds.sst1.sk.nocol
 chds.sst1.struct <- to.struct(chds.df[,c(1,2,4,3)], chds.sst1.sk.nocol,chds.sst1)
 pull(map_df(chds.sst1.stage.key, ~distinct(.x,stage)),stage )-> chds.sst1.stages#the stages
-chds.sst1.prior <-get.ref.prior(df=chds.df[,c(1,2,4,3)],struct=chds.sst1.struct,cuts=chds.cuts,stage.key=chds.sst1.sk.nocol,stages=chds.sst1.stages)#check that we can get the prior
-chds.sst1.data <- getdata(chds.df[,c(1,2,4,3)], chds.sst1.sk.nocol)
-chds.sst1.data[[1]] <- chds.sst1.sk.nocol[[1]]$n
-chds.sst1.components <- component.monitor(chds.sst1.data, chds.sst1.prior)
+#chds.sst1.prior <-get.ref.prior(df=chds.df[,c(1,2,4,3)],struct=chds.sst1.struct,cuts=chds.cuts,stage.key=chds.sst1.sk.nocol,stages=chds.sst1.stages)#check that we can get the prior
+#chds.sst1.data <- getdata(chds.df[,c(1,2,4,3)], chds.sst1.sk.nocol)
+#chds.sst1.data[[1]] <- chds.sst1.sk.nocol[[1]]$n
+#chds.sst1.components <- component.monitor(chds.sst1.data, chds.sst1.prior)
 
-cbind(chds.sst1.stages, chds.sst1.components)
 
-x <- as.data.frame(x)
-x[,1] <- as.character(x[,1])
-x[,2] <- as.numeric(as.character(x[,2]))
-dat <- x[,2]
-align(dat) <- xalign(dat)
-digits(dat) <- xdigits(dat)
-display(x[,2]) <- xdisplay(x[,2])
-
-chds.components.df
 ####PARTITION MONITORRRRR
 
 #THIS TAKES OVER 12 HOURS. DO NOT RUN HERE. chds.part.monitor <- part.monitor(rho = .7,epsilon = 1.2,df_cut = chds.df,which.cut = 4,stage.key = chds.sk.nocol,n.monitor = 860)
@@ -169,9 +167,6 @@ chds.components.df
 chds.part.monitor <- part.monitor(rho = .7,epsilon = 1.2,df_cut = chds.df,which.cut = 3,stage.key = chds.sk.nocol,n.monitor = 860)
 chds.bn.part.monitor <- part.monitor(rho = .7,epsilon = 1.2,df_cut = chds.df,which.cut = 3,stage.key = chds.bn.sk.nocol,n.monitor = 860)
 chds.sst1.part.monitor <- part.monitor(rho = .7,epsilon = 1.2,df_cut = chds.df[,c(1,2,4,3)],which.cut = 3,stage.key = chds.sst1.sk.nocol,n.monitor = 860)
-
-rho = .7;epsilon = 1.2;df_cut = chds.df;which.cut = 3;stage.key = chds.sk.nocol;n.monitor = 860
-rho = .7;epsilon = 1.2;df_cut = chds.df;which.cut = 3;stage.key = chds.bn.sk.nocol;n.monitor = 860
 
 #test against another ordering
 chds.sst2 <- CEG.AHC(chds.df[,c(2,1,3,4)]) #varorder E S L H 
@@ -190,23 +185,6 @@ renderCEG(chds.sst4.sk, chds.df[,c(3,1,2,4)])
 chds.sst4$result
 
  
-
-#what to do about the first stage
-allComponents(targetCut = 2,condtnlCut = 1,df = chds.df,stage.key = chds.sk.nocol,stages = chds.stages,struct = chds.struct,chds.prior)
-allComponents(targetCut = 3,condtnlCut = 2,df = chds.df,stage.key = chds.sk.nocol,stages = chds.stages,struct = chds.struct,chds.prior)
-#much of the BF score comes from stage w3 to w1
-allComponents(targetCut = 4,condtnlCut = 3,df = chds.df,stage.key = chds.sk.nocol,stages = chds.stages,struct = chds.struct,chds.prior)
-
-new <- component.monitor.ceg(chds.df, target.stage='w3', condtnl.stage = 'w1',target.cut=3,stages=chds.stages,stage.key=chds.sk.nocol struct=chds.struct,chds.prior)
-chds.df; target.stage='w3'; condtnl.stage = 'w1';target.cut=3;stages=chds.stages;stage.key=chds.sk.nocol;struct=chds.struct;prior=chds.prior
-
-getdata(chds.df, chds.sk.nocol) -> chds.data
-chds.data[[1]]<- chds.sk.nocol[[2]]$n
-
-
-
-chds.stage.key[[3]] #High Social, High Economic, High Social and Low Economic are triggering a pretty high error.
-#is it strangethat these get lumped in the same stage??
 renderCEG(chds.stage.key, chds.df)
 
 #Is there another staging of the situations in cut 3 that would be more appropriate? 
@@ -216,17 +194,14 @@ chds.part.monitor <- part.monitor(rho = .7,epsilon = 1.2,df_cut = chds.df,which.
 
 #rho = .7;epsilon = 1.2;df_cut = chds.df;which.cut = 3;stage.key = chds.sk;n.monitor = 200#for trblshtng
 ########PLOT FOR THE AHC CEG 
-chds.crrnt.stg.probs <- do.call("rbind", lapply(chds.part.monitor[[3]], "[[", 5)) #possible.colorin 10 
-chds.alt1.stg.probs <- do.call("rbind", lapply(chds.part.monitor[[3]], "[[", 1))#possible.coloring 2 
-chds.alt2.stg.probs <- do.call("rbind", lapply(chds.part.monitor[[3]], "[[", 2))#possible.coloring 3
-chds.alt3.stg.probs <- do.call("rbind", lapply(chds.part.monitor[[3]], "[[", 3))#possible.coloring 7
-chds.alt4.stg.probs <- do.call("rbind", lapply(chds.part.monitor[[3]], "[[", 4))#possible.coloring 15
+chds.crrnt.stg.probs <- do.call("rbind", lapply(chds.part.monitor[[3]], "[[", 4)) #possible.colorin 3
+chds.alt1.stg.probs <- do.call("rbind", lapply(chds.part.monitor[[3]], "[[", 1))#possible.coloring  10
+chds.alt2.stg.probs <- do.call("rbind", lapply(chds.part.monitor[[3]], "[[", 2))#possible.coloring 11
+chds.alt3.stg.probs <- do.call("rbind", lapply(chds.part.monitor[[3]], "[[", 3))#possible.coloring 13
 
-possible.colorings[[3]] #(HH, HL, LH) (LL)
-possible.colorings[[13]]#(HH) (HL, LH) (LL)
 
-chds.part.df <- as.data.frame(cbind(5:860,chds.crrnt.stg.probs, chds.alt1.stg.probs, chds.alt2.stg.probs, chds.alt3.stg.probs, chds.alt4.stg.probs))
-colnames(chds.part.df) <- c("t", "U1", "U2", "U3", "U4", 'U5')
+chds.part.df <- as.data.frame(cbind(5:860,chds.crrnt.stg.probs, chds.alt1.stg.probs, chds.alt2.stg.probs, chds.alt3.stg.probs))
+colnames(chds.part.df) <- c("t", "U1=(1,2,3)(4)", "U2=(1,2)(3)(4)", "U3=(1,3)(2)(4)", "U4=(2,3)(1)(4)")
 chds.part.df %>% 
   gather(key, value, -t) %>%
   ggplot(aes(x=t, y=value, colour=key)) + geom_line()
@@ -244,7 +219,7 @@ possible.colorings[[3]] #(HH, HL, LH) (LL)
 possible.colorings[[13]]#(HH) (HL, LH) (LL)
 
 chds.bn.part.df <- as.data.frame(cbind(5:860,chds.bn.crrnt.stg.probs, chds.bn.alt1.stg.probs, chds.bn.alt2.stg.probs, chds.bn.alt3.stg.probs, chds.bn.alt4.stg.probs, chds.bn.alt5.stg.probs, chds.bn.alt6.stg.probs))
-colnames(chds.bn.part.df) <- c("t", "U1", "U2", "U3", "U4", "U5", "U6", "U7")
+colnames(chds.bn.part.df) <- c("t", "U1=(1)(2)(3)(4)", "U2=(1,4)(2)(3)", "U3=(1,2)(3)(4)", "U4=(1,3)(2)(4)", "U5=(2,4)(1)(3)", "U6=(2,3)(1)(4)", "U7=(3,4)(1)(2)")
 chds.bn.part.df %>% 
   gather(key, value, -t) %>%
   ggplot(aes(x=t, y=value, colour=key)) + geom_line()
@@ -259,9 +234,9 @@ chds.bn.part.df %>%
 
 
 chds.w7w3.pach <- ceg.child.parent.monitor(df=chds.df,
-                         target.stage = "w7",
-                         target.cut = 4, 
-                         condtnl.stage = "w3",
+                         target.stage = "u3",
+                         target.cut = 3, 
+                         condtnl.stage = "u1",
                          struct = chds.struct,
                          stage.key = chds.sk.nocol, 
                          stages=chds.stages,
@@ -269,9 +244,9 @@ chds.w7w3.pach <- ceg.child.parent.monitor(df=chds.df,
                          n = 860,
                          learn = F)
 chds.w7w3.pacht <- ceg.child.parent.monitor(df=chds.df,
-                                           target.stage = "w7",
-                                           target.cut = 4, 
-                                           condtnl.stage = "w3",
+                                           target.stage = "u3",
+                                           target.cut = 3, 
+                                           condtnl.stage = "u1",
                                            struct = chds.struct,
                                            stage.key = chds.sk.nocol, 
                                            stages=chds.stages,
@@ -280,9 +255,9 @@ chds.w7w3.pacht <- ceg.child.parent.monitor(df=chds.df,
                                            learn = T)
 plot(chds.w7w3.pach[,1])
 chds.w7w4.pach <- ceg.child.parent.monitor(df=chds.df,
-                                           target.stage = "w7",
-                                           target.cut = 4, 
-                                           condtnl.stage = "w4",
+                                           target.stage = "u3",
+                                           target.cut = 3, 
+                                           condtnl.stage = "u2",
                                            struct = chds.struct,
                                            stage.key = chds.sk.nocol, 
                                            stages=chds.stages,
@@ -290,9 +265,9 @@ chds.w7w4.pach <- ceg.child.parent.monitor(df=chds.df,
                                            n = 860,
                                            learn = F)
 chds.w7w4.pacht <- ceg.child.parent.monitor(df=chds.df,
-                                           target.stage = "w7",
-                                           target.cut = 4, 
-                                           condtnl.stage = "w4",
+                                           target.stage = "u3",
+                                           target.cut = 3, 
+                                           condtnl.stage = "u2",
                                            struct = chds.struct,
                                            stage.key = chds.sk.nocol, 
                                            stages=chds.stages,
@@ -300,23 +275,12 @@ chds.w7w4.pacht <- ceg.child.parent.monitor(df=chds.df,
                                            n = 860,
                                            learn = T)
 
-chds.w7w5.pach <- ceg.child.parent.monitor(df=chds.df,
-                                         target.stage = "w7",
-                                         target.cut = 4, 
-                                         condtnl.stage = "w5",
-                                         struct = chds.struct,
-                                         stage.key = chds.sk.nocol, 
-                                         stages=chds.stages,
-                                         prior=chds.prior,
-                                         n = 860,
-                                         learn = F)
-lines(chds.w7w5.pach[,1])
 
-chds.pach <- as.data.frame(cbind(1:860,chds.w7w3.pach[,1],chds.w7w3.pacht[,1],chds.w7w4.pach[,1],chds.w7w4.pacht[,1],chds.w7w5.pach[,1]))
+chds.pach <- as.data.frame(cbind(1:860,chds.w7w3.pach[,1],chds.w7w3.pacht[,1],chds.w7w4.pach[,1],chds.w7w4.pacht[,1]))
 chds.pach <- as.data.frame(cbind(1:860,chds.w7w3.pach[,2],chds.w7w3.pacht[,2],chds.w7w4.pach[,2],chds.w7w4.pacht[,2],chds.w7w5.pach[,2]))
-colnames(chds.pach) <- c('t','w7w3','w7w3t','w7w4','w7w4t','w7w5')
+colnames(chds.pach) <- c('t','U1 Reference prior, no learning','U1 Reference prior, learning','U2 Reference prior, no learning','U2 Reference prior, learning')
 
-chds.pach[1:45,] %>%
+chds.pach[1:150,] %>%
   gather(key,value, -t) %>% 
   ggplot(aes(x=t,y=value,colour=key))+geom_line() + ylab('Cumulative logarithmic penalty')
 
@@ -324,3 +288,29 @@ chds.pach[1:45,] %>%
 ########CHDS STAGE MONITORS  
 pass.message(df = chds.df, stage.key = chds.sk.nocol, evidence = chds.df[1:10,],prior = chds.prior,struct = chds.struct,stages = chds.stages )
 df = chds.df; stage.key = chds.sk.nocol; evidence = chds.df[1:10,];prior = chds.prior;struct = chds.struct;stages = chds.stages 
+
+
+p.monitor1 <- do.call("rbind", lapply(p.monitor, "[[", 1))#possible.coloring 9 
+p.monitor2 <- do.call("rbind", lapply(p.monitor, "[[", 2))#possible.coloring 10
+p.monitor3 <- do.call("rbind", lapply(p.monitor, "[[", 3))#possible.coloring 11
+p.monitor4 <- do.call("rbind", lapply(p.monitor, "[[", 4))#possible.coloring12
+p.monitor5 <- do.call("rbind", lapply(p.monitor, "[[", 5))#possible.coloring 13
+p.monitor6 <- do.call("rbind", lapply(p.monitor, "[[", 6))#possible.coloring 14
+p.monitor7 <- do.call("rbind", lapply(p.monitor, "[[", 7))#possible.coloring 14
+p.monitor8 <- do.call("rbind", lapply(p.monitor, "[[", 8))#possible.coloring 14
+p.monitor9 <- do.call("rbind", lapply(p.monitor, "[[", 9))#possible.coloring 14
+p.monitor10 <- do.call("rbind", lapply(p.monitor, "[[", 10))#possible.coloring 14
+p.monitor11 <- do.call("rbind", lapply(p.monitor, "[[", 11))#possible.coloring 14
+p.monitor12 <- do.call("rbind", lapply(p.monitor, "[[", 12))#possible.coloring 14
+p.monitor13 <- do.call("rbind", lapply(p.monitor, "[[", 13))#possible.coloring 14
+
+
+u5monitor <- as.data.frame(cbind(1:length(p.monitor1),p.monitor1,p.monitor2,p.monitor3,p.monitor4,p.monitor5,p.monitor6,p.monitor7,p.monitor8,p.monitor9,p.monitor10,p.monitor11,p.monitor12,p.monitor13))
+u6monitor <- as.data.frame(cbind(1:length(p.monitor1),p.monitor1,p.monitor2,p.monitor3,p.monitor4,p.monitor5,p.monitor6,p.monitor7,p.monitor8,p.monitor9,p.monitor10,p.monitor11,p.monitor12,p.monitor13))
+colnames(u5monitor) <- c("t", '1,','2','3','4','5','6','7','8','9','10','11','12','13')
+colnames(u6monitor) <- c("t", '1,','2','3','4','5','6','7','8','9','10','11','12','13')
+                               
+u6monitor %>% 
+  gather(key, value, -t) %>%
+  ggplot(aes(x=t, y=value, colour=key)) + geom_line()
+#stagings
