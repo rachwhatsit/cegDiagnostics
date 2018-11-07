@@ -285,6 +285,17 @@ chds.pach[1:150,] %>%
   ggplot(aes(x=t,y=value,colour=key))+geom_line() + ylab('Cumulative logarithmic penalty')
 
 
+########CHDS BN PACH MONITOR 
+bn.pach.nl <- bn.parent.child.monitor(df = chds.df,'Social','High','Economic',n=150)
+bn.pach.l <- bn.parent.child.monitor(df = chds.df,'Social','High','Economic',n=150,learn = T)
+
+chds.bn.pach <- as.data.frame(cbind(1:length(bn.pach.l[,1]), bn.pach.nl[,1], bn.pach.l[,1]))
+colnames(chds.bn.pach) <- c('t','Ref prior, no learning','Ref prior, learning')
+
+chds.bn.pach %>%
+  gather(key,value, -t) %>% 
+  ggplot(aes(x=t,y=value,colour=key))+geom_line() + ylab('Cumulative logarithmic penalty')
+
 ########CHDS STAGE MONITORS  
 pass.message(df = chds.df, stage.key = chds.sk.nocol, evidence = chds.df[1:10,],prior = chds.prior,struct = chds.struct,stages = chds.stages )
 df = chds.df; stage.key = chds.sk.nocol; evidence = chds.df[1:10,];prior = chds.prior;struct = chds.struct;stages = chds.stages 
@@ -307,10 +318,12 @@ p.monitor13 <- do.call("rbind", lapply(p.monitor, "[[", 13))#possible.coloring 1
 
 u5monitor <- as.data.frame(cbind(1:length(p.monitor1),p.monitor1,p.monitor2,p.monitor3,p.monitor4,p.monitor5,p.monitor6,p.monitor7,p.monitor8,p.monitor9,p.monitor10,p.monitor11,p.monitor12,p.monitor13))
 u6monitor <- as.data.frame(cbind(1:length(p.monitor1),p.monitor1,p.monitor2,p.monitor3,p.monitor4,p.monitor5,p.monitor6,p.monitor7,p.monitor8,p.monitor9,p.monitor10,p.monitor11,p.monitor12,p.monitor13))
+u7monitor <- as.data.frame(cbind(1:length(p.monitor1),p.monitor1,p.monitor2,p.monitor3,p.monitor4,p.monitor5,p.monitor6,p.monitor7,p.monitor8,p.monitor9,p.monitor10,p.monitor11,p.monitor12,p.monitor13))
 colnames(u5monitor) <- c("t", '1,','2','3','4','5','6','7','8','9','10','11','12','13')
 colnames(u6monitor) <- c("t", '1,','2','3','4','5','6','7','8','9','10','11','12','13')
+colnames(u7monitor) <- c("t", '1,','2','3','4','5','6','7','8','9','10','11','12','13')
                                
-u6monitor %>% 
+u7monitor %>% 
   gather(key, value, -t) %>%
   ggplot(aes(x=t, y=value, colour=key)) + geom_line()
 #stagings

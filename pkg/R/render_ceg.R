@@ -88,7 +88,7 @@ getTreeRenderable <- function(stage.key, df){
 
   test.df <- as.data.frame(test)
   test.df$color <- nodes$fillcolor[test.df$to.vals.n]
-  test.df$label <- c('root',lbls)
+  test.df$label <- c(lbls)
   test.df <- rbind(c(NA, 1, clrs[1]),test.df)
   return(test.df)
 }
