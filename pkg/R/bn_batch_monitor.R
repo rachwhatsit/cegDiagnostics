@@ -1,14 +1,13 @@
-#' A function to compute the batch monitor of a BN
+#' A function to compute the batch monitor of a BN according to the form given in Cowell, et. al. 2007
 #'
-#' @param df data in question
-#' @param child
-#' @param parents
-#' @param parentvalues
-#' @keywords cut batch
+#' @param df data frame 
+#' @param child string with the name of the child node
+#' @param parents string with the parent node
+#' @param parentvalues string with the values of the parent node
+#' @param prior prior set by modeller 
+#' @keywords chisquare, cuts
 #' @export
 #' @examples
-#'  cegb.prior <- get.ref.prior(df, cegb.struct, cuts, cegb.stage.key, cegb.stages)
-#'  bn.batch.monitor()
 
 bn.batch.monitor <- function(df, child, parents, parent.values,prior){#returns pearson chi-square of diff between observed and expected values
   #determine what the observed counts are
@@ -28,6 +27,5 @@ bn.batch.monitor <- function(df, child, parents, parent.values,prior){#returns p
   p.val <- pchisq(adjst.prsn, d.free) 
   results <- list(adjst.prsn,d.free,p.val)
   return(results)
-  
 }
 

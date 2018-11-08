@@ -1,3 +1,12 @@
+#' The AHC algorithm as written in Barclay 2013 
+#' Author: Lorna Barclay
+#' 
+#' @param exampledata dataframe
+#' @keywords model selection, ceg
+#' @export
+#' @examples
+#' CEG.AHC()
+#' 
 CEG.AHC <- function(exampledata = exampledata ,
                     equivsize = 3) {
   exampledata <- exampledata

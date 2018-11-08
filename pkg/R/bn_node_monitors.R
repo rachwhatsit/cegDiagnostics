@@ -1,11 +1,11 @@
 #' A function to compute the node monitors of the BN
 #'
-#' @param df data in question
-#' @param col_name
-#' @param prior
-#' @param n number of iterations
-#' @param learn
-#' @keywords bn node monitor
+#' @param df data frame
+#' @param col_name string with the node in question
+#' @param prior vector prior set by modeller
+#' @param n integer number of records in the dataset to consider
+#' @param learn logical to include learning of prior or not
+#' @keywords bn node monitor unconditional
 #' @export
 #' @examples###############################################################
 ##UNCONDITIONAL NODE MONITOR FOR BNs 
