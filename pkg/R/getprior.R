@@ -11,9 +11,8 @@
 #'  get.ref.prior()
 
 get.ref.prior <-
-  function(df, struct, cuts, stage.key, stages) {
-    #returns the reference prior of a CEG
-    #FIND THE REFERENCE PRIOR for each stage
+  function(df, struct, stage.key, stages) {
+    cuts <- colnames(df)
     n <-
       max(apply(df, 2, function(x) {#reference prior as the highest number of levels of categories
         length(levels(as.factor(x)))
@@ -33,16 +32,11 @@ get.ref.prior <-
     ref.prior[[1]] <-
       rep(n / dim(struct[[1]])[1], dim(struct[[1]])[1]) #initialize the prior for w0
     counter = 1
-    #print(ref.prior[[1]])
     for (k in 2:length(cuts)) {
-      #start at the second cut
       for (l in 1:length(unique(stage.key[[k]]$stage))) {
-        #for each unique stage in the cut
         counter = counter + 1 #which stage we're on
-        #       print(counter)
         stage <-
           stages[counter]#moving through the stages top to bottom
-        #    print(stage)
         in.paths <-
           stage.key[[k]][which(stage.key[[k]]$stage == stage), ]#id the incoming pathways
         stages.of.interest <-
@@ -50,14 +44,11 @@ get.ref.prior <-
         ref.prior.idx <-
           unlist(lapply(stages.of.interest, function(x) {
             as.numeric(substr(x, nchar(x), nchar(x))) + 1
-          }))#gives the stage number, because of weird indexing, want
-        #^this is actually the stage index
+          }))
         numtor <-
           sum(sapply(ref.prior[ref.prior.idx], FUN = `[[`, 1))#the 2 here is the index of the cut that we want it to pull out of the prior lists.
-        #denom <- dim(struct[[counter]])[1]#number of outgoing edges
         denom <- length(levels(df[[colnames(df)[k]]]))#number of levels of cut we're in
         ref.prior[[counter]] <- rep(numtor / denom, denom)
-        #   print(ref.prior[[counter]])
       }
     }
     return(ref.prior)

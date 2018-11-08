@@ -8,9 +8,15 @@ bn.uncondtnl.node.monitor(df, col_name = "Events", prior, n = 50,
   learn = FALSE)
 }
 \arguments{
-\item{df}{data in question}
+\item{df}{data frame}
 
-\item{n}{number of iterations}
+\item{col_name}{string with the node in question}
+
+\item{prior}{vector prior set by modeller}
+
+\item{n}{integer number of records in the dataset to consider}
+
+\item{learn}{logical to include learning of prior or not}
 }
 \description{
 A function to compute the node monitors of the BN
@@ -21,3 +27,4 @@ A function to compute the node monitors of the BN
 \keyword{bn}
 \keyword{monitor}
 \keyword{node}
+\keyword{unconditional}

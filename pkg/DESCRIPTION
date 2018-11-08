@@ -15,5 +15,7 @@ Imports:
     tidyverse,
     rlang,
     DiagrammeR,
-    partitions
+    partitions,
+    Rmpfr, 
+    collapsibleTree
 RoxygenNote: 6.0.1

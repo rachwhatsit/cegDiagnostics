@@ -2,19 +2,23 @@
 % Please edit documentation in R/bn_batch_monitor.R
 \name{bn.batch.monitor}
 \alias{bn.batch.monitor}
-\title{A function to compute the batch monitor of a BN}
+\title{A function to compute the batch monitor of a BN according to the form given in Cowell, et. al. 2007}
 \usage{
 bn.batch.monitor(df, child, parents, parent.values, prior)
 }
 \arguments{
-\item{df}{data in question}
+\item{df}{data frame}
+
+\item{child}{string with the name of the child node}
+
+\item{parents}{string with the parent node}
+
+\item{prior}{prior set by modeller}
+
+\item{parentvalues}{string with the values of the parent node}
 }
 \description{
-A function to compute the batch monitor of a BN
+A function to compute the batch monitor of a BN according to the form given in Cowell, et. al. 2007
 }
-\examples{
- cegb.prior <- get.ref.prior(df, cegb.struct, cuts, cegb.stage.key, cegb.stages)
- bn.batch.monitor()
-}
-\keyword{batch}
-\keyword{cut}
+\keyword{chisquare,}
+\keyword{cuts}

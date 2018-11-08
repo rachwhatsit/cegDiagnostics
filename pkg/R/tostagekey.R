@@ -1,9 +1,9 @@
-library(tidyverse); library(rlang)
-
-#sst is the result of CEGAHC.R 
-#the result skey is the list of length same number of variables
-#can match all of the possibilities to what size it is in. 
-#df is the data frame of interest
+#' A function that can take the output from CEG.AHC() and put it into a list of data frames
+#' 
+#' @param x not sure
+#' @keywords ceg, structure
+#' @export
+#' @examples
 
 find.cut <- function(x){
   if (is.null(dim(test[[x]])) == T) {
@@ -13,7 +13,13 @@ find.cut <- function(x){
     no.nas <- length(which(test[[x]][,1]!="NA"))}
   return(no.nas)}#used in tostagekey
 
-
+#' A function that can take the output from CEG.AHC() and put it into a list of data frames
+#' 
+#' @param df dataframe
+#' @param sst output of CEG.AHC()
+#' @keywords ceg, structure
+#' @export
+#' @examples
 tostagekey <- function(df, sst) {
   sst$comparisonset
   num.cuts <-
@@ -110,42 +116,42 @@ tostagekey <- function(df, sst) {
   return(skey)
 }
 
-########THIS IS ONLY WORKING FOR STAGES, NOT FOR POSITIONS.
-to.struct <- function(df, stage.key, sst) {
-  idx <-
-    which(!is.na(unlist(lapply(
-      sst$data, '[[', 1
-    ))) == TRUE)
-  sst$data[idx] -> strct
-  stage.num <-
-    do.call(rbind, lapply(sst$comparisonset, length)) #gives the number of stages (except the root node)
-  dimnames(strct[[1]]) <- NULL
-  struct <- list()
-  struct[[1]] <-
-    as.tibble(cbind(levels((df[colnames(df)[1]])[, 1]), as.vector(as.numeric(strct[[1]]))))
-  names(struct[[1]]) <- c(colnames(df)[1], "n")
-  counter <- 1
-  whichcut = 1
-  for (i in 2:length(idx)) {
-    #check about the weirdness that is the first entry
-    if (counter <= stage.num[whichcut]) {
-      counter <- counter + 1
-    } else{
-      counter <- 2
-      whichcut <- whichcut + 1
-    }
-    
-    struct[[i]] <-
-      as.tibble(cbind(levels((df[colnames(df)[whichcut + 1]])[, 1]), as.vector(as.numeric(strct[[i]]))))
-    names(struct[[i]]) <- c(colnames(df)[whichcut+1], "n")
-  }
-  return(struct)
-} 
-
-get.the.struct <- function(df, stage.key,stages){ 
-  cuts <- colnames(df)
-  struct <- list() 
-  for (i in 1:length(stages)){
-    
-  }
-  }
+# 
+# to.struct <- function(df, stage.key, sst) {
+#   idx <-
+#     which(!is.na(unlist(lapply(
+#       sst$data, '[[', 1
+#     ))) == TRUE)
+#   sst$data[idx] -> strct
+#   stage.num <-
+#     do.call(rbind, lapply(sst$comparisonset, length)) #gives the number of stages (except the root node)
+#   dimnames(strct[[1]]) <- NULL
+#   struct <- list()
+#   struct[[1]] <-
+#     as.tibble(cbind(levels((df[colnames(df)[1]])[, 1]), as.vector(as.numeric(strct[[1]]))))
+#   names(struct[[1]]) <- c(colnames(df)[1], "n")
+#   counter <- 1
+#   whichcut = 1
+#   for (i in 2:length(idx)) {
+#     #check about the weirdness that is the first entry
+#     if (counter <= stage.num[whichcut]) {
+#       counter <- counter + 1
+#     } else{
+#       counter <- 2
+#       whichcut <- whichcut + 1
+#     }
+#     
+#     struct[[i]] <-
+#       as.tibble(cbind(levels((df[colnames(df)[whichcut + 1]])[, 1]), as.vector(as.numeric(strct[[i]]))))
+#     names(struct[[i]]) <- c(colnames(df)[whichcut+1], "n")
+#   }
+#   return(struct)
+# } 
+# 
+# get.the.struct <- function(df, stage.key,stages){ 
+#   cuts <- colnames(df)
+#   struct <- list() 
+#   for (i in 1:length(stages)){
+#     
+#   }
+#   }

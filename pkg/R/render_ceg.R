@@ -1,14 +1,10 @@
 #' A function to automatically visualize the CEG 
 #' 
-#' This funciton takes all the possible path and divides by the number of florets in each stage to find the reference prior
 #'  @param df data in question
 #' @param stage.key which arrows come from which stages 
-#' @param stages input of stage names should be a character that ends in a numeric value
-#' @keywords prior
+#' @keywords ceg, viz
 #' @export
 #' @examples
-#' render.ceg()
-  #get the nodes
 
 #THE RIGHT ONE
 renderCEG <- function(stage.key, df){
@@ -51,7 +47,13 @@ renderCEG <- function(stage.key, df){
   grf %>% add_global_graph_attrs('layout', 'dot', 'graph') %>% add_global_graph_attrs("rankdir", "LR","graph") %>% render_graph() 
 }
 
-
+#' A function to translate a stage.key to a renderable data.tree structure
+#' 
+#' @param df data in question
+#' @param stage.key which arrows come from which stages 
+#' @keywords ceg, viz, interactive
+#' @export
+#' @examples
 getTreeRenderable <- function(stage.key, df){
   cuts<-colnames(df)
   from.ceg <- rep(stage.key[[1]]$pos, length(stage.key[[2]]$pos))

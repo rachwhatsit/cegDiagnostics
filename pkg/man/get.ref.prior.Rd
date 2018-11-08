@@ -4,7 +4,7 @@
 \alias{get.ref.prior}
 \title{A function to set the reference prior on a CEG}
 \usage{
-get.ref.prior(df, struct, cuts, stage.key, stages)
+get.ref.prior(df, struct, stage.key, stages)
 }
 \arguments{
 \item{df}{data in question}
@@ -17,7 +17,7 @@ get.ref.prior(df, struct, cuts, stage.key, stages)
 A function to set the reference prior on a CEG
 }
 \examples{
- cegb.prior <- get.ref.prior(df, cegb.struct, cuts, cegb.stage.key, cegb.stages) 
+ cegb.prior <- get.ref.prior(df, cegb.struct, cuts, cegb.stage.key, cegb.stages)
  get.ref.prior()
 }
 \keyword{prior}
