@@ -5,8 +5,8 @@
 \title{The partition monitor examines the probability p(U_t | x^{t-1}), 
 i.e. observing the partitoning into stagings for the elements in a cut}
 \usage{
-part.monitor(rho, epsilon, df_cut, which.cut, stage.key, n.monitor, k = 0.8,
-  tau = 5)
+part.monitor(rho, epsilon, df_cut, which.cut, stage.key, n.monitor,
+  k = 0.8, tau = 5)
 }
 \arguments{
 \item{rho}{double of the probability of situations composing stage changing}

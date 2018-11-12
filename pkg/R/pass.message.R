@@ -1,12 +1,10 @@
-#preprocessing generate a stage key that only keeps the positions
-
-map(chds.sk, ~select(.x,-stage))->chds.sk.pos
-
-chds.sk.pos[[4]]%>%
-  
-#convert a CEG to a path structure
-
-
+#' get edge key: dependency for messag passing algorithm
+#' @param stage.key 
+#' @keywords message passing, ceg
+#' @export
+#' @examples
+#' 
+#'
 get.edge.path.key <- function(stage.key) {
   cuts <- colnames(df)
   stage.key[[length(stage.key)]] -> paths
@@ -20,8 +18,25 @@ get.edge.path.key <- function(stage.key) {
 }
 
 
-#takes a well ordered CEG and C-copmatible information I
-#outputs: an uncolored CEG with pi_hat
+
+#' Message passing algorithm as outlined by Collazo 2017
+#' takes a well ordered CEG and C-copmatible information I
+#' outputs: an uncolored CEG with pi_hat
+#' 
+#' @param df data frame
+#' @param stage.key 
+#' @param evidence chunk of data frame representing the root to sink paths
+#' @param prior Dirichlet prior with effective sample size as the largest number of outgoing edges
+#' @param stages vector of stage names
+#' @param struct list of observed counts in each stage
+#' @keywords message passing, ceg
+#' @export
+#' @examples
+#' 
+#' 
+pass.message <-
+  function(df, stage.key, evidence, prior,stages,struct) {
+
 
 #evidence <- df[1:5,] #how much evidencd do you have at each time?? yo ne se.
 posterior <- rep(NA, length(prior))
@@ -35,8 +50,7 @@ for (i in (1:length(prior))) {
 }
 
 
-pass.message <-
-  function(df, stage.key, evidence, prior,stages,struct) {
+
     cuts <- colnames(df)
     post.mean <- list()
     posterior <- list()

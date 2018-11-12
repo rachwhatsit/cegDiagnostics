@@ -13,13 +13,7 @@
 #' @export
 #' @examples
 #' 
-rho<-0.9#probability of changing sit contributions
-t <- 500 #number of sample size to run 
 
-which.cut <- 3
-tgt.stg <- 'u3'
-stage.key <- chds.stage.key
-stages <- chds.stages
 
 ceg.stage.monitor <- function(rho=0.8,t=500,which.cut, tgt.stg, stage.key,stages, df){
   colnames(df) -> cuts

@@ -16,8 +16,4 @@ get.ref.prior(df, struct, stage.key, stages)
 \description{
 A function to set the reference prior on a CEG
 }
-\examples{
- cegb.prior <- get.ref.prior(df, cegb.struct, cuts, cegb.stage.key, cegb.stages)
- get.ref.prior()
-}
 \keyword{prior}

@@ -7,8 +7,6 @@
 #' @keywords prior
 #' @export
 #' @examples
-#'  cegb.prior <- get.ref.prior(df, cegb.struct, cuts, cegb.stage.key, cegb.stages)
-#'  get.ref.prior()
 
 get.ref.prior <-
   function(df, struct, stage.key, stages) {

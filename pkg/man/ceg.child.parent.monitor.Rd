@@ -4,8 +4,8 @@
 \alias{ceg.child.parent.monitor}
 \title{A function to compute the node monitors of the BN}
 \usage{
-ceg.child.parent.monitor(df, target.stage, target.cut, condtnl.stage, stage.key,
-  struct, stages, prior, n = 50, learn = FALSE)
+ceg.child.parent.monitor(df, target.stage, target.cut, condtnl.stage,
+  stage.key, struct, stages, prior, n = 50, learn = FALSE)
 }
 \arguments{
 \item{df}{data in question}
