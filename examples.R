@@ -10,10 +10,11 @@ radical.stage.key <- tostagekey(radical.df, radical.sst)#the stage key
 map(radical.stage.key[-1], ~select(.x,-key))->radical.sk#a little bit of finagling to make it not blow up immediately.
 radical.sk <- c(radical.stage.key[1],radical.sk)
 pull(map_df(radical.stage.key, ~distinct(.x,stage)),stage )-> radical.stages#the stages
+
 radical.struct <- to.struct(radical.df,radical.stage.key,radical.sst) #the struct. a weird name for the data results of the AHC alg
 radical.cuts <- colnames(radical.df)
 
-renderCEG(radical.stage.key,radical.df)#plot the new stratified CEG
+#renderCEG(radical.stage.key,radical.df)#plot the new stratified CEG
 
 #visualize the first few cuts of the CEG, could try with the data.tree
 renderpart <- function(colvec, df){#running AHC on a subset of the data returns entirely different results 
@@ -29,20 +30,18 @@ radical.sst$lik #Bayes Factor of -40021.6 with reference prior that has effectiv
 
 map(radical.stage.key[-1], ~select(.x,-key))->radical.sk#a little bit of finagling 
 radical.sk <- c(radical.stage.key[1],radical.sk)
-map(radical.sk, ~select(.x,-color))->radical.sk.nocol
+map(radical.sk, ~select(.x,-pos))->radical.sk.nocol
 
 #the real component monitor 
 getdata(radical.df, radical.sk.nocol) -> radical.data
 radical.data[[1]]<- radical.sk.nocol[[2]]$n
-
-#get the prior
-radical.prior <-get.ref.prior(df=radical.df,struct=radical.struct,cuts=radical.cuts,stage.key=radical.sk.nocol,stages=radical.stages)#check that we can get the prior
+radical.prior <- radical.sst$prior[which(!is.na(unlist(lapply(radical.sst$prior, '[[', 1))) == TRUE)]
 #get the componens 
 radical.components <- component.monitor(radical.data,radical.prior)
 
 cbind(radical.stages, radical.components)
 
-radical.part.monitor <- part.monitor(rho = .7,epsilon = 1.2,df_cut = radical.df,which.cut = ,stage.key = radical.sk.nocol,n.monitor = 200)
+radical.part.monitor <- part.monitor(rho = .7,epsilon = 1.2,df_cut = radical.df,which.cut = 2,stage.key = radical.sk.nocol,n.monitor = 200)
 
 ####
 
@@ -144,7 +143,7 @@ cbind(chds.bn.stages, chds.bn.components)
 
 chds.prior <-get.ref.prior(df=chds.df,struct=chds.struct,cuts=chds.cuts,stage.key=chds.sk.nocol,stages=chds.stages)#check that we can get the prior
 chds.data <- getdata(chds.df, chds.sk.nocol)
-chds.data[[1]] <- chds.sk.nocol[[1]]$n
+chds.data[[1]] <- c(507,383)
 chds.components <- component.monitor(chds.data,chds.prior)
 
 ####COMPONENT MONITOR FOR CEG C 
@@ -327,3 +326,17 @@ u7monitor %>%
   gather(key, value, -t) %>%
   ggplot(aes(x=t, y=value, colour=key)) + geom_line()
 #stagings
+
+#new BF stage monitors
+
+chds.which.stage <- c(1,2,2,3,3,3,4,4,4)
+expected.counts(chds.prior, chds.which.stage)
+expctBF <-component.monitor(expct.cnts,chds.prior)
+actualBF <-component.monitor(chds.data, chds.prior)
+actualBF/expctBF
+
+chi <- list()
+for(i in 1:length(chds.data)){
+  chi[[i]]<-(chds.data[[i]]-expct.cnts[[i]])^2/expct.cnts[[i]]
+}
+
