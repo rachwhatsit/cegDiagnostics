@@ -1,20 +1,5 @@
 #' A function that can take the output from CEG.AHC() and put it into a list of data frames
 #' 
-#' @param x not sure
-#' @keywords ceg, structure
-#' @export
-#' @examples
-
-find.cut <- function(x){
-  if (is.null(dim(test[[x]])) == T) {
-    no.nas <- length(which(test[[x]] != "NA"))
-  }
-  else{
-    no.nas <- length(which(test[[x]][,1]!="NA"))}
-  return(no.nas)}#used in tostagekey
-
-#' A function that can take the output from CEG.AHC() and put it into a list of data frames
-#' 
 #' @param df dataframe
 #' @param sst output of CEG.AHC()
 #' @keywords ceg, structure
@@ -49,7 +34,14 @@ tostagekey <- function(df, sst) {
     #add a stage column
     skey[[i]]$pos <- rep(NA, dim(skey[[i]])[1]) #initialized
     skey[[i]]$stage <- rep(NA, dim(skey[[i]])[1]) #initialized
-    test <<- sst$result
+    test <- sst$result
+    find.cut <- function(x){
+      if (is.null(dim(test[[x]])) == T) {
+        no.nas <- length(which(test[[x]] != "NA"))
+      }
+      else{
+        no.nas <- length(which(test[[x]][,1]!="NA"))}
+      return(no.nas)}#used in tostagekey
     unlist(map(1:length(test), find.cut))->test.cut
     test.cut[1]<-0
     
@@ -116,42 +108,42 @@ tostagekey <- function(df, sst) {
   return(skey)
 }
 
-# 
-# to.struct <- function(df, stage.key, sst) {
-#   idx <-
-#     which(!is.na(unlist(lapply(
-#       sst$data, '[[', 1
-#     ))) == TRUE)
-#   sst$data[idx] -> strct
-#   stage.num <-
-#     do.call(rbind, lapply(sst$comparisonset, length)) #gives the number of stages (except the root node)
-#   dimnames(strct[[1]]) <- NULL
-#   struct <- list()
-#   struct[[1]] <-
-#     as.tibble(cbind(levels((df[colnames(df)[1]])[, 1]), as.vector(as.numeric(strct[[1]]))))
-#   names(struct[[1]]) <- c(colnames(df)[1], "n")
-#   counter <- 1
-#   whichcut = 1
-#   for (i in 2:length(idx)) {
-#     #check about the weirdness that is the first entry
-#     if (counter <= stage.num[whichcut]) {
-#       counter <- counter + 1
-#     } else{
-#       counter <- 2
-#       whichcut <- whichcut + 1
-#     }
-#     
-#     struct[[i]] <-
-#       as.tibble(cbind(levels((df[colnames(df)[whichcut + 1]])[, 1]), as.vector(as.numeric(strct[[i]]))))
-#     names(struct[[i]]) <- c(colnames(df)[whichcut+1], "n")
-#   }
-#   return(struct)
-# } 
-# 
-# get.the.struct <- function(df, stage.key,stages){ 
-#   cuts <- colnames(df)
-#   struct <- list() 
-#   for (i in 1:length(stages)){
-#     
-#   }
-#   }
+
+#' A function that can take the output from CEG.AHC() and put it into a list of data frames
+#' 
+#' @param df dataframe
+#' @param sst output of CEG.AHC()
+#' @param stage.key output of tostagekey()
+#' @keywords ceg, structure
+#' @export
+#' @examples
+to.struct <- function(df, stage.key, sst) {
+  idx <-
+    which(!is.na(unlist(lapply(
+      sst$data, '[[', 1
+    ))) == TRUE)
+  sst$data[idx] -> strct
+  stage.num <-
+    do.call(rbind, lapply(sst$comparisonset, length)) #gives the number of stages (except the root node)
+  dimnames(strct[[1]]) <- NULL
+  struct <- list()
+  struct[[1]] <-
+    as.tibble(cbind(levels((df[colnames(df)[1]])[, 1]), as.vector(as.numeric(strct[[1]]))))
+  names(struct[[1]]) <- c(colnames(df)[1], "n")
+  counter <- 1
+  whichcut = 1
+  for (i in 2:length(idx)) {
+    #check about the weirdness that is the first entry
+    if (counter <= stage.num[whichcut]) {
+      counter <- counter + 1
+    } else{
+      counter <- 2
+      whichcut <- whichcut + 1
+    }
+
+    struct[[i]] <-
+      as.tibble(cbind(levels((df[colnames(df)[whichcut + 1]])[, 1]), as.vector(as.numeric(strct[[i]]))))
+    names(struct[[i]]) <- c(colnames(df)[whichcut+1], "n")
+  }
+  return(struct)
+}
