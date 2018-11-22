@@ -80,7 +80,8 @@ expected.counts <- function(prior,which.stage){
 }
   
 
-#code the leave one out method
+#probably the least efficient way to code leave one out cross validation ever.
+#use the nocol vers of the stage.key
 one.out.getdata <- function(df, stage.key) { #returns mega list of one out situations
   cuts <- colnames(df)
   cols <- syms(colnames(df)[1:(length(colnames(df)))])#add the last stage key on
@@ -88,39 +89,50 @@ one.out.getdata <- function(df, stage.key) { #returns mega list of one out situa
   stage.key[[add.on]] <- count(df, !!!cols)
   stage.key[[add.on]]$stage <- rep('winf', length(stage.key[[add.on]]$n))
   mega.data.lst <- list()
-  for (i in 3:(length(cuts)+1)){
+  another.counter <- 0
+  for (i in 3:(length(cuts)+1)){#loop over each cut in the stratified tree
     colnames(stage.key[[(i-1)]])[i] <- "from.stage"
     if(i==length(cuts)+1){
       print('')
     } else { 
-      colnames(stage.key[[i]])[(i+1)] <-"to.stage"}
+    colnames(stage.key[[i]])[(i+1)] <-"to.stage"}
     cols <- colnames(df)[1:(i - 2)]
     trgcut <- sym(colnames(df)[(i-1)])
-    full_join(stage.key[[i]],stage.key[[(i-1)]], by=cols) ->anotherchunk
-    
-    for (k in 1:dim(anotherchunk)[1]){
-      counter <- 1
+    full_join(stage.key[[i]],stage.key[[(i-1)]], by=cols) %>% group_by(!!trgcut, from.stage) %>% summarise(cnts=sum(n.x))->data.df
+    full_join(stage.key[[i]],stage.key[[(i-1)]], by=cols) %>% group_by(from.stage) %>% count(from.stage) %>% mutate(cntrbt.sts = n/length(levels(as.factor(df[[trgcut]])))) ->numsits
+    stgs <- unique(data.df$from.stage)
+    num.stages <- length(stgs)
+    for (j in 1:num.stages){
+      counter <- 0
+      another.counter <- another.counter+1
       data.lst <- list()
-      anotherchunk %>% filter(!row_number()==1) %>% group_by(!!trgcut, from.stage) %>% summarise(cnts=sum(n.x))->data.df
-      
-      stgs <- unique(data.df$from.stage)
-      num.stages <- length(stgs)
-      
-      for (j in 1:num.stages){
-        counter <- counter+1
-        data.lst[[counter]] <- data.df$cnts[which(data.df$from.stage==stgs[j])]
-      }
-      mega.data.lst[[k]] <- data.lst
+        if(numsits$cntrbt.sts[which(numsits$from.stage==stgs[j])]==1){#if there's only one contributing situation, proceed as normal
+          counter <- counter+1
+          data.lst[[counter]] <- data.df$cnts[which(data.df$from.stage==stgs[j])]
+        } else { #otherwise take each one out
+          for(k in 1:numsits$cntrbt.sts[which(numsits$from.stage==stgs[j])]){#for each of the possible situations
+            full_join(stage.key[[i]],stage.key[[(i-1)]], by=cols) %>% group_by(!!trgcut, from.stage) ->all.df #filter the data frame
+            cntrb.sits.idx <- which(all.df$from.stage==stgs[j])
+            num.edges <-length(levels(as.factor(df[[trgcut]])))
+            LOOsits.idx <- (1:num.edges)+3*(k-1)#which indices to leave out
+            all.df[-LOOsits.idx,] %>%summarise(cnts=sum(n.x))->sumthisone.df
+            counter <- counter+1
+            data.lst[[counter]] <- sumthisone.df$cnts[which(data.df$from.stage==stgs[j])]
+            
+          }
+        }
+      mega.data.lst[[another.counter]] <- data.lst
     }
-    
     colnames(stage.key[[(i-1)]])[i] <- "stage"
     if(i==length(cuts)+1){
       print('')
     } else { 
-      colnames(stage.key[[i]])[(i+1)] <- "stage"}
-    
-    
-  }
+      colnames(stage.key[[i]])[(i+1)] <- "stage"
+    }
+  }  
   return(mega.data.lst)
 }
 
+#LOO component monitor
+LOO.component.monitor <- function(LOOcounts,prior)
+return(score)
