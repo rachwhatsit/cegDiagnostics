@@ -110,6 +110,8 @@ map(chds.stage.key[-1], ~select(.x,-key))->chds.sk#a little bit of finagling
 chds.sk <- c(chds.stage.key[1],chds.sk)
 map(chds.sk, ~select(.x,-pos))->chds.sk.nocol
 
+chds.stage.key <-tostagekey(chds.df, chds.sst)
+
 #df=chds.df;struct=chds.struct;cuts=chds.cuts;stage.key=chds.sk.nocol;stages=chds.stages#fortroubleshooting
 chds.prior <- chds.sst$prior[which(!is.na(unlist(lapply(chds.sst$prior, '[[', 1))) == TRUE)]
 chds.bn.prior <- chds.bn.sst$prior[which(!is.na(unlist(lapply(chds.bn.sst$prior, '[[', 1))) == TRUE)]#need to fix prior for this one
@@ -143,7 +145,7 @@ cbind(chds.bn.stages, chds.bn.components)
 
 chds.prior <-get.ref.prior(df=chds.df,struct=chds.struct,cuts=chds.cuts,stage.key=chds.sk.nocol,stages=chds.stages)#check that we can get the prior
 chds.data <- getdata(chds.df, chds.sk.nocol)
-chds.data[[1]] <- c(507,383)
+chds.data[[1]] <- c(507,383)x
 chds.components <- component.monitor(chds.data,chds.prior)
 
 ####COMPONENT MONITOR FOR CEG C 
@@ -339,4 +341,25 @@ chi <- list()
 for(i in 1:length(chds.data)){
   chi[[i]]<-(chds.data[[i]]-expct.cnts[[i]])^2/expct.cnts[[i]]
 }
+
+chds.prior <- chds.sst$prior[which(!is.na(unlist(lapply(chds.sst$prior, '[[', 1))) == TRUE)]
+chds.loo.counts <- one.out.getdata(chds.df,chds.sk.nocol) #is missing the bit at the root node 
+chds.loo.counts <- c(list(chds.data[[1]]), chds.loo.counts)#success 
+
+
+loo.component.monitor <- function(loo.data, prior){###THIS IS
+  loo.components <- c()
+  for (i in 1:length(prior)){#for the number of stages 
+    alpha <- unlist(prior[i])#the prior
+    cmp.vec <- c()
+    for (j in 1:length(loo.data[[i]])){
+      N <- unlist(loo.data[[i]][j])
+      cmp.vec[j] <- sum(lgamma(alpha + N) - lgamma(alpha)) + sum(lgamma(sum(alpha)) - lgamma(sum(alpha + N)))
+    }
+    loo.components[i] <- sum(cmp.vec)
+  }
+  return(loo.components)
+}
+
+loo.component.monitor(chds.loo.counts, chds.prior);actualBF
 
