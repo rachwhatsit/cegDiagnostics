@@ -145,7 +145,7 @@ cbind(chds.bn.stages, chds.bn.components)
 
 chds.prior <-get.ref.prior(df=chds.df,struct=chds.struct,cuts=chds.cuts,stage.key=chds.sk.nocol,stages=chds.stages)#check that we can get the prior
 chds.data <- getdata(chds.df, chds.sk.nocol)
-chds.data[[1]] <- c(507,383)x
+chds.data[[1]] <- c(507,383)
 chds.components <- component.monitor(chds.data,chds.prior)
 
 ####COMPONENT MONITOR FOR CEG C 
@@ -331,12 +331,15 @@ u7monitor %>%
 
 #new BF stage monitors
 
-chds.which.stage <- c(1,2,2,3,3,3,4,4,4)
-expected.counts(chds.prior, chds.which.stage)
+chds.which.stage <- c(1,2,2,3,3,4,4,4)
+expct.cnts <- expected.counts(chds.prior, chds.which.stage)
 expctBF <-component.monitor(expct.cnts,chds.prior)
 actualBF <-component.monitor(chds.data, chds.prior)
-actualBF/expctBF
+BFdiff <-expctBF/actualBF
+ actualBF/expctBF
 
+chds.stages <- paste0('u',0:7)
+BFdifftbl <- stargazer::stargazer(cbind(chds.stages,BFdiff))
 chi <- list()
 for(i in 1:length(chds.data)){
   chi[[i]]<-(chds.data[[i]]-expct.cnts[[i]])^2/expct.cnts[[i]]
@@ -361,6 +364,10 @@ loo.component.monitor <- function(loo.data, prior){###THIS IS
   return(loo.components)
 }
 
+
+
+chds.data <- chds.sst$data[which(!is.na(unlist(lapply(chds.sst$data, '[[', 1))) == TRUE)]
+
 u <- 4
 situation.monitor <- function(u){
   chds.prior[[u]]
@@ -369,15 +376,17 @@ situation.monitor <- function(u){
   cmp.vec <- c()
   for (i in 1:length(chds.loo.counts[[u]])){
     alpha <-unlist(chds.prior[[u]])
-    N <- unlist(loo.data[[u]][i])
+    N <- unlist(chds.loo.counts[[u]][i])
     cmp.vec[i] <- sum(lgamma(alpha + N) - lgamma(alpha)) + sum(lgamma(sum(alpha)) - lgamma(sum(alpha + N)))
   }
   
-x<- cmp.vec/chds.components[[u]]
+x<- cmp.vec/actualBF[[u]]
 return(x)  
 }
 
 situation.monitor(4)
+map(1:8, function(x) situation.monitor(x))
+
 
 loo.component.monitor(chds.loo.counts, chds.prior);actualBF
 

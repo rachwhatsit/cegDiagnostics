@@ -114,10 +114,11 @@ one.out.getdata <- function(df, stage.key) { #returns mega list of one out situa
             full_join(stage.key[[i]],stage.key[[(i-1)]], by=cols) %>% group_by(!!trgcut, from.stage) ->all.df #filter the data frame
             cntrb.sits.idx <- which(all.df$from.stage==stgs[j])
             num.edges <-length(levels(as.factor(df[[trgcut]])))
-            LOOsits.idx <- (1:num.edges)+3*(k-1)#which indices to leave out
-            all.df[-LOOsits.idx,] %>%summarise(cnts=sum(n.x))->sumthisone.df
+            LOOsits.idx <- (1:num.edges)+num.edges*(k-1)#which indices to leave out
+            all.df[cntrb.sits.idx,] -> df2 
+            df2[-LOOsits.idx,] %>%summarise(cnts=sum(n.x))->sumthisone.df
             counter <- counter+1
-            data.lst[[counter]] <- sumthisone.df$cnts[which(data.df$from.stage==stgs[j])]
+            data.lst[[counter]] <- sumthisone.df$cnts
             
           }
         }
