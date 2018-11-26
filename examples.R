@@ -337,6 +337,19 @@ expctBF <-component.monitor(expct.cnts,chds.prior)
 actualBF <-component.monitor(chds.data, chds.prior)
 BFdiff <-expctBF/actualBF
  actualBF/expctBF
+ 
+ 
+component.monitor <- function(prior,data,expct.cnts){###THIS IS
+   components <- c()
+   for (i in 1:length(prior)){#for the number of stages 
+     alpha <- unlist(prior[i])#the prior
+     N.obsv <- unlist(data[[i]])
+     N.expt <- unlist(expct.cnts[[i]])
+     components[i] <- lgamma(sum(N.expt)) - lgamma(sum(N.obsv)) + sum(lgamma(N.obsv))- sum(lgamma(N.expt))
+   }
+   return(components)
+ }
+ 
 
 chds.stages <- paste0('u',0:7)
 BFdifftbl <- stargazer::stargazer(cbind(chds.stages,BFdiff))
@@ -380,7 +393,9 @@ situation.monitor <- function(u){
     cmp.vec[i] <- sum(lgamma(alpha + N) - lgamma(alpha)) + sum(lgamma(sum(alpha)) - lgamma(sum(alpha + N)))
   }
   
-x<- cmp.vec/actualBF[[u]]
+  cmp.vec/actualBF[[u]]->test
+  x <- test/(test+1)
+#x<- cmp.vec/actualBF[[u]]
 return(x)  
 }
 
