@@ -235,9 +235,9 @@ chds.bn.part.df %>%
 
 
 chds.w7w3.pach <- ceg.child.parent.monitor(df=chds.df,
-                         target.stage = "u3",
-                         target.cut = 3, 
-                         condtnl.stage = "u1",
+                         target.stage = "u1",
+                         target.cut = 2, 
+                         condtnl.stage = "u0",
                          struct = chds.struct,
                          stage.key = chds.sk.nocol, 
                          stages=chds.stages,
@@ -245,39 +245,43 @@ chds.w7w3.pach <- ceg.child.parent.monitor(df=chds.df,
                          n = 860,
                          learn = F)
 chds.w7w3.pacht <- ceg.child.parent.monitor(df=chds.df,
-                                           target.stage = "u3",
-                                           target.cut = 3, 
-                                           condtnl.stage = "u1",
+                                           target.stage = "u1",
+                                           target.cut = 0, 
+                                           condtnl.stage = "u0",
                                            struct = chds.struct,
                                            stage.key = chds.sk.nocol, 
                                            stages=chds.stages,
                                            prior=chds.prior,
                                            n = 860,
                                            learn = T)
-plot(chds.w7w3.pach[,1])
-chds.w7w4.pach <- ceg.child.parent.monitor(df=chds.df,
-                                           target.stage = "u3",
-                                           target.cut = 3, 
-                                           condtnl.stage = "u2",
+chds.prior.expert <- chds.prior
+chds.prior.expert[[2]] <-sum(unlist(chds.prior.expert[[2]]))*c(.2,.8)
+chds.prior.expert[[3]] <-sum(unlist(chds.prior.expert[[3]]))*c(.2,.8)
+chds.expect.pach <- ceg.child.parent.monitor(df=chds.df,
+                                           target.stage = "u1",
+                                           target.cut = 2, 
+                                           condtnl.stage = "u0",
                                            struct = chds.struct,
                                            stage.key = chds.sk.nocol, 
                                            stages=chds.stages,
-                                           prior=chds.prior,
+                                           prior=chds.prior.expert,
                                            n = 860,
                                            learn = F)
-chds.w7w4.pacht <- ceg.child.parent.monitor(df=chds.df,
-                                           target.stage = "u3",
-                                           target.cut = 3, 
-                                           condtnl.stage = "u2",
-                                           struct = chds.struct,
-                                           stage.key = chds.sk.nocol, 
-                                           stages=chds.stages,
-                                           prior=chds.prior,
-                                           n = 860,
-                                           learn = T)
+chds.expert.pacht <- ceg.child.parent.monitor(df=chds.df,
+                                            target.stage = "u1",
+                                            target.cut = 2, 
+                                            condtnl.stage = "u0",
+                                            struct = chds.struct,
+                                            stage.key = chds.sk.nocol, 
+                                            stages=chds.stages,
+                                            prior=chds.prior.expert,
+                                            n = 860,
+                                            learn = T)
+plot(chds.expert.pacht[,1])
 
 
-chds.pach <- as.data.frame(cbind(1:860,chds.w7w3.pach[,1],chds.w7w3.pacht[,1],chds.w7w4.pach[,1],chds.w7w4.pacht[,1]))
+
+chds.pach <- as.data.frame(cbind(1:860,chds.w7w3.pach[,1],chds.w7w3.pacht[,1],chds.expect.pach[,1],chds.expert.pacht[,1]))
 chds.pach <- as.data.frame(cbind(1:860,chds.w7w3.pach[,2],chds.w7w3.pacht[,2],chds.w7w4.pach[,2],chds.w7w4.pacht[,2],chds.w7w5.pach[,2]))
 colnames(chds.pach) <- c('t','U1 Reference prior, no learning','U1 Reference prior, learning','U2 Reference prior, no learning','U2 Reference prior, learning')
 
@@ -337,7 +341,14 @@ expctBF <-component.monitor(expct.cnts,chds.prior)
 actualBF <-component.monitor(chds.data, chds.prior)
 BFdiff <-expctBF/actualBF
  actualBF/expctBF
- 
+
+ chi.square <- rep(NA, length(expct.cnts))
+for (i in 1:length(expct.cnts)){
+  chi.square[i] <-sum((unlist(chds.data[[i]])-unlist(expct.cnts[[i]]))^2/unlist(expct.cnts[[i]]))
+  
+}
+chds.data
+expct.cnts
  
 component.monitor <- function(prior,data,expct.cnts){###THIS IS
    components <- c()
@@ -387,21 +398,65 @@ situation.monitor <- function(u){
   chds.loo.counts[[u]]
   
   cmp.vec <- c()
+  wt <- c()
+  chi <- c()
   for (i in 1:length(chds.loo.counts[[u]])){
     alpha <-unlist(chds.prior[[u]])
-    N <- unlist(chds.loo.counts[[u]][i])
-    cmp.vec[i] <- sum(lgamma(alpha + N) - lgamma(alpha)) + sum(lgamma(sum(alpha)) - lgamma(sum(alpha + N)))
+    N <- unlist(chds.loo.counts[[u]][i])#counts from left out situation
+    N2 <-unlist(chds.data[[u]])-unlist(chds.loo.counts[[u]][i])#counts from other two situations
+    #N2 <-(N/sum(N))*sum(chds.data[[u]])
+    alpha.plus <-alpha+N2#final posterior
+    e <- (alpha.plus/sum(alpha.plus))*sum(N)#expected posteriors for the 
+    
+    x <- (N-e)^2/e
+    test.me <-chisq.test(as.matrix(rbind(N,as.vector(e))))
+    #wt[i] <-(sum(N))/sum(unlist(chds.data[[u]]))
+    #cmp.vec[i] <- w*(sum(lgamma(alpha + N) - lgamma(alpha)) + sum(lgamma(sum(alpha)) - lgamma(sum(alpha + N))))
+    #cmp.vec2[i] <- w*(sum(lgamma(alpha + N2) - lgamma(alpha)) + sum(lgamma(sum(alpha)) - lgamma(sum(alpha + N2))))
+    chi[i]<-test.me$p.value
   }
   
-  cmp.vec/actualBF[[u]]->test
-  x <- test/(test+1)
-#x<- cmp.vec/actualBF[[u]]
-return(x)  
+  #cmp.vec/actualBF[[u]]
+  #x <- test/(test+1)
+ 
+  
+x<- exp(sum(cmp.vec)-actualBF[[u]])
+return(chi)  
 }
 
-situation.monitor(4)
-map(1:8, function(x) situation.monitor(x))
+situation.monitor(8)
+map(c(4,6:8), function(x) situation.monitor(x))
 
 
 loo.component.monitor(chds.loo.counts, chds.prior);actualBF
 
+stage.hd <-function(k){
+  chds.loo.counts[[k]]->test
+  chds.data[[k]]->tot
+  hd <- rep(NA, length(test))
+  mat <-matrix(rep(NA,length(test)*length(test[[1]])), nrow = length(test), ncol = length(test[[1]]))
+  for (i in 1:length(test)){
+    vec1 <-unlist(test[[i]])
+    mat[i,] <- as.vector(tot-vec1)
+    #p <- vec1/sum(vec1)
+    #vec2 <-as.vector(tot-vec1)
+    #q <- vec2/sum(vec2)
+    #hd[i] <- sum((sqrt(p)-sqrt(q))^2)/sqrt(2)#hellinger distance
+    #mu1 <- vec1[1]/sum(vec1)
+    #mu2 <- vec2[1]/sum(vec2)
+    #var1 <- mu1*(1-mu1)/(sum(vec1)+1)
+    #var2 <- mu2*(1-mu2)/(sum(vec2)+1)
+    #se<-sqrt(var1)/sqrt(890)
+    #p.test<-prop.test(c(vec1[1],vec2[1]),c(sum(vec1),sum(vec2)))
+    #b.test <- binom.test(vec1,vec2)
+    #c.test <- chisq.test(as.matrix(cbind(vec1,vec2)),p = 0.5,simulate.p.value = TRUE)
+    #hd[i] <-c.test$p.value 
+  }
+    c.test <- chisq.test(mat,p = 0.01,simulate.p.value = FALSE) #throws warnings when the counts are less than 10.
+    pval <-c.test$p.value 
+  
+  return(pval)
+}
+
+stage.hd(8)
+map(c(4,6:8),function(x) stage.hd(x))

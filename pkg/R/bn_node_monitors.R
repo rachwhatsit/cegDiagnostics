@@ -63,7 +63,7 @@ bn.uncondtnl.node.monitor <- function(df, col_name="Events", prior, n=50, learn=
 }
 
 
-bn.parent.child.monitor <- function(df, parents, parent.values, child, n=50, learn=FALSE) {#dataframes should also be added for the counts
+bn.parent.child.monitor <- function(df, parents, parent.values, child, n=50, prior, learn=FALSE) {#dataframes should also be added for the counts
   #add checks to make sure that prior has same number of items as counts in dataframe
   
   #passing col names to the filtering bit
@@ -71,7 +71,10 @@ bn.parent.child.monitor <- function(df, parents, parent.values, child, n=50, lea
   #p.sym <- lapply(parents, sym)
   c.sym <- sym(child)
   alpha.bar <- max(apply(df, 2, function(x){length(levels(as.factor(x)))})) #max number of categories at each level in the dataset 
-  prior <- rep(alpha.bar, length(levels(df[[child]])))/length(levels(df[[child]]))
+  if(is.na(prior[1])==TRUE){
+    prior <- rep(alpha.bar, length(levels(df[[child]])))/length(levels(df[[child]]))  
+  }
+  
   
   #initialize log penalty scores
   Zm <- rep(NA, n)
