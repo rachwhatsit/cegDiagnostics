@@ -1,4 +1,4 @@
-library(rlang);library(tidyverse); library(DiagrammeR)
+library(rlang);library(tidyverse); library(DiagrammeR); library(latex2exp)
 
 #radical dataset 
 
@@ -33,9 +33,44 @@ radical.sk <- c(radical.stage.key[1],radical.sk)
 map(radical.sk, ~select(.x,-pos))->radical.sk.nocol
 
 #the real component monitor 
-getdata(radical.df, radical.sk.nocol) -> radical.data
-radical.data[[1]]<- radical.sk.nocol[[2]]$n
+#getdata(radical.df, radical.sk.nocol) -> radical.data
+#radical.data[[1]]<- radical.sk.nocol[[2]]$n#THIS IS NO GOOD
+
+#DO IT THIS WAY 
 radical.prior <- radical.sst$prior[which(!is.na(unlist(lapply(radical.sst$prior, '[[', 1))) == TRUE)]
+radical.data <- radical.sst$data[which(!is.na(unlist(lapply(radical.sst$data, '[[', 1))) == TRUE)]
+
+radical.loo.counts <- one.out.getdata(radical.df,radical.sk.nocol) #is missing the bit at the root node 
+radical.loo.counts <- c(list(radical.data[[1]]), radical.loo.counts)#success 
+
+
+batch.stage.mon<-function(i){
+#r.bstg <- c()
+stg.w.sits <- c()
+count <- 0
+c <- 0
+  if(length(radical.loo.counts[[i]])==1){
+    next
+  } else {
+    c <- c+1 
+    stg.w.sits[c] <- i #keep the stage we're looking at
+    #unlist all the lists and turn to a matrix
+    nrows <-length(radical.loo.counts[[i]])
+    ncols <- length(unlist(radical.loo.counts[[i]][1]))
+    mat <- matrix(rep(NA,nrows*ncols),nrow=nrows,ncol=ncols)
+    for(j in 1:nrows ){
+      mat[j,] <- as.vector(unlist(radical.data[[i]]))-as.vector(unlist(radical.loo.counts[[i]][j]))#recovers the number of the counts in each situation
+    }
+    chisq.test(mat)->test.me
+    r.bstg <- test.me$p.value
+  }
+  return(r.bstg)
+}
+  
+  
+
+
+
 #get the componens 
 radical.components <- component.monitor(radical.data,radical.prior)
 
@@ -205,7 +240,7 @@ chds.part.df <- as.data.frame(cbind(5:860,chds.crrnt.stg.probs, chds.alt1.stg.pr
 colnames(chds.part.df) <- c("t", "U1=(1,2,3)(4)", "U2=(1,2)(3)(4)", "U3=(1,3)(2)(4)", "U4=(2,3)(1)(4)")
 chds.part.df %>% 
   gather(key, value, -t) %>%
-  ggplot(aes(x=t, y=value, colour=key)) + geom_line()
+  ggplot(aes(x=t, y=value, colour=key)) + geom_line() + theme_minimal() + ylab(TeX('$p(U_t | y^{t-1})$')) 
 
 #########PLOT FOR THE BN CEG
 chds.bn.crrnt.stg.probs <- do.call("rbind", lapply(chds.bn.part.monitor[[3]], "[[", 7)) #possible.coloring 15
@@ -223,7 +258,7 @@ chds.bn.part.df <- as.data.frame(cbind(5:860,chds.bn.crrnt.stg.probs, chds.bn.al
 colnames(chds.bn.part.df) <- c("t", "U1=(1)(2)(3)(4)", "U2=(1,4)(2)(3)", "U3=(1,2)(3)(4)", "U4=(1,3)(2)(4)", "U5=(2,4)(1)(3)", "U6=(2,3)(1)(4)", "U7=(3,4)(1)(2)")
 chds.bn.part.df %>% 
   gather(key, value, -t) %>%
-  ggplot(aes(x=t, y=value, colour=key)) + geom_line()
+  ggplot(aes(x=t, y=value, colour=key)) + geom_line() + theme_minimal() + ylab(TeX('$p(U_t | y^{t-1})$')) 
 #stagings
 #9 (14)(2)(3)
 #10 (12) (3) (4)
@@ -246,7 +281,7 @@ chds.w7w3.pach <- ceg.child.parent.monitor(df=chds.df,
                          learn = F)
 chds.w7w3.pacht <- ceg.child.parent.monitor(df=chds.df,
                                            target.stage = "u1",
-                                           target.cut = 0, 
+                                           target.cut = 2, 
                                            condtnl.stage = "u0",
                                            struct = chds.struct,
                                            stage.key = chds.sk.nocol, 
@@ -255,8 +290,8 @@ chds.w7w3.pacht <- ceg.child.parent.monitor(df=chds.df,
                                            n = 860,
                                            learn = T)
 chds.prior.expert <- chds.prior
-chds.prior.expert[[2]] <-sum(unlist(chds.prior.expert[[2]]))*c(.2,.8)
-chds.prior.expert[[3]] <-sum(unlist(chds.prior.expert[[3]]))*c(.2,.8)
+#chds.prior.expert[[8]] <-sum(unlist(chds.prior.expert[[2]]))*c(.9,.1)
+chds.prior.expert[[2]] <-c(.9,.1)#sum(unlist(chds.prior.expert[[8]]))*c(.9,.1)
 chds.expect.pach <- ceg.child.parent.monitor(df=chds.df,
                                            target.stage = "u1",
                                            target.cut = 2, 
@@ -277,29 +312,31 @@ chds.expert.pacht <- ceg.child.parent.monitor(df=chds.df,
                                             prior=chds.prior.expert,
                                             n = 860,
                                             learn = T)
-plot(chds.expert.pacht[,1])
+plot(chds.w7w3.pacht[,1])
 
 
 
 chds.pach <- as.data.frame(cbind(1:860,chds.w7w3.pach[,1],chds.w7w3.pacht[,1],chds.expect.pach[,1],chds.expert.pacht[,1]))
 chds.pach <- as.data.frame(cbind(1:860,chds.w7w3.pach[,2],chds.w7w3.pacht[,2],chds.w7w4.pach[,2],chds.w7w4.pacht[,2],chds.w7w5.pach[,2]))
-colnames(chds.pach) <- c('t','U1 Reference prior, no learning','U1 Reference prior, learning','U2 Reference prior, no learning','U2 Reference prior, learning')
+colnames(chds.pach) <- c('t','Reference prior, no learning','Reference prior, learning','Expert prior, no learning','Expert prior, learning')
 
-chds.pach[1:150,] %>%
+chds.pach[1:25,] %>%
   gather(key,value, -t) %>% 
-  ggplot(aes(x=t,y=value,colour=key))+geom_line() + ylab('Cumulative logarithmic penalty')
+  ggplot(aes(x=t,y=value,colour=key))+geom_line() + ylab('Cumulative logarithmic penalty') + theme_minimal()
 
 
 ########CHDS BN PACH MONITOR 
-bn.pach.nl <- bn.parent.child.monitor(df = chds.df,'Social','High','Economic',n=150)
-bn.pach.l <- bn.parent.child.monitor(df = chds.df,'Social','High','Economic',n=150,learn = T)
+bn.pach.nl <- bn.parent.child.monitor(df = chds.df,'Social','High','Economic',prior=c(NA,NA),n=150)
+bn.pach.l <- bn.parent.child.monitor(df = chds.df,'Social','High','Economic',n=150,prior=c(NA,NA),learn = T)
+bn.pach.exp.nl <- bn.parent.child.monitor(df = chds.df,'Social','High','Economic',n=150,prior = c(.9,.7))
+bn.pach.exp.l <- bn.parent.child.monitor(df = chds.df,'Social','High','Economic',n=150,prior=c(.9,.7),learn = T)
 
-chds.bn.pach <- as.data.frame(cbind(1:length(bn.pach.l[,1]), bn.pach.nl[,1], bn.pach.l[,1]))
-colnames(chds.bn.pach) <- c('t','Ref prior, no learning','Ref prior, learning')
+chds.bn.pach <- as.data.frame(cbind(1:length(bn.pach.l[,1]), bn.pach.nl[,1], bn.pach.l[,1],bn.pach.exp.nl[,1], bn.pach.exp.l[,1]))
+colnames(chds.bn.pach) <- c('t','Ref prior, no learning','Ref prior, learning','Expert prior, no learning','Expert prior, learning')
 
-chds.bn.pach %>%
+chds.bn.pach[1:25,] %>%
   gather(key,value, -t) %>% 
-  ggplot(aes(x=t,y=value,colour=key))+geom_line() + ylab('Cumulative logarithmic penalty')
+  ggplot(aes(x=t,y=value,colour=key))+geom_line() + ylab('Cumulative logarithmic penalty') + theme_minimal()
 
 ########CHDS STAGE MONITORS  
 pass.message(df = chds.df, stage.key = chds.sk.nocol, evidence = chds.df[1:10,],prior = chds.prior,struct = chds.struct,stages = chds.stages )
@@ -338,9 +375,24 @@ u7monitor %>%
 chds.which.stage <- c(1,2,2,3,3,4,4,4)
 expct.cnts <- expected.counts(chds.prior, chds.which.stage)
 expctBF <-component.monitor(expct.cnts,chds.prior)
+EBF <- component.monitor(Edata,chds.prior)
 actualBF <-component.monitor(chds.data, chds.prior)
-BFdiff <-expctBF/actualBF
- actualBF/expctBF
+
+Edata <- list()
+for (i in 1:length(chds.data)){
+  lst <- chds.data[[i]]
+  Edata[[i]]<-list(rep(sum(lst)/length(lst), length(lst)))
+}
+
+cut <- 1
+for (i in length(chds.which.stage)){
+  if(cut==chds.which.stage[i]){
+    cut = cut
+  } else {
+    cut <- cut+1
+  }
+  for hte
+}
 
  chi.square <- rep(NA, length(expct.cnts))
 for (i in 1:length(expct.cnts)){
@@ -361,6 +413,7 @@ component.monitor <- function(prior,data,expct.cnts){###THIS IS
    return(components)
  }
  
+component.monior(chds.prior, chds.data,)
 
 chds.stages <- paste0('u',0:7)
 BFdifftbl <- stargazer::stargazer(cbind(chds.stages,BFdiff))
@@ -398,8 +451,9 @@ situation.monitor <- function(u){
   chds.loo.counts[[u]]
   
   cmp.vec <- c()
-  wt <- c()
-  chi <- c()
+  cmp.vec2 <- c()
+  #wt <- c()
+  #chi <- c()
   for (i in 1:length(chds.loo.counts[[u]])){
     alpha <-unlist(chds.prior[[u]])
     N <- unlist(chds.loo.counts[[u]][i])#counts from left out situation
@@ -411,18 +465,20 @@ situation.monitor <- function(u){
     x <- (N-e)^2/e
     test.me <-chisq.test(as.matrix(rbind(N,as.vector(e))))
     #wt[i] <-(sum(N))/sum(unlist(chds.data[[u]]))
-    #cmp.vec[i] <- w*(sum(lgamma(alpha + N) - lgamma(alpha)) + sum(lgamma(sum(alpha)) - lgamma(sum(alpha + N))))
-    #cmp.vec2[i] <- w*(sum(lgamma(alpha + N2) - lgamma(alpha)) + sum(lgamma(sum(alpha)) - lgamma(sum(alpha + N2))))
-    chi[i]<-test.me$p.value
+    cmp.vec[i] <- (sum(lgamma(alpha + N) - lgamma(alpha)) + sum(lgamma(sum(alpha)) - lgamma(sum(alpha + N))))
+    cmp.vec2[i] <- w*(sum(lgamma(alpha + N2) - lgamma(alpha)) + sum(lgamma(sum(alpha)) - lgamma(sum(alpha + N2))))
+    #chi[i]<-test.me$p.value
   }
   
   #cmp.vec/actualBF[[u]]
   #x <- test/(test+1)
  
   
-x<- exp(sum(cmp.vec)-actualBF[[u]])
-return(chi)  
+x<- exp(cmp.vec2-actualBF[[u]])
+x <- cmp.vec/cmp.vec2
+return(x)  
 }
+
 
 situation.monitor(8)
 map(c(4,6:8), function(x) situation.monitor(x))

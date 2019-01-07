@@ -78,7 +78,7 @@ sit.resids <- function(u,level, loo.counts, data, prior){
     geom_pointrange(df, mapping=aes(x=V1, y=expct, ymin=upper, ymax=lower), size=1,color='red') + 
     geom_point(df, mapping=aes(x=V1, y=obsv), size=5, color='blue',shape=17) +
     theme_minimal()+
-    xlab(expression(v[j])) + ylab(expression(p(X[h])))
+    xlab(expression(v[j])) + ylab(expression(E(X[e])))
 
   # df %>% gather(key, value, -V1) %>%
   #   ggplot(aes(x=V1, y=value, colour=key,shape=key,size=0.75)) + 
@@ -98,9 +98,12 @@ sit.resids(6,2,chds.loo.counts, chds.data,chds.prior)
 sit.resids(4,2,chds.loo.counts, chds.data,chds.prior)
 
 sit.resids(32,2,radical.loo.counts, radical.data,radical.prior)
+
 sit.resids(33,2,radical.loo.counts, radical.data,radical.prior)
 sit.resids(34,2,radical.loo.counts, radical.data,radical.prior)
+
 sit.resids(35,2,radical.loo.counts, radical.data,radical.prior)
+
 sit.resids(36,2,radical.loo.counts, radical.data,radical.prior)
 sit.resids(37,2,radical.loo.counts, radical.data,radical.prior)
 
