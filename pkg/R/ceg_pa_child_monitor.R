@@ -70,9 +70,10 @@ ceg.child.parent.monitor <-
           #this is not doing what it should. regrettably.
           for (j in 1:length(cnd.in.path.idx)) {
             df_cuts[[j]] <- df_cut
-            df_cuts[[j]] <-
-              filter(df_cuts[[j]], UQ(sym(colnames(df_cut)[1])) == as.character(unlist(stage.key[[target.cut -
-                                                                                                    1]][cnd.in.path.idx[j], 1])))#filter according to the matching indices
+            df_cuts[[j]] <- filter(df_cuts[[j]], Social=="High")#filter according to the matching indices
+            # df_cuts[[j]] <-
+            #   filter(df_cuts[[j]], UQ(sym(colnames(df_cut)[1])) == as.character(unlist(stage.key[[target.cut -
+            #                                                                                         1]][cnd.in.path.idx[j], 1])))#filter according to the matching indices
           }
         }else{
           for (j in 1:length(cnd.in.path.idx)) {
@@ -122,6 +123,7 @@ ceg.child.parent.monitor <-
     else{
       for (i in 2:n) {
         df_cut <- df[2:i, ]
+        #figure out what stages we're watching for the target (child) stage
         in.paths <-
           stage.key[[target.cut]][which(stage.key[[target.cut]]$stage == target.stage), ]#id the incoming pathways
         stages.of.interest <-
@@ -139,14 +141,24 @@ ceg.child.parent.monitor <-
         cnd.in.path.idx <-
           which(stage.key[[target.cut - 1]]$stage == condtnl.stage)
         
+        
+        
         #filter out along conditional stage requirements
         df_cuts <- list()
-        for (j in 1:length(cnd.in.path.idx)) {
-          df_cuts[[j]] <- df_cut
-          for (k in 1:(length(colnames(stage.key[[target.cut - 1]])) - 2)) {
-            df_cuts[[j]] <-
-              filter(df_cuts[[j]], UQ(sym(colnames(df_cut)[k])) == as.character(unlist(stage.key[[target.cut -
-                                                                                                    1]][cnd.in.path.idx[j], k])))#filter according to the matching indices
+        if (target.cut == 2) {
+          #this is not doing what it should. regrettably.
+          for (j in 1:length(cnd.in.path.idx)) {
+            df_cuts[[j]] <- df_cut
+            df_cuts[[j]] <- filter(df_cuts[[j]], Social=="High")#filter according to the matching indices
+          }
+        }else{
+          for (j in 1:length(cnd.in.path.idx)) {
+            df_cuts[[j]] <- df_cut
+            for (k in 1:(length(colnames(stage.key[[target.cut - 1]])) - 2)) {
+              df_cuts[[j]] <-
+                filter(df_cuts[[j]], UQ(sym(colnames(df_cut)[k])) == as.character(unlist(stage.key[[target.cut -
+                                                                                                      1]][cnd.in.path.idx[j], k])))#filter according to the matching indices
+            }
           }
         }
         df_paths.cnd <- do.call(rbind, df_cuts)
@@ -161,6 +173,7 @@ ceg.child.parent.monitor <-
           }
         }
         df_paths <- do.call(rbind, df_cuts)
+        # df_paths <- filter(df_paths,Economic==cndtnl.stage.val)
         obsv.stage.count <-
           count(df_paths, UQ(sym(colnames(
             as.data.frame(struct[target.stage.idx])

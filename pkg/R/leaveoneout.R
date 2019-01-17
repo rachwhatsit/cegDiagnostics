@@ -1,10 +1,7 @@
-pi <- Vectorize(function(theta)  dbeta(theta,104.25,11.25))
-pi2 <- Vectorize(function(theta)  dbeta(theta,213.25,21.25))
-curve(pi, xlab=~theta, ylab="Density", main="Beta prior: a=104.25, b=11.25",lwd=2)
-curve(pi, xlab=~theta, ylab="Density", main="Beta prior: a=213.25, b=21.25",lwd=2)
-curve(pi2, xlab=~theta, ylab="Density", main="Beta prior: a=109.25, b=10.25",add=T, col=2,lwd=2)
-
-u <- 4
+#' @param u
+#' @param which.stage
+#' @export
+#' @examples
 surprise.score <- function(u){#guessing this is what jim calls the bayes p-value
   score <- rep(NA, length(chds.loo.counts[[u]]))
   counts <- rep(0, length(unlist(chds.loo.counts[[u]][i])))
@@ -23,11 +20,12 @@ surprise.score <- function(u){#guessing this is what jim calls the bayes p-value
   }
   return(score)
 }
-surprise.score(8)
-map(c(4,6:8),surprise.score)
 
-u <- 4
-level <- 2 #idx corresponding to 'worst' level
+#' @param u
+#' @param level
+#' @keywords BayesFactor
+#' @export
+#' @examples
 sit.resids <- function(u,level){
   expct <- rep(NA, length(chds.loo.counts[[u]]))
   obsv <- rep(NA, length(chds.loo.counts[[u]]))
@@ -50,13 +48,16 @@ sit.resids <- function(u,level){
   
 }
 
-sit.resids(4,2)
 
 
 ###########FUNCTIONIZE MEEEEE
-
-u <- 4
-level <- 2 #idx corresponding to 'worst' level
+#' @param u
+#' @param level
+#' @param data
+#' @param prior
+#' @keywords BayesFactor
+#' @export
+#' @examples
 sit.resids <- function(u,level, loo.counts, data, prior){
   expct <- rep(NA, length(loo.counts[[u]]))
   obsv <- rep(NA, length(loo.counts[[u]]))
@@ -80,35 +81,18 @@ sit.resids <- function(u,level, loo.counts, data, prior){
     theme_minimal()+
     xlab(expression(v[j])) + ylab(expression(E(X[e])))
 
-  # df %>% gather(key, value, -V1) %>%
-  #   ggplot(aes(x=V1, y=value, colour=key,shape=key,size=0.75)) + 
-  #   geom_point() +
-  #   #scale_y_continuous(limits = c(0, 1)) +
-  #   scale_x_continuous(breaks= 1:length(loo.counts[[u]])) +
-  #   theme(legend.position = "none") + 
-  #   xlab(expression(v[j])) + ylab(expression(mu))
   
 }
 
 #########for the radical example
-
-sit.resids(8,2,chds.loo.counts, chds.data,chds.prior)
-sit.resids(7,2,chds.loo.counts, chds.data,chds.prior)
-sit.resids(6,2,chds.loo.counts, chds.data,chds.prior)
-sit.resids(4,2,chds.loo.counts, chds.data,chds.prior)
-
-sit.resids(32,2,radical.loo.counts, radical.data,radical.prior)
-
-sit.resids(33,2,radical.loo.counts, radical.data,radical.prior)
-sit.resids(34,2,radical.loo.counts, radical.data,radical.prior)
-
-sit.resids(35,2,radical.loo.counts, radical.data,radical.prior)
-
-sit.resids(36,2,radical.loo.counts, radical.data,radical.prior)
-sit.resids(37,2,radical.loo.counts, radical.data,radical.prior)
-
 #######do the surprise score
-u <- 4
+#' @param u
+#' @param loo.counts
+#' @param data
+#' @param prior
+#' @keywords 
+#' @export
+#' @examples
 surprise.score <- function(u, loo.counts, data, prior){#guessing this is what jim calls the bayes p-value
   score <- rep(NA, length(loo.counts[[u]]))
   counts <- rep(0, length(unlist(loo.counts[[u]][i])))
@@ -127,12 +111,3 @@ surprise.score <- function(u, loo.counts, data, prior){#guessing this is what ji
   }
   return(score)
 }
-surprise.score(8, chds.loo.counts, chds.data, chds.prior)
-map(c(4,6:8),surprise.score)
-
-map(1:37, function(x) length(radical.loo.counts[[x]])) %>% unlist ->num.sits
-
-map(which(num.sits!=1), function(x) surprise.score(x, radical.loo.counts, radical.data,radical.prior))
-
-surprise.score(32,radical.loo.counts,radical.data,radical.prior)
-    

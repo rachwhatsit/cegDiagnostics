@@ -51,7 +51,7 @@ getdata <- function(df, stage.key) {
 component.monitor <- function(data, prior){###THIS IS
   components <- c()
 #  for (i in 1:length(prior)){
-  for (i in 1:3{
+  for (i in 1:3){
     alpha <- unlist(prior[i])
     N <- unlist(data[i])
     components[i]  <- sum(lgamma(alpha + N) - lgamma(alpha)) + sum(lgamma(sum(alpha)) - lgamma(sum(alpha + N)))
