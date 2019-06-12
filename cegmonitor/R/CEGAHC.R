@@ -1,16 +1,16 @@
-#' The AHC algorithm as written in Barclay 2013 
+#' The AHC algorithm as written in Barclay 2013
 #' Author: Lorna Barclay
-#' 
+#'
 #' @param exampledata dataframe
 #' @keywords model selection, ceg
 #' @export
 #' @examples
 #' CEG.AHC()
-#' 
+#'
 CEG.AHC <- function(exampledata = exampledata ,
                     equivsize = 3) {
   exampledata <- exampledata
-  equivsize <- 
+  equivsize <-
     max(apply(exampledata, 2, function(x) {#reference prior as the highest number of levels of categories
       length(levels(as.factor(x)))
     })) #total number of pathways in the CEG
@@ -20,7 +20,7 @@ CEG.AHC <- function(exampledata = exampledata ,
     numbcat <- c(numbcat , nlevels(exampledata[, k]))
   }
   numb <- c(1)
-  
+
   for (i in 2:numbvariables) {
     numb <- c(numb , prod(numbcat [1:(i - 1)]))
   }
@@ -34,7 +34,7 @@ CEG.AHC <- function(exampledata = exampledata ,
     }
   }
   #Datalist1:list of the number of individuals going from the stage along a particular edge in C_{0}
-  
+
   data <- c(list(rbind(table(exampledata [, 1]))))
   for (i in 2:numbvariables) {
     for (j in 1:numb[i]) {
@@ -102,12 +102,15 @@ CEG.AHC <- function(exampledata = exampledata ,
               sum(lgamma(prior [[compare1]] + prior [[compare2]])) - #and the CEG where the two stages are not merged
               (
                 lgamma(sum(prior [[compare1]])) - lgamma(sum(prior[[compare1]] + data[[compare1]])) +
-                  sum(lgamma(prior [[compare1]] + data[[compare1]])) -
-                  sum(lgamma(prior [[compare1]])) + lgamma(sum(prior[[compare2]])) - lgamma(sum(prior[[compare2]] + data[[compare2]])) +
+                  sum(lgamma(prior [[compare1]] + data[[compare1]])) - sum(lgamma(prior [[compare1]])) +
+                  lgamma(sum(prior[[compare2]])) - lgamma(sum(prior[[compare2]] + data[[compare2]])) +
                   sum(lgamma(prior [[compare2]] + data[[compare2]])) - sum(lgamma(prior [[compare2]]))
               )
             #if the resulting difference is greater than the current difference then we replace it
             if (result > difference) {
+              print("WE HAVE A VANILLA RESULT")
+              print(result)
+              print(c(i,j,k))
               difference <- result
               merged <- c(compare1 , compare2 , k)
             }
@@ -117,7 +120,7 @@ CEG.AHC <- function(exampledata = exampledata ,
     }
     diff.end <- difference
     #We update our priorlist , datalist and comparisonset to obtain the priorlist , datalist and comparisonlist for C_{1}
-    
+
     if (diff.end > 0) {
       prior[[merged [1]]] <- prior [[merged [1]]] + prior [[merged [2]]]
       prior[[merged [2]]] <- cbind(NA , NA)
@@ -125,7 +128,7 @@ CEG.AHC <- function(exampledata = exampledata ,
       data[[merged [2]]] <- cbind(NA, NA)
       comparisonset [[merged [3]]] <-
         comparisonset [[merged [3]]][-(which(comparisonset [[merged [3]]] == merged [2]))]
-      
+
       mergedlist [[merged [1]]] <-
         cbind(mergedlist[[merged [1]]] , mergedlist [[merged [2]]])
       mergedlist [[merged [2]]] <- cbind(NA , NA)
