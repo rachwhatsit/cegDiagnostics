@@ -1,7 +1,11 @@
-#' @param u
+#' an alternative way to get the surprise score?? 
+#' @param u stage in quesiton 
 #' @export
-#' @examples
-surprise.score <- function(u){#guessing this is what jim calls the bayes p-value
+#' @examples 
+#' surprise.score2(8)
+#'map(c(4,6:8),surprise.score2)
+
+surprise.score2 <- function(u){#guessing this is what jim calls the bayes p-value
   score <- rep(NA, length(chds.loo.counts[[u]]))
   counts <- rep(0, length(unlist(chds.loo.counts[[u]][i])))
   for (i in 2:length(chds.loo.counts[[u]])){
@@ -20,12 +24,15 @@ surprise.score <- function(u){#guessing this is what jim calls the bayes p-value
   return(score)
 }
 
-#' @param u
-#' @param level
+#'returns the situation residual plot 
+#'
+#' @param u stage
+#' @param level edge of interest
 #' @keywords BayesFactor
 #' @export
-#' @examples
-sit.resids <- function(u,level){
+#' @examples sit.resids.plot(8,2,chds.loo.counts, chds.data,chds.prior)
+#' 
+sit.resids.plot <- function(u,level){
   expct <- rep(NA, length(chds.loo.counts[[u]]))
   obsv <- rep(NA, length(chds.loo.counts[[u]]))
   for (i in 1:length(chds.loo.counts[[u]])){
@@ -49,15 +56,16 @@ sit.resids <- function(u,level){
 
 
 
-###########FUNCTIONIZE MEEEEE
-#' @param u
-#' @param level
-#' @param data
-#' @param prior
+#' possibly a duplicate function i do not need 
+#' @param u stage
+#' @param level level of interest
+#' @param data dataset 
+#' @param prior effective sample size divided by number of outgoing edges
 #' @keywords BayesFactor
 #' @export
-#' @examples
-sit.resids <- function(u,level, loo.counts, data, prior){
+#' @examples sit.resids.plot2(8,2,chds.loo.counts, chds.data,chds.prior)
+#' 
+sit.resids.plot2 <- function(u,level, loo.counts, data, prior){
   expct <- rep(NA, length(loo.counts[[u]]))
   obsv <- rep(NA, length(loo.counts[[u]]))
   for (i in 1:length(loo.counts[[u]])){
@@ -83,15 +91,16 @@ sit.resids <- function(u,level, loo.counts, data, prior){
 
 }
 
-#########for the radical example
-#######do the surprise score
-#' @param u
-#' @param loo.counts
-#' @param data
-#' @param prior
-#' @keywords
+#' computes the surprise score
+#' @param u #stage
+#' @param loo.counts #list containing counts with each one left out
+#' @param data #dataset
+#' @param prior #ceg prior
+#' @keywords position stage
 #' @export
-#' @examples
+#' @examples surprise.score(8)
+#'map(c(4,6:8),surprise.score)
+
 surprise.score <- function(u, loo.counts, data, prior){#guessing this is what jim calls the bayes p-value
   score <- rep(NA, length(loo.counts[[u]]))
   counts <- rep(0, length(unlist(loo.counts[[u]][i])))

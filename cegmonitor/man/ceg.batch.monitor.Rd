@@ -8,6 +8,14 @@ ceg.batch.monitor(df, struct, stage.key, stages, which.cut)
 }
 \arguments{
 \item{df}{data in question}
+
+\item{struct}{ceg struct}
+
+\item{stage.key}{ceg stage.key}
+
+\item{stages}{list of stages}
+
+\item{which.cut}{which stratified set of stages to consider}
 }
 \description{
 A function to compute the batch monitor of a CEG

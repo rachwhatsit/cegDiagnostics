@@ -2,23 +2,18 @@ Package: pkg
 Title: Prequential Diagnostics for Chain Event Graphs
 Version: 0.0.2
 Authors@R: person("Rachel", "Wilkerson", email = "rachel.lynne.wilkerson@gmail.com", role = c("aut", "cre"))
-Description: Number of monitors for different aspects of the structure of a Chain Event Graph.
-Monitors generalize the prequential diagnostics for Bayesian Networks given in ''Probabilistic Networks and Expert Systems'', Cowell et al. 
-Monitors should be used after the model selection techniques. Prequential diagostics for Chain Event Graphs
-Depends: R (>= 3.4.2)
-License: MIT + file LICENSE
-Encoding: UTF-8
-LazyData: true
-Imports:
-    dplyr,
-    ggvis,
+Description: Number of monitors for different aspects of the structure of a Chain Event Graph. Monitors generalize the prequential diagnostics for Bayesian Networks given in ''Probabilistic Networks and Expert Systems'', Cowell et al. Monitors should be used after the model selection techniques. 
+Depends: 
     ggplot2,
-    tidyr,
     tidyverse,
     rlang,
     DiagrammeR,
     partitions,
     Rmpfr, 
     collapsibleTree
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports:
 RoxygenNote: 6.1.1
 URL: https://github.com/rachwhatsit/cegmonitor

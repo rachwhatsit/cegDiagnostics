@@ -16,5 +16,9 @@ to.struct(df, stage.key, sst)
 \description{
 A function that can take the output from CEG.AHC() and put it into a list of data frames
 }
+\examples{
+ to.struct(chds.df,chds.stage.key,chds.sst) 
+
+}
 \keyword{ceg,}
 \keyword{structure}

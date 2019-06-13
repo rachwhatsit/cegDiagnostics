@@ -4,16 +4,19 @@
 \alias{get.ref.prior}
 \title{A function to set the reference prior on a CEG}
 \usage{
-get.ref.prior(df, struct, stage.key, stages)
+get.ref.prior(df, struct, stage.key)
 }
 \arguments{
 \item{df}{data in question}
 
-\item{stage.key}{which arrows come from which stages}
+\item{struct}{ceg struct}
 
-\item{stages}{input of stage names should be a character that ends in a numeric value}
+\item{stage.key}{which arrows come from which stages}
 }
 \description{
 A function to set the reference prior on a CEG
+}
+\examples{
+radical.prior <-get.ref.prior(df=radical.df,struct=radical.struct,cuts=radical.cuts,stage.key=radical.sk,stages=radical.stages)#check that we can get the prior
 }
 \keyword{prior}

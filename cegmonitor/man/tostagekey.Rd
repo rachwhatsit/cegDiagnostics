@@ -14,5 +14,8 @@ tostagekey(df, sst)
 \description{
 A function that can take the output from CEG.AHC() and put it into a list of data frames
 }
+\examples{
+tostagekey(chds.df, chds.sst)-> chds.stage.key
+}
 \keyword{ceg,}
 \keyword{structure}

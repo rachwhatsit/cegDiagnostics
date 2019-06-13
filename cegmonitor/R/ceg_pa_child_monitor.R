@@ -1,17 +1,25 @@
 #' A function to compute the node monitors of the BN
 #'
 #' @param df data in question
-#' @param target.stage
-#' @param target.cut
-#' @param stages 
-#' @param stage.key
-#' @param struct
+#' @param target.stage child stage
+#' @param target.cut which cut is the child stage in 
+#' @param stages list of stages
+#' @param stage.key ceg stage.key
+#' @param struct ceg structure
 #' @param n number of iterations
 #' @param learn binary to control learning 
 #' @keywords bn node monitor
 #' @export
-#' @examples###############################################################
-#no conditional parent monitor here. 
+#' @examples chds.expect.pach <- ceg.child.parent.monitor(df=chds.df,
+#'target.stage = "u1",
+#'target.cut = 2, 
+#'condtnl.stage = "u0",
+#'struct = chds.struct,
+#'stage.key = chds.sk.nocol, 
+#'stages=chds.stages,
+#'prior=chds.prior.expert,
+#'n = 860,
+#'learn = F)
 
 ceg.child.parent.monitor <-
   function(df,

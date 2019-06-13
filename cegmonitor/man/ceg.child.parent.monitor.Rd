@@ -10,7 +10,15 @@ ceg.child.parent.monitor(df, target.stage, target.cut, condtnl.stage,
 \arguments{
 \item{df}{data in question}
 
-\item{stages}{}
+\item{target.stage}{child stage}
+
+\item{target.cut}{which cut is the child stage in}
+
+\item{stage.key}{ceg stage.key}
+
+\item{struct}{ceg structure}
+
+\item{stages}{list of stages}
 
 \item{n}{number of iterations}
 
@@ -20,7 +28,16 @@ ceg.child.parent.monitor(df, target.stage, target.cut, condtnl.stage,
 A function to compute the node monitors of the BN
 }
 \examples{
-###############################################################
+chds.expect.pach <- ceg.child.parent.monitor(df=chds.df,
+target.stage = "u1",
+target.cut = 2, 
+condtnl.stage = "u0",
+struct = chds.struct,
+stage.key = chds.sk.nocol, 
+stages=chds.stages,
+prior=chds.prior.expert,
+n = 860,
+learn = F)
 }
 \keyword{bn}
 \keyword{monitor}

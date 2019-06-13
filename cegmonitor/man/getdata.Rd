@@ -8,9 +8,22 @@ getdata(df, stage.key)
 }
 \arguments{
 \item{df}{data in question}
+
+\item{stage.key}{ceg stage leu}
+
+\item{struct}{ceg.struct}
+
+\item{stages}{list of stages}
+
+\item{which.cut}{which cut to examine}
 }
 \description{
 A function to compute the component monitor of a CEG
 }
-\keyword{batch}
-\keyword{cut}
+\examples{
+getdata(radical.df, radical.sk.nocol) -> radical.data
+}
+\keyword{leave}
+\keyword{one}
+\keyword{out}
+\keyword{prequential}

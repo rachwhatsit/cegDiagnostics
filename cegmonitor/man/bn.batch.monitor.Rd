@@ -20,5 +20,8 @@ bn.batch.monitor(df, child, parents, parent.values, prior)
 \description{
 A function to compute the batch monitor of a BN according to the form given in Cowell, et. al. 2007
 }
+\examples{
+bn.batch.monitor(df, Economic, Social, High, chds.prior)
+}
 \keyword{chisquare,}
 \keyword{cuts}

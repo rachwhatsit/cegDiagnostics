@@ -1,10 +1,10 @@
 #' A function to compute the batch monitor of a CEG
 #'
 #' @param df data in question
-#' @param struct
-#' @param stage.key
-#' @param stages
-#' @param which.cut
+#' @param struct ceg struct
+#' @param stage.key ceg stage.key
+#' @param stages list of stages
+#' @param which.cut which stratified set of stages to consider
 #' @keywords cut batch
 #' @export
 #' @examples

@@ -2,7 +2,7 @@
 % Please edit documentation in R/CEGAHC.R
 \name{CEG.AHC}
 \alias{CEG.AHC}
-\title{The AHC algorithm as written in Barclay 2013 
+\title{The AHC algorithm as written in Barclay 2013
 Author: Lorna Barclay}
 \usage{
 CEG.AHC(exampledata = exampledata, equivsize = 3)
@@ -11,7 +11,7 @@ CEG.AHC(exampledata = exampledata, equivsize = 3)
 \item{exampledata}{dataframe}
 }
 \description{
-The AHC algorithm as written in Barclay 2013 
+The AHC algorithm as written in Barclay 2013
 Author: Lorna Barclay
 }
 \examples{

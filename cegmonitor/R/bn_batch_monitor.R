@@ -7,7 +7,7 @@
 #' @param prior prior set by modeller 
 #' @keywords chisquare, cuts
 #' @export
-#' @examples
+#' @examples bn.batch.monitor(df, Economic, Social, High, chds.prior)
 
 bn.batch.monitor <- function(df, child, parents, parent.values,prior){#returns pearson chi-square of diff between observed and expected values
   #determine what the observed counts are

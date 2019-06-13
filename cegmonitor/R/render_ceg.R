@@ -4,7 +4,7 @@
 #' @param stage.key which arrows come from which stages 
 #' @keywords ceg, viz
 #' @export
-#' @examples
+#' @examples renderCEG(chds.stage.key,chds.df)
 
 #THE RIGHT ONE
 renderCEG <- function(stage.key, df){
@@ -21,7 +21,7 @@ renderCEG <- function(stage.key, df){
     lbls <- c(lbls, as.vector(unlist(stage.key[[i]][colnames(df)[(i-1)]])))
   }
   from.sink <-  rep(unique(stage.key[[length(stage.key)]]$pos), length(levels(df[,length(cuts)]))) 
-  to.sink <- rep("winf", length(from.sink) )
+  to.sink <- rep("winf", length(from.sink) ) #TODO change this with the infinity node
   from.vals <- c(from.ceg, from.sink)
   to.vals <- c(to.ceg, to.sink)
   lbls <- c(lbls, rep(as.vector(unlist(unique(df[,length(stage.key)]))),length(to.sink)/length(as.vector(unlist(unique(df[,length(stage.key)]))))))
@@ -53,7 +53,7 @@ renderCEG <- function(stage.key, df){
 #' @param stage.key which arrows come from which stages 
 #' @keywords ceg, viz, interactive
 #' @export
-#' @examples
+#' @examples getTreeRenderable(stage.key, df)
 getTreeRenderable <- function(stage.key, df){
   cuts<-colnames(df)
   from.ceg <- rep(stage.key[[1]]$pos, length(stage.key[[2]]$pos))

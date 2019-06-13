@@ -12,5 +12,8 @@ renderCEG(stage.key, df)
 \description{
 @param df data in question
 }
+\examples{
+renderCEG(chds.stage.key,chds.df)
+}
 \keyword{ceg,}
 \keyword{viz}

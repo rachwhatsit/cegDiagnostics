@@ -4,7 +4,7 @@
 #' @param sst output of CEG.AHC()
 #' @keywords ceg, structure
 #' @export
-#' @examples
+#' @examples tostagekey(chds.df, chds.sst)-> chds.stage.key
 tostagekey <- function(df, sst) {
   sst$comparisonset
   num.cuts <-
@@ -116,7 +116,8 @@ tostagekey <- function(df, sst) {
 #' @param stage.key output of tostagekey()
 #' @keywords ceg, structure
 #' @export
-#' @examples
+#' @examples  to.struct(chds.df,chds.stage.key,chds.sst) 
+#' 
 to.struct <- function(df, stage.key, sst) {
   idx <-
     which(!is.na(unlist(lapply(

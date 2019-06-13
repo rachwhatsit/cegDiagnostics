@@ -1,15 +1,15 @@
 #' A function to set the reference prior on a CEG
 #'
 #' @param df data in question
-#' @param struct
+#' @param struct ceg struct
 #' @param stage.key which arrows come from which stages
-#' @param stages input of stage names should be a character that ends in a numeric value
 #' @keywords prior
 #' @export
-#' @examples
+#' @examples radical.prior <-get.ref.prior(df=radical.df,struct=radical.struct,cuts=radical.cuts,stage.key=radical.sk,stages=radical.stages)#check that we can get the prior
+
 
 get.ref.prior <-
-  function(df, struct, stage.key, stages) {
+  function(df, struct, stage.key) {
     cuts <- colnames(df)
     n <-
       max(apply(df, 2, function(x) {#reference prior as the highest number of levels of categories

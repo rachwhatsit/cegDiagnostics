@@ -1,13 +1,13 @@
 #' A function to compute the component monitor of a CEG
 #'
 #' @param df data in question
-#' @param struct
-#' @param stage.key
-#' @param stages
-#' @param which.cut
-#' @keywords cut batch
+#' @param struct ceg.struct
+#' @param stage.key ceg stage leu 
+#' @param stages list of stages
+#' @param which.cut which cut to examine
+#' @keywords leave one out prequential 
 #' @export
-#' @examples
+#' @examples getdata(radical.df, radical.sk.nocol) -> radical.data
 
 getdata <- function(df, stage.key) {
   cuts <- colnames(df)
@@ -40,14 +40,16 @@ getdata <- function(df, stage.key) {
 }
 
 
-
-##TODO: change for the sparsity of the different functions... 
+#' A function that returns the component monitors
+#' 
 #' @param data from get.data fn
-#' @param prior
+#' @param prior effective sample size over number of edges 
 #' @keywords BayesFactor
 #' @export
-#' @examples
-#' 
+#' @examples expct.cnts <- expected.counts(chds.prior, chds.which.stage)
+#' expctBF <-component.monitor(expct.cnts,chds.prior)
+#'
+#'  
 component.monitor <- function(data, prior){###THIS IS
   components <- c()
 #  for (i in 1:length(prior)){
@@ -59,13 +61,17 @@ component.monitor <- function(data, prior){###THIS IS
   return(components)
 }
 
-#' @param prior
-#' @param which.stage
-#' @param which.cut
+#' Returns the expected counts
+#' 
+#' @param prior effective sample size divided by number of outgoing edges
+#' @param which.stage stage under consideration
+#' @param which.cut cut containing the stage in question 
 #' @keywords BayesFactor
 #' @export
 #' @examples
-#' 
+#' chds.which.stage <- c(1,2,2,3,3,4,4,4)
+#'expct.cnts <- expected.counts(chds.prior, chds.which.stage)
+
 expected.counts <- function(prior,which.stage){
   p <- lapply(chds.prior, function(x) (x/sum(x)))
   expct.cnts <- list()
@@ -83,6 +89,7 @@ expected.counts <- function(prior,which.stage){
 
 #probably the least efficient way to code leave one out cross validation ever.
 #use the nocol vers of the stage.key
+#'returns the leave one out data
 one.out.getdata <- function(df, stage.key) { #returns mega list of one out situations
   cuts <- colnames(df)
   cols <- syms(colnames(df)[1:(length(colnames(df)))])#add the last stage key on

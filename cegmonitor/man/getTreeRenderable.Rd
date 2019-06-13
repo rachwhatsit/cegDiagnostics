@@ -14,6 +14,9 @@ getTreeRenderable(stage.key, df)
 \description{
 A function to translate a stage.key to a renderable data.tree structure
 }
+\examples{
+getTreeRenderable(stage.key, df)
+}
 \keyword{ceg,}
 \keyword{interactive}
 \keyword{viz,}
