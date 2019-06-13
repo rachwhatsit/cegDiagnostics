@@ -4,7 +4,7 @@ This is a package to implement diagnostic monitors for the class of models refer
 
 The package can be installed using: 
 ```{r}
-devtools:::install_github("rachwhatsit/cegmonitors")
+devtools:::install_github("rachwhatsit/cegmonitor")
 ```
 
 ### Chain Event Graphs 
